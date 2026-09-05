@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-09-05T08:22:28.564612+00:00",
+  "catchment_id": "catch_007",
+  "alert_level": "RED",
+  "state_snapshot": {
+    "catchment_id": "catch_007",
+    "data_source": "IMD_GRIDDED_RAINFALL",
+    "data_quality": 0.95,
+    "is_fallback": false,
+    "data_timestamp": 1788596547.0183434,
+    "rainfall_mm": 122.0,
+    "rainfall_1d": 122.0,
+    "rainfall_3d": 319.9,
+    "rainfall_7d": 784.9,
+    "rainfall_30d": 2560.2,
+    "soil_saturation_proxy": 0.9,
+    "ndvi": 0.65,
+    "slope_mean": 20.0,
+    "flow_accumulation": 1000.0,
+    "probability": 0.738,
+    "confidence": 0.717,
+    "raw_probability": 0.99,
+    "raw_confidence": 0.95,
+    "lead_time_hrs": 1.7,
+    "top_drivers": [
+      "rainfall_3d",
+      "soil_saturation_proxy",
+      "rainfall_1d",
+      "rainfall_7d",
+      "slope_mean"
+    ],
+    "driver_importances": {
+      "rainfall_3d": 0.5598,
+      "soil_saturation_proxy": 0.225,
+      "rainfall_1d": 0.183,
+      "rainfall_7d": 0.1744,
+      "slope_mean": 0.0667
+    },
+    "is_out_of_distribution": false,
+    "ood_features": [],
+    "alert_level": "RED",
+    "alert_color": "red",
+    "cap_draft": "<?xml version='1.0' encoding='utf-8'?>\n<alert xmlns=\"urn:oasis:names:tc:emergency:cap:1.2\"><identifier>IN-FLOOD-catch_007-1788596548</identifier><sender>SIH2026-FlashFloodAI</sender><sent>2026-09-05T13:52:28+05:30</sent><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><language>en-IN</language><category>Met</category><event>Flash Flood Warning</event><responseType>Evacuate</responseType><urgency>Immediate</urgency><severity>Severe</severity><certainty>Likely</certainty><headline>Flash Flood RED Alert -- catch_007</headline><description>Flash flood risk 74% (confidence 72%) in catch_007 within 2 hours. Top risk drivers: rainfall_3d, soil_saturation_proxy, rainfall_1d.</description><instruction>Avoid low-lying areas near rivers and streams. Move to higher ground immediately if water levels rise rapidly. Follow instructions from local authorities.</instruction><area><areaDesc>Catchment catch_007</areaDesc></area></info></alert>",
+    "explanation": "[ALERT] FLASH FLOOD ALERT -- RED\n\nCatchment: catch_007\nRisk Level: 74% probability of flash flood\nConfidence: 72%\nExpected within: 2 hours\n\nKey Risk Factors:\n  1. cumulative rainfall over the past 3 days (current: 319.9)\n  2. estimated soil moisture saturation level (current: 0.9)\n  3. rainfall in the last 24 hours\n\n[Context] 320mm in 3 days is 6.4x the regional average. Soil is likely near saturation.",
+    "rate_limited": false,
+    "final_status": "APPROVED_SENT",
+    "decision_by": "human",
+    "decision_reason": "Human approved the alert",
+    "pipeline_start_time": 1788596546.8229682,
+    "pipeline_errors": [],
+    "validation_result": {
+      "is_valid": true,
+      "quality_score": 1.0,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  "cap_xml": "<?xml version='1.0' encoding='utf-8'?>\n<alert xmlns=\"urn:oasis:names:tc:emergency:cap:1.2\"><identifier>IN-FLOOD-catch_007-1788596548</identifier><sender>SIH2026-FlashFloodAI</sender><sent>2026-09-05T13:52:28+05:30</sent><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><language>en-IN</language><category>Met</category><event>Flash Flood Warning</event><responseType>Evacuate</responseType><urgency>Immediate</urgency><severity>Severe</severity><certainty>Likely</certainty><headline>Flash Flood RED Alert -- catch_007</headline><description>Flash flood risk 74% (confidence 72%) in catch_007 within 2 hours. Top risk drivers: rainfall_3d, soil_saturation_proxy, rainfall_1d.</description><instruction>Avoid low-lying areas near rivers and streams. Move to higher ground immediately if water levels rise rapidly. Follow instructions from local authorities.</instruction><area><areaDesc>Catchment catch_007</areaDesc></area></info></alert>"
+}

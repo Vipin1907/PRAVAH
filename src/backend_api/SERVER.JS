@@ -49,8 +49,8 @@ app.post('/api/get-dashboard-data', async (req, res) => {
 
  
        const VIPIN_ML_URL = "http://localhost:5000/predict";
-        const AYUSH_ROUTE_URL = "http://dummy-ayush-ip/route";
-        const ATUL_AI_URL = "http://dummy-atul-ip/explain";
+        const AYUSH_ROUTE_URL = "http://localhost:5002/route";  
+        const ATUL_AI_URL = "http://localhost:5001/explain";
 
         console.log("Doston ki APIs call ho rahi hain...");
 
@@ -76,4 +76,10 @@ app.post('/api/get-dashboard-data', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Bhai, server badhiya chal raha hai: http://localhost:${PORT}`);
 });
+
+
+
+
+
+
 

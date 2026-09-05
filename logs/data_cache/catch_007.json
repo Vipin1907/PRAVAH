@@ -1,0 +1,1 @@
+{"catchment_id": "catch_007", "timestamp": 1788596555.4445248, "source": "IMD_GRIDDED_RAINFALL", "is_fallback": false, "quality_score": 0.95, "rainfall_mm": 12.9, "rainfall_1d": 12.9, "rainfall_3d": 35.5, "rainfall_7d": 72.0, "rainfall_30d": 246.8, "soil_saturation_proxy": 0.74, "ndvi": 0.65, "slope_mean": 20.0, "flow_accumulation": 1000.0}
