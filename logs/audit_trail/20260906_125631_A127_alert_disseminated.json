@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-09-06T07:26:31.900472+00:00",
+  "catchment_id": "A127",
+  "event_type": "alert_disseminated",
+  "agent": "dissemination",
+  "data": {
+    "alert_level": "ORANGE",
+    "probability": 0.603,
+    "confidence": 0.666,
+    "decision_by": "human",
+    "channels": [
+      "audit_log",
+      "webhook",
+      "sms"
+    ]
+  }
+}

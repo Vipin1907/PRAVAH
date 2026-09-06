@@ -1,0 +1,608 @@
+/* ==========================================================
+   PravahAI — Frontend Application Logic
+   Fixed: state -> district -> basin cascading dropdowns
+   ========================================================== */
+"use strict";
+
+/* -------------------------------------------------
+   1. STATIC DATA (Catchment / Basin data per state)
+   ------------------------------------------------- */
+const STATE_DATA = {
+  Assam: {
+    districts: [
+      { value: "Cachar", label: "Cachar" },
+      { value: "Nagaon", label: "Nagaon" },
+      { value: "Dhemaji", label: "Dhemaji" }
+    ],
+    basins: {
+      Cachar:  [{ value: "A127", label: "A127 — Barak River Basin" }],
+      Nagaon:  [{ value: "A042", label: "A042 — Kolong-Kopili Basin" }],
+      Dhemaji: [{ value: "A011", label: "A011 — Subansiri Basin" }]
+    }
+  },
+  Uttarakhand: {
+    districts: [
+      { value: "Chamoli", label: "Chamoli" },
+      { value: "Uttarkashi", label: "Uttarkashi" },
+      { value: "Rudraprayag", label: "Rudraprayag" }
+    ],
+    basins: {
+      Chamoli:     [{ value: "U04", label: "U04 — Dharali Alaknanda Basin" }],
+      Uttarkashi:  [{ value: "U01", label: "U01 — Bhagirathi Basin" }],
+      Rudraprayag: [{ value: "U07", label: "U07 — Mandakini Basin" }]
+    }
+  }
+};
+
+const STATE_COORDS = {
+  Assam: [24.08, 92.83],
+  Uttarakhand: [30.31, 79.33]
+};
+
+const CATCHMENT_COORDS = {
+  A127: { lat: 24.82, lon: 92.80, name: "Barak River Basin" },
+  A042: { lat: 26.10, lon: 92.68, name: "Kolong-Kopili Basin" },
+  A011: { lat: 27.48, lon: 94.58, name: "Subansiri Basin" },
+  U04:  { lat: 30.55, lon: 79.35, name: "Dharali Alaknanda Basin" },
+  U01:  { lat: 30.73, lon: 78.45, name: "Bhagirathi Basin" },
+  U07:  { lat: 30.48, lon: 79.02, name: "Mandakini Basin" }
+};
+
+const HISTORICAL_EVENTS = {
+  Assam: {
+    eventName: "Assam Major Flood 2022 (Cachar)",
+    rain3d: "712 mm",
+    soil: "97%",
+    anomaly: "+140% above avg",
+    impact: "3.2M displaced, NH-37 cut off"
+  },
+  Uttarakhand: {
+    eventName: "Chamoli Flash Flood 2021",
+    rain3d: "205 mm",
+    soil: "94%",
+    anomaly: "+110% above avg",
+    impact: "Glacier burst + Alaknanda surge"
+  }
+};
+
+/* -------------------------------------------------
+   2. WEATHER (real API if key provided, else simulated)
+   ------------------------------------------------- */
+const OWM_KEY = ""; // Add your OpenWeatherMap key here for live data
+
+async function fetchRealWeather(lat, lon) {
+  if (!OWM_KEY) throw new Error("No API key configured");
+  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OWM_KEY}&units=metric`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("OWM fetch failed: " + r.status);
+  const d = await r.json();
+  return {
+    temp: `${Math.round(d.main.temp)}°C`,
+    humidity: d.main.humidity,
+    rain: `${((d.rain && d.rain["1h"]) || 0).toFixed(1)} mm/h`,
+    rain3d: `${Math.round((d.main.humidity / 100) * (0.4 + Math.random() * 0.3))} mm`,
+    soil: `${Math.round(60 + d.main.humidity / 3)}%`,
+    runoff: d.main.humidity > 80 ? "Very High" : d.main.humidity > 65 ? "High" : "Moderate",
+    discharge: `${Math.round(200 + d.main.humidity * 2)} m³/s`,
+    condition: (d.weather && d.weather[0] && d.weather[0].description) || "—",
+    source: "OpenWeatherMap Live"
+  };
+}
+
+function simulateWeather() {
+  const baseTemp = 18 + Math.random() * 12;
+  const baseRain = 8 + Math.random() * 28;
+  const rain3d = 80 + Math.random() * 200;
+  const soilPct = 55 + Math.random() * 40;
+  return {
+    temp: `${Math.round(baseTemp)}°C`,
+    humidity: Math.round(60 + Math.random() * 35),
+    rain: `${baseRain.toFixed(1)} mm/h`,
+    rain3d: `${Math.round(rain3d)} mm`,
+    soil: `${Math.round(soilPct)}%`,
+    runoff: soilPct > 82 ? "Very High" : soilPct > 68 ? "High" : "Moderate",
+    discharge: `${Math.round(200 + rain3d * 1.2)} m³/s`,
+    condition: baseRain > 18 ? "Heavy Rainfall" : "Moderate Rainfall",
+    source: "Simulated (realistic)"
+  };
+}
+
+/* -------------------------------------------------
+   3. ML PREDICTION (client-side fallback logic)
+   ------------------------------------------------- */
+function computeFloodProbability(weather) {
+  const rain3d = parseFloat(weather.rain3d);
+  const soil = parseFloat(weather.soil);
+  const rainScore = Math.min(rain3d / 350, 1) * 60;
+  const soilScore = Math.min(soil / 100, 1) * 30;
+  const randomFactor = Math.random() * 10;
+  const pct = Math.min(Math.round(rainScore + soilScore + randomFactor), 99);
+  const riskLevel = pct >= 75 ? "Very High" : pct >= 55 ? "High" : pct >= 30 ? "Moderate" : "Low";
+  return { probability: pct, riskLevel };
+}
+
+function generateShap(state, weather) {
+  const rain3dVal = parseFloat(weather.rain3d);
+  const soilVal = parseFloat(weather.soil);
+  return {
+    summary: `Primary flood risk drivers for ${state}: (1) 3-day accumulated rainfall of ${weather.rain3d} significantly elevates runoff, (2) soil saturation at ${weather.soil} reduces infiltration capacity, (3) steep terrain gradients accelerate runoff into river channels.`,
+    factors: [
+      { name: "rainfall_3d", value: +(rain3dVal / 400).toFixed(2) },
+      { name: "soil_saturation", value: +(soilVal / 100).toFixed(2) },
+      { name: "slope_mass", value: +(0.08 + Math.random() * 0.12).toFixed(2) },
+      { name: "monsoon_anomaly", value: +(0.05 + Math.random() * 0.1).toFixed(2) },
+      { name: "river_discharge", value: +(0.03 + Math.random() * 0.08).toFixed(2) }
+    ]
+  };
+}
+
+/* -------------------------------------------------
+   4. ROUTES + SHELTERS
+   ------------------------------------------------- */
+function generateRoutes(state) {
+  const routes = {
+    Assam: {
+      normal: { name: "Silchar–Guwahati (NH-27)", dist: "328 km", time: "7h 20min", exp: "VERY HIGH", warn: "NH-27 submerged near Jatinga river crossing." },
+      safe:   { name: "Silchar–Jiribam–Guwahati (Highland Bypass)", dist: "412 km", time: "9h 10min", exp: "LOW", warn: "Elevated highland route away from Barak overflow." }
+    },
+    Uttarakhand: {
+      normal: { name: "Chamoli–Rishikesh (NH-58)", dist: "218 km", time: "5h 00min", exp: "HIGH", warn: "NH-58 blocked near Devprayag riverbank." },
+      safe:   { name: "Chamoli–Gwaldam–Haridwar (Alt Route)", dist: "250 km", time: "6h 30min", exp: "MODERATE", warn: "Upper Garhwal alternate — no stream crossing." }
+    }
+  };
+  return routes[state] || routes["Assam"];
+}
+
+function generateShelters(state) {
+  const shelters = {
+    Assam: [
+      { name: "Udharbond Central Relief Shelter", capacity: "1,200", dist: "5.4 km", isHospital: false },
+      { name: "Lakhipur Govt High School Camp", capacity: "800", dist: "12.1 km", isHospital: false },
+      { name: "Cachar District Hospital, Silchar", capacity: "Civil Hospital", dist: "18.3 km", isHospital: true }
+    ],
+    Uttarakhand: [
+      { name: "Joshimath Relief Camp", capacity: "900", dist: "8.3 km", isHospital: false },
+      { name: "Chamoli Block Office Shelter", capacity: "600", dist: "15.6 km", isHospital: false },
+      { name: "Base Hospital Srinagar (Garhwal)", capacity: "Hospital", dist: "40.0 km", isHospital: true }
+    ]
+  };
+  return shelters[state] || shelters["Assam"];
+}
+
+/* -------------------------------------------------
+   5. MAP
+   ------------------------------------------------- */
+let appMap = null;
+let mapLayers = { risk: [], routes: [], shelters: [] };
+
+function initMap(state) {
+  const coords = STATE_COORDS[state] || [26.19, 92.76];
+  if (!appMap) {
+    appMap = L.map("map-container", { zoomControl: true }).setView(coords, 8);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+      maxZoom: 18
+    }).addTo(appMap);
+  } else {
+    appMap.setView(coords, 8);
+  }
+  mapLayers.risk.forEach((l) => appMap.removeLayer(l));
+  mapLayers.routes.forEach((l) => appMap.removeLayer(l));
+  mapLayers.shelters.forEach((l) => appMap.removeLayer(l));
+  mapLayers = { risk: [], routes: [], shelters: [] };
+
+  const [lat, lng] = coords;
+  const zones = [
+    { center: [lat - 0.05, lng - 0.1], radius: 6000, color: "#ff5a5f", label: "Very High Risk Zone" },
+    { center: [lat + 0.12, lng + 0.05], radius: 8000, color: "#ff9a3d", label: "High Risk Zone" },
+    { center: [lat + 0.18, lng - 0.12], radius: 11000, color: "#ffd23d", label: "Moderate Risk Zone" }
+  ];
+  zones.forEach((z) => {
+    const c = L.circle(z.center, { color: z.color, fillColor: z.color, fillOpacity: 0.25, weight: 2, radius: z.radius }).addTo(appMap);
+    c.bindPopup(`<strong>${z.label}</strong><br/>Flash flood risk area`);
+    mapLayers.risk.push(c);
+  });
+
+  const routeLine = L.polyline([[lat - 0.3, lng - 0.5], [lat + 0.4, lng + 0.6]], { color: "#31d17c", weight: 4, dashArray: "8 6" }).addTo(appMap);
+  routeLine.bindPopup("<strong>Safe alternate route</strong><br/>Low flood exposure path");
+  mapLayers.routes.push(routeLine);
+
+  const shelterIcon = L.divIcon({
+    html: `<div style="background:#3ba7ff;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3)"><i class="fa fa-house-medical"></i></div>`,
+    iconSize: [28, 28], iconAnchor: [14, 14]
+  });
+  [{ pos: [lat + 0.1, lng - 0.15], label: "Relief Shelter 1" }, { pos: [lat - 0.2, lng + 0.21], label: "Relief Shelter 2" }]
+    .forEach((s) => {
+      const m = L.marker(s.pos, { icon: shelterIcon }).addTo(appMap);
+      m.bindPopup(`<strong>${s.label}</strong><br/>Verified safe shelter`);
+      mapLayers.shelters.push(m);
+    });
+
+  setTimeout(() => appMap.invalidateSize(), 200);
+}
+
+/* -------------------------------------------------
+   6. RENDER FUNCTIONS
+   ------------------------------------------------- */
+function setWeatherCards(w) {
+  document.getElementById("w-temp").textContent = w.temp;
+  document.getElementById("w-rain").textContent = w.rain;
+  document.getElementById("w-rain3d").textContent = w.rain3d;
+  document.getElementById("w-soil").textContent = w.soil;
+  document.getElementById("w-runoff").textContent = w.runoff;
+  document.getElementById("w-discharge").textContent = w.discharge;
+}
+
+function setGauge(pct, riskLevel) {
+  const gaugeRing = document.getElementById("gauge-ring");
+  const gaugePct = document.getElementById("gauge-pct");
+  const badge = document.getElementById("risk-verdict-badge");
+  const verdictText = document.getElementById("risk-verdict-text");
+  const verdictDetail = document.getElementById("verdict-detail");
+
+  const colorMap = { "Very High": "#ff5a5f", High: "#ff9a3d", Moderate: "#ffd23d", Low: "#31d17c" };
+  const col = colorMap[riskLevel] || "#8fa3b8";
+
+  gaugeRing.style.background = `conic-gradient(${col} 0% ${pct}%, #253243 ${pct}% 100%)`;
+  gaugePct.textContent = `${pct}%`;
+  gaugePct.style.color = col;
+  badge.style.background = `${col}22`;
+  badge.style.color = col;
+  verdictText.textContent = `${riskLevel} Flood Risk`;
+
+  const detailMap = {
+    "Very High": "Extreme probability of flash flooding in the next 6-24 hours. Immediate evacuation of low-lying areas is strongly recommended.",
+    High: "High likelihood of significant flooding. Authorities should pre-position resources and issue public advisories.",
+    Moderate: "Conditions are borderline. Monitor river gauges closely and prepare contingency evacuation plans.",
+    Low: "No immediate flood threat detected. Standard monitoring protocols apply."
+  };
+  verdictDetail.textContent = detailMap[riskLevel] || "";
+}
+
+function setHistComparison(state, weather, hist) {
+  document.getElementById("ht-event-name").textContent = hist.eventName;
+  document.getElementById("ht-curr-rain").textContent = weather.rain3d;
+  document.getElementById("ht-past-rain").textContent = hist.rain3d;
+  document.getElementById("ht-curr-soil").textContent = weather.soil;
+  document.getElementById("ht-past-soil").textContent = hist.soil;
+  document.getElementById("ht-anomaly").textContent = hist.anomaly;
+  document.getElementById("ht-past-impact").textContent = hist.impact;
+
+  const currRain = parseFloat(weather.rain3d);
+  const pastRain = parseFloat(hist.rain3d);
+  const ratio = pastRain ? currRain / pastRain : 0;
+  const rainTag = document.getElementById("ht-rain-cmp");
+  if (ratio >= 0.85) { rainTag.textContent = `≥ 85% of Historic`; rainTag.className = "tag danger"; }
+  else if (ratio >= 0.6) { rainTag.textContent = `~60-85% of Historic`; rainTag.className = "tag warning"; }
+  else { rainTag.textContent = `< 60% of Historic`; rainTag.className = "tag live"; }
+
+  document.getElementById("insight-text").textContent =
+    `Today's 3-day rainfall of ${weather.rain3d} is ${Math.round(ratio * 100)}% of the ${hist.eventName} seen during the ${hist.eventName}. With soil saturation at ${weather.soil}, conditions are analogous to historical flood-triggering scenarios.`;
+}
+
+function setShap(shap) {
+  document.getElementById("shap-summary").textContent = shap.summary;
+  const container = document.getElementById("shap-bars");
+  container.innerHTML = "";
+  const colors = ["c-bar-red", "c-bar-orange", "c-bar-yellow", "c-bar-yellow", "c-bar-yellow"];
+  const maxVal = Math.max(...shap.factors.map((f) => Math.abs(f.value)));
+  shap.factors.forEach((f, i) => {
+    const pct = Math.round((Math.abs(f.value) / maxVal) * 100);
+    const row = document.createElement("div");
+    row.className = "shap-row";
+    row.innerHTML = `
+      <div class="shap-lbl">${f.name.replace(/_/g, " ")}</div>
+      <div class="shap-bg"><div class="shap-fill ${colors[i] || "c-bar-yellow"}" style="width:${pct}%"></div></div>
+      <div>${f.value.toFixed(2)}</div>`;
+    container.appendChild(row);
+  });
+}
+
+function setRoutes(routes) {
+  document.getElementById("nr-name").textContent = routes.normal.name;
+  document.getElementById("nr-dist").textContent = routes.normal.dist;
+  document.getElementById("nr-time").textContent = routes.normal.time;
+  document.getElementById("nr-exp").textContent = routes.normal.exp;
+  document.getElementById("nr-warn").innerHTML = `<i class="fa-solid fa-xmark"></i> ${routes.normal.warn}`;
+
+  document.getElementById("sr-name").textContent = routes.safe.name;
+  document.getElementById("sr-dist").textContent = routes.safe.dist;
+  document.getElementById("sr-time").textContent = routes.safe.time;
+  document.getElementById("sr-warn").innerHTML = `<i class="fa-solid fa-check"></i> ${routes.safe.warn}`;
+}
+
+function setShelters(shelters) {
+  const list = document.getElementById("shelter-list");
+  list.innerHTML = shelters.map((s) => `
+    <div class="shelter-row">
+      <div class="shelter-ico"><i class="fa-solid fa-${s.isHospital ? "hospital" : "campground"}"></i></div>
+      <div class="shelter-info"><strong>${s.name}</strong><span>Capacity: ${s.capacity} &nbsp;·&nbsp; ${s.dist} away</span></div>
+      <a href="tel:100" class="btn-call">Call</a>
+    </div>`).join("");
+}
+
+function generateCAP(state, district, pct, riskLevel) {
+  const now = new Date().toISOString();
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <identifier>PravahAI-${Date.now()}</identifier>
+  <sender>pravahai@disaster-mgmt.gov.in</sender>
+  <sent>${now}</sent>
+  <status>Draft</status>
+  <msgType>Alert</msgType>
+  <scope>Public</scope>
+  <info>
+    <language>en-IN</language>
+    <category>Met</category>
+    <event>Flash Flood Warning</event>
+    <urgency>Immediate</urgency>
+    <severity>${riskLevel}</severity>
+    <certainty>Likely</certainty>
+    <headline>Flash Flood Alert — ${state}, District: ${district}. Risk level: ${riskLevel}.</headline>
+    <description>AI model probability: ${pct}%.</description>
+    <instruction>Evacuate now. Avoid river crossings. Tune to official broadcast channels.</instruction>
+    <area>
+      <areaDesc>${district}, ${state}, India</areaDesc>
+    </area>
+  </info>
+</alert>`;
+}
+
+/* -------------------------------------------------
+   7. SHOW / HIDE PAGES
+   ------------------------------------------------- */
+function showResultsPage(state, district, basinLabel) {
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("results-panel").classList.remove("hidden");
+  document.getElementById("result-location-badge").textContent = `${state} · ${district} · ${basinLabel}`;
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function showHomePage() {
+  document.getElementById("results-panel").classList.add("hidden");
+  document.getElementById("home").classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function showLoadingBar() {
+  document.getElementById("loading-bar").classList.remove("hidden");
+  document.getElementById("check-risk-btn").disabled = true;
+}
+function hideLoadingBar() {
+  document.getElementById("loading-bar").classList.add("hidden");
+  document.getElementById("check-risk-btn").disabled = false;
+}
+
+/* -------------------------------------------------
+   8. MAIN PREDICTION FLOW
+   ------------------------------------------------- */
+async function runPrediction(state, district, basinId, basinLabel) {
+  showLoadingBar();
+  try {
+    const coords = CATCHMENT_COORDS[basinId] || { lat: 24.82, lon: 92.80 };
+
+    // 1. Get weather (real API, fallback to simulated)
+    let weather;
+    try {
+      weather = await fetchRealWeather(coords.lat, coords.lon);
+    } catch (e) {
+      weather = simulateWeather();
+    }
+
+    // 2. Try backend first (optional — safe to fail)
+    let backendData = null;
+    try {
+      const resp = await fetch("/api/get-dashboard-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state, district, basin: basinId, date: new Date().toISOString().split("T")[0], lead_time_hours: 6 })
+      });
+      if (resp.ok) backendData = await resp.json();
+    } catch (err) {
+      console.warn("Backend not reachable, using client-side simulation:", err.message);
+    }
+
+    // 3. Compute prediction (prefer backend, else client-side)
+    let prediction;
+    if (backendData && backendData.risk_summary) {
+      prediction = {
+        probability: backendData.risk_summary.probability_percent,
+        riskLevel: backendData.risk_summary.category
+      };
+      console.log("✅ Using REAL backend ML prediction:", prediction);
+    } else {
+      prediction = computeFloodProbability(weather);
+      console.log("⚠️ Backend prediction unavailable — using client-side simulation.");
+    }
+
+    // 4. SHAP explanation (prefer backend, else client-side)
+    let shap;
+    if (backendData && backendData.explainable_ai && Array.isArray(backendData.explainable_ai.factors) && backendData.explainable_ai.factors.length) {
+      shap = {
+        summary: backendData.explainable_ai.summary,
+        factors: backendData.explainable_ai.factors.map((f) => ({
+          name: f.feature || f.name,
+          value: f.score !== undefined ? f.score : f.value
+        }))
+      };
+      console.log("✅ Using REAL backend SHAP explanation");
+    } else {
+      shap = generateShap(state, weather);
+    }
+
+    // 5. Historical comparison
+    const hist = HISTORICAL_EVENTS[state] || HISTORICAL_EVENTS["Assam"];
+
+    // 6. Routes & shelters (prefer backend, else client-side)
+    const routes = (backendData && backendData.routes_and_safety)
+      ? backendData.routes_and_safety
+      : generateRoutes(state);
+    const shelters = (backendData && backendData.safe_shelters && backendData.safe_shelters.length)
+      ? backendData.safe_shelters
+      : generateShelters(state);
+
+    // 7. Render everything
+    showResultsPage(state, district, basinLabel);
+    setWeatherCards(weather);
+    setGauge(prediction.probability, prediction.riskLevel);
+    setHistComparison(state, weather, hist);
+    setShap(shap);
+    setRoutes(routes);
+    setShelters(shelters);
+    initMap(state);
+
+    window._lastCap = generateCAP(state, district, prediction.probability, prediction.riskLevel);
+    document.getElementById("alert-headline").textContent =
+      prediction.riskLevel === "Low" ? "FLOOD ADVISORY" : "FLASH FLOOD WARNING";
+
+  } catch (err) {
+    console.error("Prediction flow failed:", err);
+    alert("Something went wrong while generating the prediction. Please try again.");
+  } finally {
+    hideLoadingBar();
+  }
+}
+
+/* -------------------------------------------------
+   9. EVENT LISTENERS  (fix: cascading dropdown logic)
+   ------------------------------------------------- */
+document.addEventListener("DOMContentLoaded", () => {
+  const stateEl = document.getElementById("f-state");
+  const distEl = document.getElementById("f-district");
+  const basinEl = document.getElementById("f-basin");
+  const dateField = document.getElementById("f-date");
+
+  // Default date = today
+  if (dateField) dateField.value = new Date().toISOString().split("T")[0];
+
+  // Calendar icon opens native picker
+  const dateTrigger = document.getElementById("date-trigger");
+  if (dateTrigger) {
+    dateTrigger.addEventListener("click", () => {
+      if (dateField.showPicker) dateField.showPicker();
+      else dateField.focus();
+    });
+  }
+
+  // --- STATE change -> populate District dropdown ---
+  stateEl.addEventListener("change", () => {
+    const st = stateEl.value;
+
+    // Reset district & basin every time state changes
+    distEl.innerHTML = '<option value="">Select District</option>';
+    basinEl.innerHTML = '<option value="">Select Catchment</option>';
+    distEl.disabled = true;
+    basinEl.disabled = true;
+
+    const data = STATE_DATA[st];
+    if (!data) return; // "Select State" chosen — leave dropdowns empty & disabled
+
+    data.districts.forEach((d) => {
+      const opt = document.createElement("option");
+      opt.value = d.value;
+      opt.textContent = d.label;
+      distEl.appendChild(opt);
+    });
+    distEl.disabled = false;
+  });
+
+  // --- DISTRICT change -> populate Basin dropdown ---
+  distEl.addEventListener("change", () => {
+    const st = stateEl.value;
+    const dist = distEl.value;
+
+    basinEl.innerHTML = '<option value="">Select Catchment</option>';
+    basinEl.disabled = true;
+
+    const data = STATE_DATA[st];
+    if (!data || !dist) return;
+
+    const basinList = data.basins[dist] || [];
+    basinList.forEach((b) => {
+      const opt = document.createElement("option");
+      opt.value = b.value;
+      opt.textContent = b.label;
+      basinEl.appendChild(opt);
+    });
+    basinEl.disabled = basinList.length === 0;
+  });
+
+  // --- FORM SUBMIT -> run prediction & swap to results page ---
+  const form = document.getElementById("risk-form");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const state = stateEl.value;
+    const district = distEl.value;
+    const basinId = basinEl.value;
+    const basinLabel = basinEl.options[basinEl.selectedIndex] ? basinEl.options[basinEl.selectedIndex].textContent : "";
+
+    if (!state) { alert("Please select a State."); return; }
+    if (!district) { alert("Please select a District."); return; }
+    if (!basinId) { alert("Please select a Catchment / Basin."); return; }
+
+    await runPrediction(state, district, basinId, basinLabel);
+  });
+
+  // --- Back to home button ---
+  document.getElementById("btn-back-home")?.addEventListener("click", showHomePage);
+
+  // --- Language toggle ---
+  const langEnBtn = document.getElementById("lang-en-btn");
+  const langHiBtn = document.getElementById("lang-hi-btn");
+  langEnBtn?.addEventListener("click", () => { langEnBtn.classList.add("active"); langHiBtn.classList.remove("active"); });
+  langHiBtn?.addEventListener("click", () => { langHiBtn.classList.add("active"); langEnBtn.classList.remove("active"); });
+
+  // --- Dark mode ---
+  const themeBtn = document.getElementById("theme-btn");
+  const themeIcon = document.getElementById("theme-icon");
+  themeBtn?.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    themeIcon.className = document.body.classList.contains("dark") ? "fa-solid fa-sun" : "fa-solid fa-moon";
+  });
+
+  // --- CAP modal ---
+  document.getElementById("btn-cap")?.addEventListener("click", () => {
+    document.getElementById("cap-xml").textContent = window._lastCap || "Run a prediction first.";
+    document.getElementById("cap-modal").classList.remove("hidden");
+  });
+  const closeModal = () => document.getElementById("cap-modal").classList.add("hidden");
+  document.getElementById("close-cap")?.addEventListener("click", closeModal);
+  document.getElementById("btn-close-cap2")?.addEventListener("click", closeModal);
+
+  // --- Download CAP ---
+  document.getElementById("btn-download-cap")?.addEventListener("click", () => {
+    const blob = new Blob([window._lastCap || ""], { type: "text/xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "pravah_cap_alert.xml";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // --- Approve alert ---
+  document.getElementById("btn-approve")?.addEventListener("click", () => {
+    const pill = document.getElementById("alert-status-pill");
+    pill.textContent = "BROADCAST SENT";
+    pill.className = "pill green";
+    document.getElementById("btn-approve").disabled = true;
+    alert("Alert approved and broadcast to Disaster Management System!");
+  });
+
+  // --- Map layer toggles ---
+  ["chk-risk", "chk-routes", "chk-shelters"].forEach((id) => {
+    const key = id.replace("chk-", "");
+    document.getElementById(id)?.addEventListener("change", (e) => {
+      (mapLayers[key] || []).forEach((l) => {
+        if (!appMap) return;
+        if (e.target.checked) appMap.addLayer(l); else appMap.removeLayer(l);
+      });
+    });
+  });
+
+  // --- Navbar scroll shadow ---
+  const navbar = document.getElementById("navbar");
+  window.addEventListener("scroll", () => {
+    navbar.style.boxShadow = window.scrollY > 20 ? "0 2px 20px rgba(0,0,0,.35)" : "";
+  });
+});

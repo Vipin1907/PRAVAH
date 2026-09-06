@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PravahAI — Flash Flood Intelligence & Early Warning System</title>
+  <meta name="description" content="AI-powered flash flood prediction, real-time risk mapping, intelligent alerts, and safe route guidance for India." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ─── NAVIGATION ─── -->
+  <header class="navbar" id="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <div class="nav-logo"><i class="fa-solid fa-water-lower"></i></div>
+        <span class="nav-title">PRAVAH <span class="accent">AI</span></span>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#home">How It Works</a>
+        <a href="#prediction">Prediction Console</a>
+        <a href="#weather">Weather Forecast</a>
+        <a href="#comparison">Past Comparison</a>
+        <a href="#dashboard">Command Dashboard</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="lang-en-btn" class="lang-btn active">English</button>
+        <button id="lang-hi-btn" class="lang-btn">हिंदी</button>
+        <button id="theme-btn" class="icon-btn" title="Toggle theme">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+        <a href="#dashboard" class="btn-launch">LAUNCH DASHBOARD <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── HERO SECTION ─── -->
+  <section class="hero" id="home">
+    <div class="hero-inner">
+
+      <div class="hero-badge">• FLASH FLOOD INTELLIGENCE &amp; EARLY WARNING SYSTEM •</div>
+
+      <h1 class="hero-headline">PRAVAH <span class="accent">AI</span></h1>
+
+      <p class="hero-tagline">
+        <span class="c-orange" data-en="PREDICT EARLY." data-hi="पूर्व चेतावनी।">PREDICT EARLY.</span>&nbsp;
+        <span class="c-white" data-en="EXPLAIN CLEARLY." data-hi="स्पष्ट व्याख्या।">EXPLAIN CLEARLY.</span>&nbsp;
+        <span class="c-green" data-en="ACT SAFELY." data-hi="सुरक्षित कार्य।">ACT SAFELY.</span>
+      </p>
+
+      <p class="hero-sub" data-en="AI-powered flash flood prediction, real-time risk mapping, intelligent alerts, and safe route guidance — all in one platform." data-hi="एआई-संचालित फ़्लैश फ्लड पूर्वानुमान, रियल-टाइम जोखिम मानचित्र, स्मार्ट अलर्ट और सुरक्षित मार्ग — एक ही प्लेटफॉर्म पर।">
+        AI-powered flash flood prediction, real-time risk mapping, intelligent alerts, and safe route guidance — all in one platform.
+      </p>
+
+      <!-- ─── HERO FLOOD RISK FORM ─── -->
+      <div class="hero-card" id="prediction">
+        <div class="hero-card-title">
+          <i class="fa-solid fa-location-crosshairs"></i>
+          <span data-en="CHECK FLOOD RISK FOR YOUR AREA" data-hi="अपने क्षेत्र का बाढ़ जोखिम जांचें">CHECK FLOOD RISK FOR YOUR AREA</span>
+        </div>
+
+        <form class="hero-form" id="risk-form">
+          <div class="field-group">
+            <label data-en="State" data-hi="राज्य">State</label>
+            <select id="f-state" class="field-input">
+              <option value="">Select State</option>
+              <option value="Assam">Assam</option>
+              <option value="Uttarakhand">Uttarakhand</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label data-en="District" data-hi="ज़िला">District</label>
+            <select id="f-district" class="field-input">
+              <option value="">Select District</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label data-en="Catchment / Basin" data-hi="जलग्रहण / बेसिन">Catchment / Basin</label>
+            <select id="f-basin" class="field-input">
+              <option value="">Select Catchment</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label data-en="Select Date" data-hi="तिथि चुनें">Select Date</label>
+            <div class="date-wrap">
+              <i class="fa-regular fa-calendar date-trigger" id="date-trigger" title="Open calendar"></i>
+              <input id="f-date" class="field-input" type="date">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>
+              <span data-en="Lead Time (Forecast Horizon)" data-hi="पूर्वानुमान अवधि">Lead Time (Forecast Horizon)</span>
+              <i class="fa-regular fa-circle-question tip-ico" title="How far ahead to forecast"></i>
+            </label>
+            <select id="f-lead" class="field-input">
+              <option value="3">Next 3 Hours</option>
+              <option value="6">Next 6 Hours</option>
+              <option value="12">Next 12 Hours</option>
+              <option value="24">Next 24 Hours</option>
+            </select>
+          </div>
+
+          <div class="field-group span-full">
+            <button type="submit" class="btn-check-risk" id="check-risk-btn">
+              <i class="fa-solid fa-bolt"></i>
+              <span data-en="SUBMIT &amp; ANALYZE FLOOD RISK" data-hi="सबमिट करें और बाढ़ जोखिम विश्लेषण करें">SUBMIT &amp; ANALYZE FLOOD RISK</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Loading spinner -->
+      <div id="loading-bar" class="loading-bar hidden">
+        <div class="loading-inner">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <span data-en="Analyzing weather data & running ML model..." data-hi="मौसम डेटा विश्लेषण जारी है...">Analyzing weather data & running ML model...</span>
+        </div>
+      </div>
+
+      <!-- ─── WHAT YOU WILL GET ─── -->
+      <div class="features-row">
+        <div class="features-divider">
+          <hr /><span data-en="WHAT YOU WILL GET" data-hi="आपको क्या मिलेगा">WHAT YOU WILL GET</span><hr />
+        </div>
+        <div class="features-grid">
+          <div class="feat-card">
+            <div class="feat-icon orange"><i class="fa-solid fa-chart-line"></i></div>
+            <h4 class="c-orange" data-en="Flood Risk Prediction" data-hi="बाढ़ जोखिम पूर्वानुमान">Flood Risk Prediction</h4>
+            <p data-en="Get risk score, confidence and lead time for your selected location." data-hi="अपने स्थान के लिए जोखिम स्कोर और अवधि प्राप्त करें।">Get risk score, confidence and lead time for your selected location.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon green"><i class="fa-solid fa-map-location-dot"></i></div>
+            <h4 class="c-green" data-en="Risk Map" data-hi="जोखिम मानचित्र">Risk Map</h4>
+            <p data-en="View predicted risk areas on interactive real map with risk zones." data-hi="इंटरएक्टिव मानचित्र पर जोखिम क्षेत्र देखें।">View predicted risk areas on interactive real map with risk zones.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon yellow"><i class="fa-solid fa-bell"></i></div>
+            <h4 class="c-yellow" data-en="Alerts & Notifications" data-hi="अलर्ट व सूचनाएं">Alerts & Notifications</h4>
+            <p data-en="Receive timely alerts with sound notifications for high risk." data-hi="उच्च जोखिम पर त्वरित अलर्ट व ध्वनि सूचना पाएं।">Receive timely alerts with sound notifications for high risk.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon blue"><i class="fa-solid fa-route"></i></div>
+            <h4 class="c-blue" data-en="Route & Safety" data-hi="मार्ग व सुरक्षा">Route & Safety</h4>
+            <p data-en="Find safer routes and nearest shelters/hospitals in your area." data-hi="सुरक्षित मार्ग और निकटतम आश्रय खोजें।">Find safer routes and nearest shelters/hospitals in your area.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon purple"><i class="fa-solid fa-house-medical"></i></div>
+            <h4 class="c-purple" data-en="Nearby Shelters" data-hi="निकटतम आश्रय">Nearby Shelters</h4>
+            <p data-en="Locate nearest shelters and hospitals for emergency support." data-hi="आपातकाल में निकटतम आश्रय व अस्पताल खोजें।">Locate nearest shelters and hospitals for emergency support.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon cyan"><i class="fa-solid fa-file-invoice"></i></div>
+            <h4 class="c-cyan" data-en="Reports & History" data-hi="रिपोर्ट व इतिहास">Reports & History</h4>
+            <p data-en="View past predictions, reports and historical replay of flood events." data-hi="पिछली भविष्यवाणियां और बाढ़ घटनाओं की रिपोर्ट देखें।">View past predictions, reports and historical replay of flood events.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── RESULTS PANEL (hidden until prediction submitted — replaces hero) ─── -->
+  <div id="results-panel" class="results-panel hidden">
+
+    <!-- Back to Home button -->
+    <div class="back-home-bar">
+      <button class="btn-back-home" id="btn-back-home">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span data-en="Back to Home" data-hi="होम पर वापस">Back to Home</span>
+      </button>
+      <div class="result-location-badge" id="result-location-badge">Assam · Cachar · Barak River Basin</div>
+    </div>
+
+    <!-- ── SECTION 1: REAL-TIME WEATHER ── -->
+    <section class="section-block" id="weather">
+      <div class="section-label blue-label">
+        <i class="fa-solid fa-cloud-showers-heavy"></i>
+        REAL-TIME WEATHER &amp; HYDROLOGICAL FORECAST
+      </div>
+      <h2 class="section-title" data-en="Current Weather Conditions & Hydrological Indicators" data-hi="वर्तमान मौसम और जलविज्ञान संकेतक">Current Weather Conditions &amp; Hydrological Indicators</h2>
+      <p class="section-sub" data-en="Live observation metrics from IMD, GPM satellite precipitation, and soil moisture proxies." data-hi="आईएमडी, जीपीएम उपग्रह और मृदा नमी प्रॉक्सी से लाइव अवलोकन।">Live observation metrics from IMD, GPM satellite precipitation, and soil moisture proxies.</p>
+
+      <div class="weather-grid">
+        <div class="w-card"><i class="fa-solid fa-temperature-three-quarters w-ico orange"></i><div class="w-val" id="w-temp">—</div><div class="w-lbl">Temperature</div></div>
+        <div class="w-card"><i class="fa-solid fa-droplet w-ico blue"></i><div class="w-val" id="w-rain">—</div><div class="w-lbl">Rain Intensity (mm/h)</div></div>
+        <div class="w-card"><i class="fa-solid fa-cloud-rain w-ico cyan"></i><div class="w-val" id="w-rain3d">—</div><div class="w-lbl">3-Day Rainfall (mm)</div></div>
+        <div class="w-card"><i class="fa-solid fa-water w-ico green"></i><div class="w-val" id="w-soil">—</div><div class="w-lbl">Soil Saturation (%)</div></div>
+        <div class="w-card"><i class="fa-solid fa-person-running-water w-ico yellow"></i><div class="w-val" id="w-runoff">—</div><div class="w-lbl">Runoff Potential</div></div>
+        <div class="w-card"><i class="fa-solid fa-water-ladder w-ico purple"></i><div class="w-val" id="w-discharge">—</div><div class="w-lbl">Est. Discharge (m³/s)</div></div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 2: FLOOD PREDICTION + HISTORICAL COMPARISON ── -->
+    <section class="section-block alt-bg" id="comparison">
+      <div class="section-label orange-label">
+        <i class="fa-solid fa-chart-pie"></i>
+        TODAY'S WEATHER vs HISTORICAL FLOOD RECORDS
+      </div>
+      <h2 class="section-title" data-en='"Will a Flood Occur Today Based on Today&apos;s Weather &amp; Past Records?"' data-hi='"क्या आज के मौसम और ऐतिहासिक डेटा के आधार पर बाढ़ आएगी?"'>"Will a Flood Occur Today Based on Today's Weather &amp; Past Records?"</h2>
+      <p class="section-sub">Our ML ensemble model compares live hydro-meteorological observations against historic flood catastrophes in the same catchment.</p>
+
+      <div class="comparison-layout">
+
+        <!-- Gauge card -->
+        <div class="gauge-result-card">
+          <div class="grc-label">TODAY'S FLOOD PREDICTION SCORE</div>
+          <div class="gauge-wrap">
+            <div class="gauge-ring" id="gauge-ring">
+              <div class="gauge-center">
+                <span class="gauge-pct" id="gauge-pct">—</span>
+                <span class="gauge-sub">RISK PROBABILITY</span>
+              </div>
+            </div>
+          </div>
+          <div class="risk-verdict-badge" id="risk-verdict-badge">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="risk-verdict-text">—</span>
+          </div>
+          <p class="verdict-detail" id="verdict-detail">Run the prediction to see the AI verdict.</p>
+        </div>
+
+        <!-- Historical table card -->
+        <div class="hist-table-card">
+          <div class="grc-label">COMPARISON WITH PAST EXTREME FLOOD EVENT</div>
+          <div class="table-scroll">
+            <table class="hist-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Today's Live Weather</th>
+                  <th>Past Historical Event</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Benchmark Event</strong></td>
+                  <td><span class="tag live">Today (Observed)</span></td>
+                  <td><strong id="ht-event-name">—</strong></td>
+                  <td><span class="tag danger">Past Catastrophe</span></td>
+                </tr>
+                <tr>
+                  <td><strong>3-Day Rainfall</strong></td>
+                  <td id="ht-curr-rain">—</td>
+                  <td id="ht-past-rain">—</td>
+                  <td><span class="tag warning" id="ht-rain-cmp">—</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Soil Saturation</strong></td>
+                  <td id="ht-curr-soil">—</td>
+                  <td id="ht-past-soil">—</td>
+                  <td><span class="tag warning">Near Critical</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Monsoon Anomaly</strong></td>
+                  <td class="c-orange" id="ht-anomaly">—</td>
+                  <td>Historical Peak</td>
+                  <td><span class="tag danger">High</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Inundation Pattern</strong></td>
+                  <td id="ht-curr-impact">River Overflow Risk</td>
+                  <td id="ht-past-impact">—</td>
+                  <td><span class="tag warning">Similar Pattern</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="insight-box" id="insight-box">
+            <i class="fa-solid fa-lightbulb c-yellow"></i>
+            <span id="insight-text">Run prediction to see historical comparison insight.</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── SECTION 3: COMMAND DASHBOARD ── -->
+    <section class="section-block" id="dashboard">
+      <div class="section-label blue-label">
+        <i class="fa-solid fa-sliders"></i>
+        LIVE COMMAND DASHBOARD &amp; SAFE ROUTING
+      </div>
+      <h2 class="section-title">Interactive Risk Map, SHAP Explainability, Alert Controls &amp; Safe Routes</h2>
+
+      <div class="dash-grid">
+
+        <!-- LEFT: Map + Routes -->
+        <div class="dash-left">
+
+          <!-- Map -->
+          <div class="db-card">
+            <div class="db-card-header">
+              <span><i class="fa-solid fa-map-location c-blue"></i> Interactive Risk Map &amp; Route Warnings</span>
+              <div class="map-toggles">
+                <label><input type="checkbox" id="chk-risk" checked> Risk Zones</label>
+                <label><input type="checkbox" id="chk-routes" checked> Safe Routes</label>
+                <label><input type="checkbox" id="chk-shelters" checked> Shelters</label>
+              </div>
+            </div>
+            <div id="map-container"></div>
+            <div class="map-legend">
+              <strong>Risk Level</strong>
+              <span class="l-dot red"></span> Very High
+              <span class="l-dot orange"></span> High
+              <span class="l-dot yellow"></span> Moderate
+              <span class="l-dot green"></span> Low
+            </div>
+          </div>
+
+          <!-- Routes -->
+          <div class="db-card">
+            <div class="db-card-header">
+              <span><i class="fa-solid fa-route c-green"></i> OSM Risk-Aware Safe Routing</span>
+              <span class="pill green" id="route-badge">~70% Less Flood Risk</span>
+            </div>
+            <div class="routes-grid">
+              <div class="route-box danger-box">
+                <div class="rb-head"><i class="fa-solid fa-triangle-exclamation"></i> <span id="nr-name">Normal Direct Route</span> <span class="rtag red">AVOID</span></div>
+                <div class="rb-rows">
+                  <span>Distance: <strong id="nr-dist">48.0 km</strong></span>
+                  <span>Time: <strong id="nr-time">80 mins</strong></span>
+                  <span>Exposure: <strong class="c-red" id="nr-exp">HIGH</strong></span>
+                </div>
+                <p class="rb-note c-red" id="nr-warn"><i class="fa-solid fa-xmark"></i> Crosses flooded river crossing.</p>
+              </div>
+              <div class="route-box safe-box">
+                <div class="rb-head"><i class="fa-solid fa-shield-halved"></i> <span id="sr-name">Safe Highland Bypass</span> <span class="rtag green">SAFE</span></div>
+                <div class="rb-rows">
+                  <span>Distance: <strong id="sr-dist">63.0 km</strong></span>
+                  <span>Time: <strong id="sr-time">95 mins</strong></span>
+                  <span>Exposure: <strong class="c-green" id="sr-exp">LOW</strong></span>
+                </div>
+                <p class="rb-note c-green" id="sr-warn"><i class="fa-solid fa-check"></i> Elevated bypass away from stream overflow.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: SHAP + Alert + Shelters -->
+        <div class="dash-right">
+
+          <!-- SHAP -->
+          <div class="db-card">
+            <div class="db-card-header">
+              <span><i class="fa-solid fa-brain c-purple"></i> Explainable AI — Why This Risk?</span>
+              <span class="pill purple">SHAP Attribution</span>
+            </div>
+            <p class="shap-summary" id="shap-summary">Run prediction to see AI explanation.</p>
+            <div class="shap-bars" id="shap-bars">
+              <div class="shap-row"><div class="shap-lbl"><span>rainfall 3d</span><span>+0.32</span></div><div class="shap-bg"><div class="shap-fill c-bar-red" style="width:80%"></div></div></div>
+              <div class="shap-row"><div class="shap-lbl"><span>soil saturation</span><span>+0.21</span></div><div class="shap-bg"><div class="shap-fill c-bar-orange" style="width:55%"></div></div></div>
+              <div class="shap-row"><div class="shap-lbl"><span>slope mean</span><span>+0.12</span></div><div class="shap-bg"><div class="shap-fill c-bar-yellow" style="width:32%"></div></div></div>
+            </div>
+          </div>
+
+          <!-- Alert -->
+          <div class="db-card alert-card">
+            <div class="db-card-header">
+              <span><i class="fa-solid fa-bullhorn c-orange"></i> Agentic Alert &amp; CAP Workflow</span>
+              <span class="pill orange" id="alert-status-pill">PENDING REVIEW</span>
+            </div>
+            <div class="alert-inner">
+              <div class="alert-row"><i class="fa-solid fa-triangle-exclamation c-red big-ico"></i>
+                <div>
+                  <strong class="c-red" id="alert-headline">FLASH FLOOD WARNING</strong>
+                  <p class="tiny-muted">LangGraph Multi-Agent Alert Draft</p>
+                </div>
+              </div>
+              <ul class="action-list" id="action-list">
+                <li><i class="fa-solid fa-check c-green"></i> Evacuate low-lying river bank zones.</li>
+                <li><i class="fa-solid fa-check c-green"></i> Avoid stream crossings during high flow.</li>
+                <li><i class="fa-solid fa-check c-green"></i> Follow official instructions.</li>
+              </ul>
+              <div class="alert-btns">
+                <button class="btn-approve" id="btn-approve"><i class="fa-solid fa-check-circle"></i> <span data-en="Approve & Broadcast" data-hi="स्वीकृत करें">Approve &amp; Broadcast</span></button>
+                <button class="btn-cap" id="btn-cap"><i class="fa-solid fa-code"></i> <span data-en="View CAP XML" data-hi="CAP XML देखें">View CAP XML</span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shelters -->
+          <div class="db-card">
+            <div class="db-card-header">
+              <span><i class="fa-solid fa-house-medical c-blue"></i> Verified Safe Shelters</span>
+            </div>
+            <div class="shelter-list" id="shelter-list">
+              <div class="shelter-row">
+                <div class="shelter-ico"><i class="fa-solid fa-campground"></i></div>
+                <div class="shelter-info"><strong>Udharbond Central Relief Shelter</strong><span>Capacity 1200 · 5.4 km away</span></div>
+                <a href="tel:108" class="btn-call">108</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /results-panel -->
+
+  <!-- ─── CAP MODAL ─── -->
+  <div id="cap-modal" class="modal-bg hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span><i class="fa-solid fa-code"></i> CAP v1.2 Alert XML Draft</span>
+        <button class="close-x" id="close-cap">&times;</button>
+      </div>
+      <pre class="cap-pre" id="cap-xml">Loading…</pre>
+      <div class="modal-foot">
+        <button class="btn-dl" id="btn-download-cap"><i class="fa-solid fa-download"></i> Download</button>
+        <button class="btn-sec" id="btn-close-cap2">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-09-06T07:26:31.898818+00:00",
+  "catchment_id": "A127",
+  "alert_level": "ORANGE",
+  "state_snapshot": {
+    "catchment_id": "A127",
+    "data_source": "IMD_GRIDDED_RAINFALL",
+    "data_quality": 0.95,
+    "is_fallback": false,
+    "data_timestamp": 1788679591.2907348,
+    "rainfall_mm": 27.5,
+    "rainfall_1d": 27.5,
+    "rainfall_3d": 71.5,
+    "rainfall_7d": 177.6,
+    "rainfall_30d": 576.8,
+    "soil_saturation_proxy": 0.9,
+    "ndvi": 0.65,
+    "slope_mean": 20.0,
+    "flow_accumulation": 1000.0,
+    "probability": 0.603,
+    "confidence": 0.666,
+    "raw_probability": 0.475,
+    "raw_confidence": 0.73,
+    "lead_time_hrs": 4.6,
+    "top_drivers": [
+      "soil_saturation_proxy",
+      "rainfall_3d",
+      "slope_mean",
+      "rainfall_1d",
+      "rainfall_7d"
+    ],
+    "driver_importances": {
+      "soil_saturation_proxy": 0.225,
+      "rainfall_3d": 0.1251,
+      "slope_mean": 0.0667,
+      "rainfall_1d": 0.0413,
+      "rainfall_7d": 0.0395
+    },
+    "is_out_of_distribution": false,
+    "ood_features": [],
+    "alert_level": "ORANGE",
+    "alert_color": "orange",
+    "cap_draft": "<?xml version='1.0' encoding='utf-8'?>\n<alert xmlns=\"urn:oasis:names:tc:emergency:cap:1.2\"><identifier>IN-FLOOD-A127-1788679591</identifier><sender>SIH2026-FlashFloodAI</sender><sent>2026-09-06T12:56:31+05:30</sent><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><language>en-IN</language><category>Met</category><event>Flash Flood Warning</event><responseType>Evacuate</responseType><urgency>Future</urgency><severity>Moderate</severity><certainty>Likely</certainty><headline>Flash Flood ORANGE Alert -- A127</headline><description>Flash flood risk 60% (confidence 67%) in A127 within 5 hours. Top risk drivers: soil_saturation_proxy, rainfall_3d, slope_mean.</description><instruction>Avoid low-lying areas near rivers and streams. Move to higher ground immediately if water levels rise rapidly. Follow instructions from local authorities.</instruction><area><areaDesc>Catchment A127</areaDesc></area></info></alert>",
+    "explanation": "[ALERT] FLASH FLOOD ALERT -- ORANGE\n\nCatchment: A127\nRisk Level: 60% probability of flash flood\nConfidence: 67%\nExpected within: 5 hours\n\nKey Risk Factors:\n  1. estimated soil moisture saturation level (current: 0.9)\n  2. cumulative rainfall over the past 3 days (current: 71.5)\n  3. average terrain slope angle (current: 20.0)",
+    "rate_limited": false,
+    "final_status": "APPROVED_SENT",
+    "decision_by": "human",
+    "decision_reason": "Human approved the alert",
+    "pipeline_start_time": 1788679590.7974846,
+    "pipeline_errors": [],
+    "validation_result": {
+      "is_valid": true,
+      "quality_score": 1.0,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  "cap_xml": "<?xml version='1.0' encoding='utf-8'?>\n<alert xmlns=\"urn:oasis:names:tc:emergency:cap:1.2\"><identifier>IN-FLOOD-A127-1788679591</identifier><sender>SIH2026-FlashFloodAI</sender><sent>2026-09-06T12:56:31+05:30</sent><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><language>en-IN</language><category>Met</category><event>Flash Flood Warning</event><responseType>Evacuate</responseType><urgency>Future</urgency><severity>Moderate</severity><certainty>Likely</certainty><headline>Flash Flood ORANGE Alert -- A127</headline><description>Flash flood risk 60% (confidence 67%) in A127 within 5 hours. Top risk drivers: soil_saturation_proxy, rainfall_3d, slope_mean.</description><instruction>Avoid low-lying areas near rivers and streams. Move to higher ground immediately if water levels rise rapidly. Follow instructions from local authorities.</instruction><area><areaDesc>Catchment A127</areaDesc></area></info></alert>"
+}

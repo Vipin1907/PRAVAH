@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRAVAH - End-to-End Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            padding: 40px;
+            max-width: 800px;
+            margin: auto;
+        }
+        .card {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover { background-color: #0056b3; }
+        pre {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            color: #4af626;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        #status { color: #ffca28; font-weight: bold; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Pravah Backend Integration Test</h2>
+        <p>Ye button tumhare Node.js Gateway ko hit karega, jo Vipin (ML), Atul (AI), aur Ayush (Routes) se data layega.</p>
+        
+        <button onclick="testPravahSystem()">Check Flood Risk & Routes</button>
+        
+        <div id="status"></div>
+        <pre id="result">Data yahan print hoga...</pre>
+    </div>
+
+    <script>
+        async function testPravahSystem() {
+            const statusText = document.getElementById('status');
+            const resultBox = document.getElementById('result');
+            
+            statusText.innerText = "⏳ Loading... Teeno Python servers se data fetch ho raha hai...";
+            resultBox.innerText = "";
+
+            try {
+                // Tera Node.js API Gateway port 3000 par hai
+                const response = await fetch('http://localhost:3000/api/get-dashboard-data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        catchment_id: "catch_007",
+                        rainfall_3d: 120,
+                        soil_saturation_proxy: 0.85,
+                        slope_mean: 20
+                    })
+                });
+
+                const data = await response.json();
+                statusText.innerText = "✅ Success! Teeno doston ka data merge ho gaya.";
+                
+                // JSON ko sundar tareeqe se print karne ke liye
+                resultBox.innerText = JSON.stringify(data, null, 4);
+
+            } catch (error) {
+                statusText.style.color = "#ff4c4c";
+                statusText.innerText = "❌ Error: API Gateway se connect nahi ho paya.";
+                resultBox.innerText = error.message;
+            }
+        }
+    </script>
+</body>
+</html>

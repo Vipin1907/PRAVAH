@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-09-06T07:26:31.896059+00:00",
+  "catchment_id": "A127",
+  "event_type": "alert_approved",
+  "agent": "alert_decision",
+  "data": {
+    "level": "ORANGE",
+    "probability": 0.603,
+    "by": "human"
+  }
+}
