@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: pravah-ai
+    runtime: node
+    rootDir: src/backend_api
+    buildCommand: npm install
+    startCommand: node SERVER.JS
+    plan: free
+    envVars:
+      - key: PORT
+        value: 10000
