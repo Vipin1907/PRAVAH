@@ -1,0 +1,47 @@
+{"timestamp": "2026-09-05T08:22:26.823420+00:00", "level": "INFO", "agent": "data_ingestion", "catchment_id": "catch_007", "event": "-- Data Ingestion START --"}
+{"timestamp": "2026-09-05T08:22:27.018593+00:00", "level": "INFO", "agent": "data_ingestion", "catchment_id": "catch_007", "event": "IMD data fetched: rain=122.0mm, 3d=319.9mm, latency=193ms", "source": "IMD", "latency_ms": 193}
+{"timestamp": "2026-09-05T08:22:27.021161+00:00", "level": "INFO", "agent": "data_validator", "catchment_id": "catch_007", "event": "Validation passed: quality=100.0%", "data_quality": 1.0}
+{"timestamp": "2026-09-05T08:22:27.021515+00:00", "level": "INFO", "agent": "data_ingestion", "catchment_id": "catch_007", "event": "|- Source: IMD_GRIDDED_RAINFALL (primary) [OK]", "data_quality": 0.95, "source": "IMD_GRIDDED_RAINFALL"}
+{"timestamp": "2026-09-05T08:22:27.065999+00:00", "level": "INFO", "agent": "data_ingestion", "catchment_id": "catch_007", "event": "|- Data quality: 95.0%"}
+{"timestamp": "2026-09-05T08:22:27.066357+00:00", "level": "INFO", "agent": "data_ingestion", "catchment_id": "catch_007", "event": "|_ Features: rain_3d=319.9mm, soil=0.90, slope=20deg"}
+{"timestamp": "2026-09-05T08:22:27.068192+00:00", "level": "INFO", "agent": "forecast", "catchment_id": "catch_007", "event": "-- Forecast Agent START --"}
+{"timestamp": "2026-09-05T08:22:28.547794+00:00", "level": "INFO", "agent": "responsible_ai", "catchment_id": "catch_007", "event": "Calibrated: prob 0.99->0.74, conf 0.94->0.72", "probability": 0.738, "confidence": 0.717}
+{"timestamp": "2026-09-05T08:22:28.548267+00:00", "level": "INFO", "agent": "forecast", "catchment_id": "catch_007", "event": "|- Model: Vipin_XGBoost_v1"}
+{"timestamp": "2026-09-05T08:22:28.548515+00:00", "level": "INFO", "agent": "forecast", "catchment_id": "catch_007", "event": "|- Raw: prob=0.99, conf=0.95"}
+{"timestamp": "2026-09-05T08:22:28.548772+00:00", "level": "INFO", "agent": "forecast", "catchment_id": "catch_007", "event": "|- Calibrated: prob=0.74, conf=0.72", "probability": 0.738, "confidence": 0.717}
+{"timestamp": "2026-09-05T08:22:28.549019+00:00", "level": "INFO", "agent": "forecast", "catchment_id": "catch_007", "event": "|_ Top drivers: rainfall_3d, soil_saturation_proxy, rainfall_1d"}
+{"timestamp": "2026-09-05T08:22:28.550980+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "-- Alert Decision Agent START --"}
+{"timestamp": "2026-09-05T08:22:28.551674+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "|- Level: [RED] (prob=0.74 >= 0.7, conf=0.72 >= 0.7)", "probability": 0.738, "confidence": 0.717, "alert_level": "RED"}
+{"timestamp": "2026-09-05T08:22:28.553119+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "|- CAP XML drafted (CAP v1.2 compliant)"}
+{"timestamp": "2026-09-05T08:22:28.553379+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "|- Waiting for HUMAN APPROVAL (auto-escalate in 15min)"}
+{"timestamp": "2026-09-05T08:22:28.558773+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "-- Alert Decision Agent START --"}
+{"timestamp": "2026-09-05T08:22:28.559473+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "|- Level: [RED] (prob=0.74 >= 0.7, conf=0.72 >= 0.7)", "probability": 0.738, "confidence": 0.717, "alert_level": "RED"}
+{"timestamp": "2026-09-05T08:22:28.560073+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "|- CAP XML drafted (CAP v1.2 compliant)"}
+{"timestamp": "2026-09-05T08:22:28.560366+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "|- Waiting for HUMAN APPROVAL (auto-escalate in 15min)"}
+{"timestamp": "2026-09-05T08:22:28.560704+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "|_ APPROVED by human", "decision": "approve", "status": "APPROVED_SENT"}
+{"timestamp": "2026-09-05T08:22:28.564319+00:00", "level": "INFO", "agent": "dissemination", "catchment_id": "catch_007", "event": "-- Dissemination Agent START --"}
+{"timestamp": "2026-09-05T08:22:28.566824+00:00", "level": "INFO", "agent": "dissemination", "catchment_id": "catch_007", "event": "|- Alert record saved: C:\\Users\\Aditya Gautam\\Desktop\\PRAVAH FINAL\\SIH_2026_Flash_Flood_Prediction\\src\\data_pipeline\\..\\..\\logs\\alerts\\20260905_135228_catch_007_RED.json"}
+{"timestamp": "2026-09-05T08:22:28.567194+00:00", "level": "INFO", "agent": "dissemination", "catchment_id": "catch_007", "event": "|- Webhook: SIMULATED (no URL configured)"}
+{"timestamp": "2026-09-05T08:22:28.567448+00:00", "level": "INFO", "agent": "dissemination", "catchment_id": "catch_007", "event": "|- SMS: SIMULATED (3 district collectors would be notified)"}
+{"timestamp": "2026-09-05T08:22:28.569528+00:00", "level": "INFO", "agent": "dissemination", "catchment_id": "catch_007", "event": "|- Audit trail written [OK]"}
+{"timestamp": "2026-09-05T08:22:28.569834+00:00", "level": "INFO", "agent": "dissemination", "catchment_id": "catch_007", "event": "|_ Pipeline completed in 1.7s | Status: APPROVED_SENT", "latency_ms": 1746, "status": "APPROVED_SENT"}
+{"timestamp": "2026-09-05T08:22:28.571416+00:00", "level": "INFO", "agent": "supervisor", "catchment_id": "catch_007", "event": "-- Supervisor Health Check --"}
+{"timestamp": "2026-09-05T08:22:28.572001+00:00", "level": "INFO", "agent": "supervisor", "catchment_id": "catch_007", "event": "|- All agents healthy [OK]"}
+{"timestamp": "2026-09-05T08:22:28.572269+00:00", "level": "INFO", "agent": "supervisor", "catchment_id": "catch_007", "event": "|- Total pipeline time: 1.7s", "latency_ms": 1748}
+{"timestamp": "2026-09-05T08:22:28.572510+00:00", "level": "INFO", "agent": "supervisor", "catchment_id": "catch_007", "event": "|_ Final status: APPROVED_SENT", "status": "APPROVED_SENT"}
+{"timestamp": "2026-09-05T08:22:35.230246+00:00", "level": "INFO", "agent": "data_ingestion", "catchment_id": "catch_007", "event": "-- Data Ingestion START --"}
+{"timestamp": "2026-09-05T08:22:35.444743+00:00", "level": "INFO", "agent": "data_ingestion", "catchment_id": "catch_007", "event": "IMD data fetched: rain=12.9mm, 3d=35.5mm, latency=213ms", "source": "IMD", "latency_ms": 213}
+{"timestamp": "2026-09-05T08:22:35.446721+00:00", "level": "INFO", "agent": "data_validator", "catchment_id": "catch_007", "event": "Validation passed: quality=100.0%", "data_quality": 1.0}
+{"timestamp": "2026-09-05T08:22:35.447053+00:00", "level": "INFO", "agent": "data_ingestion", "catchment_id": "catch_007", "event": "|- Source: IMD_GRIDDED_RAINFALL (primary) [OK]", "data_quality": 0.95, "source": "IMD_GRIDDED_RAINFALL"}
+{"timestamp": "2026-09-05T08:22:35.447326+00:00", "level": "INFO", "agent": "data_ingestion", "catchment_id": "catch_007", "event": "|- Data quality: 95.0%"}
+{"timestamp": "2026-09-05T08:22:35.447574+00:00", "level": "INFO", "agent": "data_ingestion", "catchment_id": "catch_007", "event": "|_ Features: rain_3d=35.5mm, soil=0.74, slope=20deg"}
+{"timestamp": "2026-09-05T08:22:35.449192+00:00", "level": "INFO", "agent": "forecast", "catchment_id": "catch_007", "event": "-- Forecast Agent START --"}
+{"timestamp": "2026-09-05T08:22:35.449999+00:00", "level": "INFO", "agent": "responsible_ai", "catchment_id": "catch_007", "event": "Calibrated: prob 0.28->0.55, conf 0.81->0.69", "probability": 0.547, "confidence": 0.688}
+{"timestamp": "2026-09-05T08:22:35.450250+00:00", "level": "INFO", "agent": "forecast", "catchment_id": "catch_007", "event": "|- Model: Vipin_XGBoost_v1"}
+{"timestamp": "2026-09-05T08:22:35.450495+00:00", "level": "INFO", "agent": "forecast", "catchment_id": "catch_007", "event": "|- Raw: prob=0.28, conf=0.82"}
+{"timestamp": "2026-09-05T08:22:35.450725+00:00", "level": "INFO", "agent": "forecast", "catchment_id": "catch_007", "event": "|- Calibrated: prob=0.55, conf=0.69", "probability": 0.547, "confidence": 0.688}
+{"timestamp": "2026-09-05T08:22:35.450966+00:00", "level": "INFO", "agent": "forecast", "catchment_id": "catch_007", "event": "|_ Top drivers: soil_saturation_proxy, slope_mean, rainfall_3d"}
+{"timestamp": "2026-09-05T08:22:35.452289+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "-- Alert Decision Agent START --"}
+{"timestamp": "2026-09-05T08:22:35.452793+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "|- Level: [ORANGE] (prob=0.55 >= 0.5, conf=0.69 >= 0.6)", "probability": 0.547, "confidence": 0.688, "alert_level": "ORANGE"}
+{"timestamp": "2026-09-05T08:22:35.453208+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "|- CAP XML drafted (CAP v1.2 compliant)"}
+{"timestamp": "2026-09-05T08:22:35.453419+00:00", "level": "INFO", "agent": "alert_decision", "catchment_id": "catch_007", "event": "|- Waiting for HUMAN APPROVAL (auto-escalate in 30min)"}
