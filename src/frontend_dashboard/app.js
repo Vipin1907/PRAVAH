@@ -665,6 +665,119 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // --- Past Events Section Interactivity ---
+  const initPastEvents = () => {
+    const tabBtns = document.querySelectorAll(".pe-tab-btn");
+    const filterBtns = document.querySelectorAll(".pe-filter-btn");
+    const eventCards = document.querySelectorAll(".pe-event-card");
+
+    let currentState = "assam";
+    let currentFilter = "all";
+
+    const updateEventCardsVisibility = () => {
+      eventCards.forEach((card) => {
+        const cardState = card.getAttribute("data-state");
+        const cardType = card.getAttribute("data-type");
+
+        const matchesState = cardState === currentState;
+        const matchesFilter = currentFilter === "all" || cardType === currentFilter;
+
+        if (matchesState && matchesFilter) {
+          card.classList.remove("hidden-card");
+          card.style.display = "flex";
+        } else {
+          card.classList.add("hidden-card");
+          card.style.display = "none";
+        }
+      });
+    };
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        tabBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentState = btn.getAttribute("data-state");
+        updateEventCardsVisibility();
+      });
+    });
+
+    filterBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        filterBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.getAttribute("data-filter");
+        updateEventCardsVisibility();
+      });
+    });
+
+    // Details button modal/alert preview with verified facts
+    const eventDetailsData = {
+      "assam-2009": {
+        title: "Assam Flood — 2009",
+        state: "Assam",
+        districts: "Lakhimpur, Dhemaji, Jorhat, Nagaon",
+        type: "Flood",
+        source: "ASDMA Official Annual Monograph",
+        details: "Continuous torrential precipitation during early monsoon phase led to sudden river stage spikes along Brahmaputra tributaries. Matmora embankment breaches caused wide-scale inundation across upper Assam plains. Historical hydrological logs ingested into PravahAI hydro-routing engine."
+      },
+      "assam-2012": {
+        title: "Assam Major Flood — 2012",
+        state: "Assam",
+        districts: "Multiple flood-prone riverine districts",
+        type: "Flood",
+        source: "ASDMA Disaster Records & CWC Bulletin",
+        details: "Multiple waves of extreme rainfall saturated the Brahmaputra valley. Peak discharge exceeded critical embankment safety margins, impacting agricultural plains and wildlife corridors across Kaziranga and surrounding sub-basins."
+      },
+      "assam-2024": {
+        title: "Assam Flood — 2024",
+        state: "Assam",
+        districts: "Barak and Brahmaputra river sub-catchments",
+        type: "Flood",
+        source: "ASDMA Flood Situation Reports 2024",
+        details: "Early monsoon cloudbursts and high antecedent soil moisture triggered rapid runoff in Barak and northern tributaries. Real-time satellite radar telemetry calibrated PravahAI's AI runoff prediction model."
+      },
+      "uk-2013": {
+        title: "Uttarakhand Floods — 2013",
+        state: "Uttarakhand",
+        districts: "Kedarnath, Rudraprayag, Chamoli, Uttarkashi",
+        type: "Flash Flood & Landslide",
+        source: "USDMA, Wadia Institute & GSI Special Report",
+        details: "Multi-day intense monsoon rainfall coupled with Chorabari glacial lake outburst triggered catastrophic debris torrents, massive slope failures and gorge scouring across the Mandakini and Alaknanda valleys."
+      },
+      "uk-2022": {
+        title: "Maldevta Flash Flood — 2022",
+        state: "Uttarakhand",
+        districts: "Dehradun (Maldevta & Raipur belt)",
+        type: "Flash Flood",
+        source: "SDRF Uttarakhand Incident Log",
+        details: "Local cloudburst over Song river catchment generated steep surge hydrographs within 90 minutes, damaging bridges, rural roads and riverside installations in the Dehradun foothill region."
+      },
+      "uk-landslide": {
+        title: "Uttarakhand Landslide Events",
+        state: "Uttarakhand",
+        districts: "Pithoragarh, Chamoli, Rudraprayag & Garhwal/Kumaon Hills",
+        type: "Landslide",
+        source: "Disaster Mitigation & Management Centre (DMMC)",
+        details: "Slope instability caused by high pore-water pressure along steep Himalayan terrain during monsoon downpours. PravahAI integrates slope angle, geological fault data and rainfall thresholds for early landslide hazard forecasting."
+      }
+    };
+
+    document.querySelectorAll(".pec-btn-details").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.getAttribute("data-target");
+        const ev = eventDetailsData[target];
+        if (ev) {
+          alert(`📋 ${ev.title}\n\n📍 Location: ${ev.districts}\n⚠️ Type: ${ev.type}\n🏛️ Official Source: ${ev.source}\n\n📝 Report Summary:\n${ev.details}\n\n💡 PravahAI ML models incorporate these verified historical parameters to predict upcoming flood risks.`);
+        }
+      });
+    });
+
+    // Run initial state filter setup
+    updateEventCardsVisibility();
+  };
+
+  initPastEvents();
+
   // --- Navbar scroll shadow ---
   const navbar = document.getElementById("navbar");
   window.addEventListener("scroll", () => {
