@@ -473,11 +473,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const dateField = document.getElementById("f-date");
 
   // Default date = today
-  if (dateField) dateField.value = new Date().toISOString().split("T")[0];
+  if (dateField && !dateField.value) {
+    dateField.value = new Date().toISOString().split("T")[0];
+  }
+
+  // Live status time updater
+  const updateStatusTime = () => {
+    const timeStatusEl = document.getElementById("live-time-status");
+    if (timeStatusEl) {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      timeStatusEl.textContent = `Data updated: ${hours}:${mins} IST`;
+    }
+  };
+  updateStatusTime();
 
   // Calendar icon opens native picker
   const dateTrigger = document.getElementById("date-trigger");
-  if (dateTrigger) {
+  if (dateTrigger && dateField) {
     dateTrigger.addEventListener("click", () => {
       if (dateField.showPicker) dateField.showPicker();
       else dateField.focus();
@@ -543,21 +557,72 @@ document.addEventListener("DOMContentLoaded", () => {
     await runPrediction(state, district, basinId, basinLabel);
   });
 
-  // --- Back to home button ---
-  document.getElementById("btn-back-home")?.addEventListener("click", showHomePage);
+  // --- Sidebar Drawer Open / Close Logic ---
+  const drawer = document.getElementById("sidebar-drawer");
+  const overlay = document.getElementById("drawer-overlay");
+  const hamburgerBtn = document.getElementById("nav-hamburger-btn");
+  const drawerCloseBtn = document.getElementById("drawer-close-btn");
 
-  // --- Language toggle ---
-  const langEnBtn = document.getElementById("lang-en-btn");
-  const langHiBtn = document.getElementById("lang-hi-btn");
-  langEnBtn?.addEventListener("click", () => { langEnBtn.classList.add("active"); langHiBtn.classList.remove("active"); });
-  langHiBtn?.addEventListener("click", () => { langHiBtn.classList.add("active"); langEnBtn.classList.remove("active"); });
+  const openDrawer = () => {
+    if (drawer && overlay) {
+      drawer.classList.add("open");
+      overlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+  };
 
-  // --- Dark mode ---
+  const closeDrawer = () => {
+    if (drawer && overlay) {
+      drawer.classList.remove("open");
+      overlay.classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+  };
+
+  hamburgerBtn?.addEventListener("click", openDrawer);
+  drawerCloseBtn?.addEventListener("click", closeDrawer);
+  overlay?.addEventListener("click", closeDrawer);
+
+  // Drawer Nav Item Click
+  document.querySelectorAll(".drawer-item").forEach((item) => {
+    item.addEventListener("click", () => {
+      document.querySelectorAll(".drawer-item").forEach((i) => i.classList.remove("active"));
+      item.classList.add("active");
+      closeDrawer();
+    });
+  });
+
+  // --- Integrated Language Pill Toggle ---
+  const langEnOpt = document.getElementById("lang-en-opt");
+  const langHiOpt = document.getElementById("lang-hi-opt");
+
+  langEnOpt?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    langEnOpt.classList.add("active");
+    langHiOpt?.classList.remove("active");
+  });
+
+  langHiOpt?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    langHiOpt.classList.add("active");
+    langEnOpt?.classList.remove("active");
+  });
+
+  // --- Notification Bell Button ---
+  document.getElementById("notif-btn")?.addEventListener("click", () => {
+    alert("📢 PravahAI Notifications:\n\n• All flood monitoring stations operational.\n• Live telemetry synced for Assam (Barak Basin) and Uttarakhand.\n• No critical breach warnings active at this moment.");
+  });
+
+  // --- Dark mode toggle ---
   const themeBtn = document.getElementById("theme-btn");
   const themeIcon = document.getElementById("theme-icon");
   themeBtn?.addEventListener("click", () => {
     document.body.classList.toggle("dark");
-    themeIcon.className = document.body.classList.contains("dark") ? "fa-solid fa-sun" : "fa-solid fa-moon";
+    if (document.body.classList.contains("dark")) {
+      themeIcon.className = "fa-solid fa-sun";
+    } else {
+      themeIcon.className = "fa-regular fa-sun";
+    }
   });
 
   // --- CAP modal ---

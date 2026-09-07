@@ -21,29 +21,132 @@
 </head>
 <body>
 
-  <!-- ─── NAVIGATION ─── -->
+  <!-- ─── SIDEBAR DRAWER OVERLAY & MENU ─── -->
+  <div id="drawer-overlay" class="drawer-overlay hidden"></div>
+  <aside id="sidebar-drawer" class="sidebar-drawer">
+    <div class="drawer-header">
+      <div class="drawer-brand">
+        <div class="drawer-logo-icon">
+          <span class="drawer-dot"></span>
+        </div>
+        <div class="drawer-brand-text">
+          <div class="drawer-title">PRAVAH <span class="c-orange">AI.</span></div>
+          <div class="drawer-sub">FLASH FLOOD INTELLIGENCE</div>
+        </div>
+      </div>
+      <button class="drawer-close-btn" id="drawer-close-btn" aria-label="Close menu">&times;</button>
+    </div>
+
+    <nav class="drawer-nav">
+      <a href="#home" class="drawer-item active" data-target="home">
+        <i class="fa-solid fa-table-cells-large"></i>
+        <span>Home / Overview</span>
+      </a>
+      <a href="#weather" class="drawer-item" data-target="weather">
+        <i class="fa-solid fa-cloud-rain"></i>
+        <span>Weather &amp; Telemetry</span>
+        <span class="d-badge">STEP 2</span>
+      </a>
+      <a href="#dashboard" class="drawer-item" data-target="dashboard">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>Live Dashboard</span>
+        <span class="d-badge">AI</span>
+      </a>
+      <a href="#dashboard" class="drawer-item" data-target="dashboard">
+        <i class="fa-solid fa-map-location-dot"></i>
+        <span>Risk Map</span>
+      </a>
+      <a href="#prediction" class="drawer-item" data-target="prediction">
+        <i class="fa-solid fa-cubes-stacked"></i>
+        <span>Catchment View</span>
+      </a>
+      <a href="#weather" class="drawer-item" data-target="weather">
+        <i class="fa-solid fa-water"></i>
+        <span>Hydrology</span>
+      </a>
+      <a href="#dashboard" class="drawer-item" data-target="dashboard">
+        <i class="fa-solid fa-bell"></i>
+        <span>Alerts</span>
+        <span class="d-badge live">LIVE</span>
+      </a>
+      <a href="#dashboard" class="drawer-item" data-target="dashboard">
+        <i class="fa-solid fa-location-arrow"></i>
+        <span>Routes &amp; Safety</span>
+        <span class="d-badge">OSM</span>
+      </a>
+      <a href="#comparison" class="drawer-item" data-target="comparison">
+        <i class="fa-solid fa-users"></i>
+        <span>Impact / Exposure</span>
+      </a>
+      <a href="#comparison" class="drawer-item" data-target="comparison">
+        <i class="fa-solid fa-file-lines"></i>
+        <span>Reports</span>
+      </a>
+      <a href="#weather" class="drawer-item" data-target="weather">
+        <i class="fa-solid fa-database"></i>
+        <span>Data Quality</span>
+      </a>
+      <a href="#prediction" class="drawer-item" data-target="prediction">
+        <i class="fa-solid fa-gear"></i>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <div class="drawer-footer-card">
+      <div class="df-row">
+        <span class="df-dot green"></span>
+        <strong>Assam &amp; Uttarakhand</strong>
+      </div>
+      <div class="df-sub">OSM Evacuation Engine Active</div>
+      <div class="df-sub">XGBoost v2 + TreeSHAP</div>
+    </div>
+  </aside>
+
+  <!-- ─── NAVIGATION BAR ─── -->
   <header class="navbar" id="navbar">
     <div class="nav-inner">
-      <div class="nav-brand">
-        <div class="nav-logo"><i class="fa-solid fa-water-lower"></i></div>
-        <span class="nav-title">PRAVAH <span class="accent">AI</span></span>
+      <div class="nav-left">
+        <!-- Hamburger Menu Button -->
+        <button class="nav-hamburger-btn" id="nav-hamburger-btn" title="Open Navigation Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <a href="#home" class="nav-brand">
+          <span class="nav-title">PRAVAH <span class="accent">AI</span></span>
+        </a>
       </div>
 
       <nav class="nav-links">
         <a href="#home">How It Works</a>
         <a href="#prediction">Prediction Console</a>
-        <a href="#weather">Weather Forecast</a>
-        <a href="#comparison">Past Comparison</a>
+        <a href="#dashboard">Agentic AI</a>
         <a href="#dashboard">Command Dashboard</a>
       </nav>
 
       <div class="nav-actions">
-        <button id="lang-en-btn" class="lang-btn active">English</button>
-        <button id="lang-hi-btn" class="lang-btn">हिंदी</button>
-        <button id="theme-btn" class="icon-btn" title="Toggle theme">
-          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        <!-- Integrated Language Pill -->
+        <div class="lang-pill-container" id="lang-pill-toggle">
+          <i class="fa-solid fa-globe lang-globe-ico"></i>
+          <span class="lang-opt active" id="lang-en-opt">English</span>
+          <span class="lang-sep">|</span>
+          <span class="lang-opt" id="lang-hi-opt">हिंदी</span>
+        </div>
+
+        <!-- Theme Toggle Button -->
+        <button id="theme-btn" class="icon-btn theme-icon-btn" title="Toggle Theme">
+          <i class="fa-regular fa-sun" id="theme-icon"></i>
         </button>
-        <a href="#dashboard" class="btn-launch">LAUNCH DASHBOARD <i class="fa-solid fa-arrow-right"></i></a>
+
+        <!-- Notification Bell with Counter Badge -->
+        <button id="notif-btn" class="icon-btn notif-icon-btn" title="Alerts &amp; Notifications">
+          <i class="fa-regular fa-bell"></i>
+          <span class="notif-badge">0</span>
+        </button>
+
+        <!-- Launch Dashboard CTA -->
+        <a href="#prediction" class="btn-launch">
+          <span>LAUNCH DASHBOARD</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
       </div>
     </div>
   </header>
@@ -52,76 +155,204 @@
   <section class="hero" id="home">
     <div class="hero-inner">
 
-      <div class="hero-badge">• FLASH FLOOD INTELLIGENCE &amp; EARLY WARNING SYSTEM •</div>
+      <!-- Hero Top Row: Left Text & Right Flood Map Illustration -->
+      <div class="hero-top-grid">
+        <div class="hero-text-col">
+          <div class="hero-badge">• FLASH FLOOD INTELLIGENCE &amp; EARLY WARNING SYSTEM •</div>
+          <h1 class="hero-headline">PRAVAH <span class="accent">AI</span></h1>
+          <p class="hero-tagline">
+            <span class="c-orange" data-en="PREDICT EARLY." data-hi="पूर्व चेतावनी।">PREDICT EARLY.</span>&nbsp;
+            <span class="c-navy" data-en="EXPLAIN CLEARLY." data-hi="स्पष्ट व्याख्या।">EXPLAIN CLEARLY.</span>&nbsp;
+            <span class="c-green" data-en="ACT SAFELY." data-hi="सुरक्षित कार्य।">ACT SAFELY.</span>
+          </p>
+          <p class="hero-sub" data-en="AI-powered flash flood prediction, real-time risk mapping, intelligent alerts, and safe route guidance — all in one platform." data-hi="एआई-संचालित फ़्लैश फ्लड पूर्वानुमान, रियल-टाइम जोखिम मानचित्र, स्मार्ट अलर्ट और सुरक्षित मार्ग — एक ही प्लेटफॉर्म पर।">
+            AI-powered flash flood prediction, real-time risk mapping, intelligent alerts, and safe route guidance — all in one platform.
+          </p>
+        </div>
 
-      <h1 class="hero-headline">PRAVAH <span class="accent">AI</span></h1>
+        <div class="hero-graphic-col">
+          <div class="map-graphic-wrapper">
+            <!-- Topographic Map SVG -->
+            <svg class="topo-map-svg" viewBox="0 0 540 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="streamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+                  <stop offset="50%" stop-color="#0284c7" stop-opacity="0.9"/>
+                  <stop offset="100%" stop-color="#0369a1" stop-opacity="0.7"/>
+                </linearGradient>
+                <filter id="mapShadow" x="-10%" y="-10%" width="120%" height="120%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.08"/>
+                </filter>
+              </defs>
 
-      <p class="hero-tagline">
-        <span class="c-orange" data-en="PREDICT EARLY." data-hi="पूर्व चेतावनी।">PREDICT EARLY.</span>&nbsp;
-        <span class="c-white" data-en="EXPLAIN CLEARLY." data-hi="स्पष्ट व्याख्या।">EXPLAIN CLEARLY.</span>&nbsp;
-        <span class="c-green" data-en="ACT SAFELY." data-hi="सुरक्षित कार्य।">ACT SAFELY.</span>
-      </p>
+              <!-- Topographic Contour Lines -->
+              <g class="topo-contours" stroke="#bbf7d0" stroke-width="1.2" fill="none" opacity="0.6">
+                <path d="M-20,120 Q120,40 280,70 T560,30" />
+                <path d="M-20,160 Q140,80 300,110 T560,80" />
+                <path d="M-20,200 Q160,130 320,160 T560,130" />
+                <path d="M-20,240 Q180,180 340,210 T560,180" />
+                <path d="M-20,280 Q200,230 360,260 T560,230" />
+                <path d="M40,-20 Q120,140 180,360" />
+                <path d="M120,-20 Q200,160 260,360" />
+                <path d="M220,-20 Q300,180 360,360" />
+                <path d="M320,-20 Q400,190 460,360" />
+              </g>
 
-      <p class="hero-sub" data-en="AI-powered flash flood prediction, real-time risk mapping, intelligent alerts, and safe route guidance — all in one platform." data-hi="एआई-संचालित फ़्लैश फ्लड पूर्वानुमान, रियल-टाइम जोखिम मानचित्र, स्मार्ट अलर्ट और सुरक्षित मार्ग — एक ही प्लेटफॉर्म पर।">
-        AI-powered flash flood prediction, real-time risk mapping, intelligent alerts, and safe route guidance — all in one platform.
-      </p>
+              <!-- River network (cyan/blue streams) -->
+              <g class="river-streams" stroke="url(#streamGrad)" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M-10,180 C80,170 140,210 220,180 C300,150 360,110 440,80 C480,65 520,30 550,10" stroke-width="6" fill="none"/>
+                <path d="M220,180 C240,230 280,270 330,320" stroke-width="3.5" fill="none"/>
+                <path d="M140,210 C150,260 170,300 180,350" stroke-width="2.5" fill="none"/>
+                <path d="M340,120 C380,170 410,230 450,290" stroke-width="3" fill="none"/>
+                <path d="M300,150 C290,90 270,50 260,-10" stroke-width="2.5" fill="none"/>
+                <path d="M440,80 C430,30 420,-10 410,-30" stroke-width="2" fill="none"/>
+              </g>
 
-      <!-- ─── HERO FLOOD RISK FORM ─── -->
+              <!-- Flood Heatmap Rings -->
+              <!-- Outer: Light Green -->
+              <path d="M220,230 C190,190 210,130 280,110 C350,90 430,110 460,160 C480,210 440,260 380,275 C310,290 240,260 220,230 Z" fill="#bbf7d0" fill-opacity="0.55"/>
+              
+              <!-- Moderate: Yellow -->
+              <path d="M245,215 C225,180 245,140 295,125 C345,110 410,125 435,165 C450,205 420,245 370,255 C320,265 260,245 245,215 Z" fill="#fde047" fill-opacity="0.65"/>
+              
+              <!-- High: Orange -->
+              <path d="M270,200 C255,175 270,145 315,135 C360,125 405,140 418,175 C430,205 400,235 360,242 C315,248 280,225 270,200 Z" fill="#fb923c" fill-opacity="0.85"/>
+              
+              <!-- Very High: Red -->
+              <path d="M300,188 C290,170 305,150 338,145 C372,138 396,152 402,178 C408,200 388,220 358,224 C328,228 306,206 300,188 Z" fill="#ef4444" fill-opacity="0.95"/>
+            </svg>
+
+            <!-- Floating Map Pins / Icons -->
+            <div class="map-marker pin-cloud" style="top: 22%; left: 33%;">
+              <div class="marker-circle">
+                <i class="fa-solid fa-cloud-showers-heavy"></i>
+              </div>
+            </div>
+
+            <div class="map-marker pin-alert" style="top: 52%; left: 45%;">
+              <div class="marker-circle alert-pulse">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+            </div>
+
+            <div class="map-marker pin-shelter" style="top: 32%; left: 68%;">
+              <div class="marker-circle">
+                <i class="fa-solid fa-house"></i>
+              </div>
+            </div>
+
+            <div class="map-marker pin-hospital" style="top: 64%; left: 62%;">
+              <div class="marker-circle">
+                <i class="fa-solid fa-square-plus"></i>
+              </div>
+            </div>
+
+            <!-- Floating Rain Cloud Detail -->
+            <div class="floating-cloud-deco" style="top: 8%; left: 24%;">
+              <svg width="60" height="40" viewBox="0 0 60 40" fill="none">
+                <path d="M15 28C10 28 6 24 6 19C6 14.5 9.5 11 14 10.2C15.8 5 20.8 1.5 26.5 1.5C33.5 1.5 39.2 6.5 40.5 13C44.5 13.5 48 16.8 48 21C48 25.5 44.5 29 40 29L15 28Z" fill="#e2e8f0" fill-opacity="0.75"/>
+                <line x1="16" y1="32" x2="14" y2="38" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="24" y1="32" x2="22" y2="38" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="32" y1="32" x2="30" y2="38" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Flood Risk Level Floating Legend Card -->
+            <div class="hero-legend-card">
+              <div class="legend-card-title">FLOOD RISK LEVEL</div>
+              <div class="legend-item">
+                <span class="legend-dot dot-low"></span>
+                <span class="legend-text">Low</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot dot-mod"></span>
+                <span class="legend-text">Moderate</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot dot-high"></span>
+                <span class="legend-text">High</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot dot-vhigh"></span>
+                <span class="legend-text">Very High</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── HERO FLOOD RISK FORM (Navy Floating Card) ─── -->
       <div class="hero-card" id="prediction">
         <div class="hero-card-title">
-          <i class="fa-solid fa-location-crosshairs"></i>
+          <i class="fa-solid fa-location-crosshairs target-orange-icon"></i>
           <span data-en="CHECK FLOOD RISK FOR YOUR AREA" data-hi="अपने क्षेत्र का बाढ़ जोखिम जांचें">CHECK FLOOD RISK FOR YOUR AREA</span>
         </div>
 
         <form class="hero-form" id="risk-form">
-          <div class="field-group">
-            <label data-en="State" data-hi="राज्य">State</label>
-            <select id="f-state" class="field-input">
-              <option value="">Select State</option>
-              <option value="Assam">Assam</option>
-              <option value="Uttarakhand">Uttarakhand</option>
-            </select>
-          </div>
+          <div class="form-inputs-grid">
+            <div class="field-group">
+              <label data-en="State" data-hi="राज्य">State</label>
+              <div class="select-wrapper">
+                <select id="f-state" class="field-input">
+                  <option value="Assam" selected>Assam</option>
+                  <option value="Uttarakhand">Uttarakhand</option>
+                </select>
+              </div>
+            </div>
 
-          <div class="field-group">
-            <label data-en="District" data-hi="ज़िला">District</label>
-            <select id="f-district" class="field-input">
-              <option value="">Select District</option>
-            </select>
-          </div>
+            <div class="field-group">
+              <label data-en="District" data-hi="ज़िला">District</label>
+              <div class="select-wrapper">
+                <select id="f-district" class="field-input">
+                  <option value="Cachar" selected>Cachar</option>
+                  <option value="Nagaon">Nagaon</option>
+                  <option value="Dhemaji">Dhemaji</option>
+                </select>
+              </div>
+            </div>
 
-          <div class="field-group">
-            <label data-en="Catchment / Basin" data-hi="जलग्रहण / बेसिन">Catchment / Basin</label>
-            <select id="f-basin" class="field-input">
-              <option value="">Select Catchment</option>
-            </select>
-          </div>
+            <div class="field-group">
+              <label data-en="Catchment / Basin" data-hi="जलग्रहण / बेसिन">Catchment / Basin</label>
+              <div class="select-wrapper">
+                <select id="f-basin" class="field-input">
+                  <option value="A127" selected>A127 — Barak River Basin</option>
+                </select>
+              </div>
+            </div>
 
-          <div class="field-group">
-            <label data-en="Select Date" data-hi="तिथि चुनें">Select Date</label>
-            <div class="date-wrap">
-              <i class="fa-regular fa-calendar date-trigger" id="date-trigger" title="Open calendar"></i>
-              <input id="f-date" class="field-input" type="date">
+            <div class="field-group">
+              <label data-en="Select Date" data-hi="तिथि चुनें">Select Date</label>
+              <div class="date-wrap">
+                <i class="fa-regular fa-calendar date-trigger" id="date-trigger" title="Open calendar"></i>
+                <input id="f-date" class="field-input" type="date" value="2026-09-05">
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label>
+                <span data-en="Forecast Horizon" data-hi="पूर्वानुमान अवधि">Forecast Horizon</span>
+                <i class="fa-regular fa-circle-question tip-ico" title="How far ahead to forecast"></i>
+              </label>
+              <div class="select-wrapper">
+                <select id="f-lead" class="field-input">
+                  <option value="3" selected>Next 3 Hours</option>
+                  <option value="6">Next 6 Hours</option>
+                  <option value="12">Next 12 Hours</option>
+                  <option value="24">Next 24 Hours</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div class="field-group">
-            <label>
-              <span data-en="Lead Time (Forecast Horizon)" data-hi="पूर्वानुमान अवधि">Lead Time (Forecast Horizon)</span>
-              <i class="fa-regular fa-circle-question tip-ico" title="How far ahead to forecast"></i>
-            </label>
-            <select id="f-lead" class="field-input">
-              <option value="3">Next 3 Hours</option>
-              <option value="6">Next 6 Hours</option>
-              <option value="12">Next 12 Hours</option>
-              <option value="24">Next 24 Hours</option>
-            </select>
-          </div>
-
-          <div class="field-group span-full">
+          <!-- Bottom Action Row -->
+          <div class="form-bottom-row">
+            <div class="form-trust-note">
+              <i class="fa-solid fa-shield-halved trust-shield-icon"></i>
+              <span>Powered by rainfall, soil moisture, terrain &amp; hydrological indicators</span>
+            </div>
             <button type="submit" class="btn-check-risk" id="check-risk-btn">
               <i class="fa-solid fa-bolt"></i>
-              <span data-en="SUBMIT &amp; ANALYZE FLOOD RISK" data-hi="सबमिट करें और बाढ़ जोखिम विश्लेषण करें">SUBMIT &amp; ANALYZE FLOOD RISK</span>
+              <span data-en="ANALYZE FLOOD RISK" data-hi="बाढ़ जोखिम विश्लेषण करें">ANALYZE FLOOD RISK</span>
               <i class="fa-solid fa-arrow-right"></i>
             </button>
           </div>
@@ -136,42 +367,60 @@
         </div>
       </div>
 
-      <!-- ─── WHAT YOU WILL GET ─── -->
-      <div class="features-row">
-        <div class="features-divider">
-          <hr /><span data-en="WHAT YOU WILL GET" data-hi="आपको क्या मिलेगा">WHAT YOU WILL GET</span><hr />
+      <!-- ─── PRAVAH AI FEATURES SECTION ─── -->
+      <div class="features-section-wrap">
+        <h2 class="features-main-heading">
+          PRAVAH AI <span class="features-accent">FEATURES</span>
+        </h2>
+
+        <div class="features-3col-grid">
+          <!-- Feature 1 -->
+          <div class="feature-card">
+            <div class="feat-icon-bubble green-bubble">
+              <i class="fa-solid fa-cloud-showers-heavy"></i>
+            </div>
+            <h3 class="feat-title">AI PREDICTION</h3>
+            <p class="feat-desc">Advanced machine learning models predict flash flood risk with high accuracy.</p>
+            <a href="#prediction" class="feat-link link-green">Learn more <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="feature-card">
+            <div class="feat-icon-bubble orange-bubble">
+              <i class="fa-solid fa-magnifying-glass-chart"></i>
+            </div>
+            <h3 class="feat-title">RISK EXPLAINABILITY</h3>
+            <p class="feat-desc">Understand the key factors behind every prediction with clear &amp; transparent explanations.</p>
+            <a href="#prediction" class="feat-link link-orange">Learn more <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="feature-card">
+            <div class="feat-icon-bubble blue-bubble">
+              <i class="fa-solid fa-route"></i>
+            </div>
+            <h3 class="feat-title">SAFE ROUTE GUIDANCE</h3>
+            <p class="feat-desc">Get the safest route recommendations to reach higher ground during high risk situations.</p>
+            <a href="#prediction" class="feat-link link-blue">Learn more <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
         </div>
-        <div class="features-grid">
-          <div class="feat-card">
-            <div class="feat-icon orange"><i class="fa-solid fa-chart-line"></i></div>
-            <h4 class="c-orange" data-en="Flood Risk Prediction" data-hi="बाढ़ जोखिम पूर्वानुमान">Flood Risk Prediction</h4>
-            <p data-en="Get risk score, confidence and lead time for your selected location." data-hi="अपने स्थान के लिए जोखिम स्कोर और अवधि प्राप्त करें।">Get risk score, confidence and lead time for your selected location.</p>
+      </div>
+
+      <!-- ─── SYSTEM STATUS FOOTER BAR ─── -->
+      <div class="status-footer-bar">
+        <div class="status-left-group">
+          <div class="status-badge-item">
+            <i class="fa-solid fa-circle-check status-check-icon"></i>
+            <i class="fa-solid fa-circle-check status-check-icon"></i>
+            <span class="status-strong">PRAVAH AI SYSTEM OPERATIONAL</span>
           </div>
-          <div class="feat-card">
-            <div class="feat-icon green"><i class="fa-solid fa-map-location-dot"></i></div>
-            <h4 class="c-green" data-en="Risk Map" data-hi="जोखिम मानचित्र">Risk Map</h4>
-            <p data-en="View predicted risk areas on interactive real map with risk zones." data-hi="इंटरएक्टिव मानचित्र पर जोखिम क्षेत्र देखें।">View predicted risk areas on interactive real map with risk zones.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon yellow"><i class="fa-solid fa-bell"></i></div>
-            <h4 class="c-yellow" data-en="Alerts & Notifications" data-hi="अलर्ट व सूचनाएं">Alerts & Notifications</h4>
-            <p data-en="Receive timely alerts with sound notifications for high risk." data-hi="उच्च जोखिम पर त्वरित अलर्ट व ध्वनि सूचना पाएं।">Receive timely alerts with sound notifications for high risk.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon blue"><i class="fa-solid fa-route"></i></div>
-            <h4 class="c-blue" data-en="Route & Safety" data-hi="मार्ग व सुरक्षा">Route & Safety</h4>
-            <p data-en="Find safer routes and nearest shelters/hospitals in your area." data-hi="सुरक्षित मार्ग और निकटतम आश्रय खोजें।">Find safer routes and nearest shelters/hospitals in your area.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon purple"><i class="fa-solid fa-house-medical"></i></div>
-            <h4 class="c-purple" data-en="Nearby Shelters" data-hi="निकटतम आश्रय">Nearby Shelters</h4>
-            <p data-en="Locate nearest shelters and hospitals for emergency support." data-hi="आपातकाल में निकटतम आश्रय व अस्पताल खोजें।">Locate nearest shelters and hospitals for emergency support.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon cyan"><i class="fa-solid fa-file-invoice"></i></div>
-            <h4 class="c-cyan" data-en="Reports & History" data-hi="रिपोर्ट व इतिहास">Reports & History</h4>
-            <p data-en="View past predictions, reports and historical replay of flood events." data-hi="पिछली भविष्यवाणियां और बाढ़ घटनाओं की रिपोर्ट देखें।">View past predictions, reports and historical replay of flood events.</p>
-          </div>
+          <span class="status-divider">|</span>
+          <span class="status-item">All systems functional</span>
+          <span class="status-divider">|</span>
+          <span class="status-item" id="live-time-status">Data updated: 15:40 IST</span>
+        </div>
+        <div class="status-right-msg">
+          Stay prepared. Stay safe.
         </div>
       </div>
 
