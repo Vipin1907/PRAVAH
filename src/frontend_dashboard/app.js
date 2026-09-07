@@ -176,49 +176,61 @@ let appMap = null;
 let mapLayers = { risk: [], routes: [], shelters: [] };
 
 function initMap(state) {
-  const coords = STATE_COORDS[state] || [26.19, 92.76];
-  if (!appMap) {
-    appMap = L.map("map-container", { zoomControl: true }).setView(coords, 8);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors",
-      maxZoom: 18
-    }).addTo(appMap);
-  } else {
-    appMap.setView(coords, 8);
-  }
-  mapLayers.risk.forEach((l) => appMap.removeLayer(l));
-  mapLayers.routes.forEach((l) => appMap.removeLayer(l));
-  mapLayers.shelters.forEach((l) => appMap.removeLayer(l));
-  mapLayers = { risk: [], routes: [], shelters: [] };
+  try {
+    const coords = STATE_COORDS[state] || [26.19, 92.76];
+    const container = document.getElementById("map-container");
+    if (!container || typeof L === "undefined") {
+      console.warn("Leaflet or map container not ready");
+      return;
+    }
 
-  const [lat, lng] = coords;
-  const zones = [
-    { center: [lat - 0.05, lng - 0.1], radius: 6000, color: "#ff5a5f", label: "Very High Risk Zone" },
-    { center: [lat + 0.12, lng + 0.05], radius: 8000, color: "#ff9a3d", label: "High Risk Zone" },
-    { center: [lat + 0.18, lng - 0.12], radius: 11000, color: "#ffd23d", label: "Moderate Risk Zone" }
-  ];
-  zones.forEach((z) => {
-    const c = L.circle(z.center, { color: z.color, fillColor: z.color, fillOpacity: 0.25, weight: 2, radius: z.radius }).addTo(appMap);
-    c.bindPopup(`<strong>${z.label}</strong><br/>Flash flood risk area`);
-    mapLayers.risk.push(c);
-  });
+    if (!appMap) {
+      appMap = L.map("map-container", { zoomControl: true }).setView(coords, 8);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+        maxZoom: 18
+      }).addTo(appMap);
+    } else {
+      appMap.setView(coords, 8);
+    }
+    mapLayers.risk.forEach((l) => appMap.removeLayer(l));
+    mapLayers.routes.forEach((l) => appMap.removeLayer(l));
+    mapLayers.shelters.forEach((l) => appMap.removeLayer(l));
+    mapLayers = { risk: [], routes: [], shelters: [] };
 
-  const routeLine = L.polyline([[lat - 0.3, lng - 0.5], [lat + 0.4, lng + 0.6]], { color: "#31d17c", weight: 4, dashArray: "8 6" }).addTo(appMap);
-  routeLine.bindPopup("<strong>Safe alternate route</strong><br/>Low flood exposure path");
-  mapLayers.routes.push(routeLine);
-
-  const shelterIcon = L.divIcon({
-    html: `<div style="background:#3ba7ff;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3)"><i class="fa fa-house-medical"></i></div>`,
-    iconSize: [28, 28], iconAnchor: [14, 14]
-  });
-  [{ pos: [lat + 0.1, lng - 0.15], label: "Relief Shelter 1" }, { pos: [lat - 0.2, lng + 0.21], label: "Relief Shelter 2" }]
-    .forEach((s) => {
-      const m = L.marker(s.pos, { icon: shelterIcon }).addTo(appMap);
-      m.bindPopup(`<strong>${s.label}</strong><br/>Verified safe shelter`);
-      mapLayers.shelters.push(m);
+    const [lat, lng] = coords;
+    const zones = [
+      { center: [lat - 0.05, lng - 0.1], radius: 6000, color: "#ff5a5f", label: "Very High Risk Zone" },
+      { center: [lat + 0.12, lng + 0.05], radius: 8000, color: "#ff9a3d", label: "High Risk Zone" },
+      { center: [lat + 0.18, lng - 0.12], radius: 11000, color: "#ffd23d", label: "Moderate Risk Zone" }
+    ];
+    zones.forEach((z) => {
+      const c = L.circle(z.center, { color: z.color, fillColor: z.color, fillOpacity: 0.25, weight: 2, radius: z.radius }).addTo(appMap);
+      c.bindPopup(`<strong>${z.label}</strong><br/>Flash flood risk area`);
+      mapLayers.risk.push(c);
     });
 
-  setTimeout(() => appMap.invalidateSize(), 200);
+    const routeLine = L.polyline([[lat - 0.3, lng - 0.5], [lat + 0.4, lng + 0.6]], { color: "#31d17c", weight: 4, dashArray: "8 6" }).addTo(appMap);
+    routeLine.bindPopup("<strong>Safe alternate route</strong><br/>Low flood exposure path");
+    mapLayers.routes.push(routeLine);
+
+    const shelterIcon = L.divIcon({
+      html: `<div style="background:#3ba7ff;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3)"><i class="fa fa-house-medical"></i></div>`,
+      iconSize: [28, 28], iconAnchor: [14, 14]
+    });
+    [{ pos: [lat + 0.1, lng - 0.15], label: "Relief Shelter 1" }, { pos: [lat - 0.2, lng + 0.21], label: "Relief Shelter 2" }]
+      .forEach((s) => {
+        const m = L.marker(s.pos, { icon: shelterIcon }).addTo(appMap);
+        m.bindPopup(`<strong>${s.label}</strong><br/>Verified safe shelter`);
+        mapLayers.shelters.push(m);
+      });
+
+    setTimeout(() => {
+      if (appMap) appMap.invalidateSize();
+    }, 200);
+  } catch (mapErr) {
+    console.warn("Map setup notice:", mapErr);
+  }
 }
 
 /* -------------------------------------------------
@@ -502,14 +514,13 @@ document.addEventListener("DOMContentLoaded", () => {
   stateEl.addEventListener("change", () => {
     const st = stateEl.value;
 
-    // Reset district & basin every time state changes
     distEl.innerHTML = '<option value="">Select District</option>';
     basinEl.innerHTML = '<option value="">Select Catchment</option>';
     distEl.disabled = true;
     basinEl.disabled = true;
 
     const data = STATE_DATA[st];
-    if (!data) return; // "Select State" chosen — leave dropdowns empty & disabled
+    if (!data) return;
 
     data.districts.forEach((d) => {
       const opt = document.createElement("option");
@@ -518,6 +529,12 @@ document.addEventListener("DOMContentLoaded", () => {
       distEl.appendChild(opt);
     });
     distEl.disabled = false;
+
+    // Auto-select first district and populate its catchment
+    if (data.districts.length > 0) {
+      distEl.value = data.districts[0].value;
+      distEl.dispatchEvent(new Event("change"));
+    }
   });
 
   // --- DISTRICT change -> populate Basin dropdown ---
@@ -539,6 +556,11 @@ document.addEventListener("DOMContentLoaded", () => {
       basinEl.appendChild(opt);
     });
     basinEl.disabled = basinList.length === 0;
+
+    // Auto-select first catchment
+    if (basinList.length > 0) {
+      basinEl.value = basinList[0].value;
+    }
   });
 
   // --- FORM SUBMIT -> run prediction & swap to results page ---
@@ -555,6 +577,33 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!basinId) { alert("Please select a Catchment / Basin."); return; }
 
     await runPrediction(state, district, basinId, basinLabel);
+  });
+
+  // --- Back to Home button handler ---
+  document.getElementById("btn-back-home")?.addEventListener("click", () => {
+    showHomePage();
+  });
+
+  // --- Global Navigation Link Handler ---
+  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", (e) => {
+      const href = link.getAttribute("href");
+      if (!href || href === "#") return;
+      const targetId = href.substring(1);
+      
+      const resultsPanel = document.getElementById("results-panel");
+      if (resultsPanel && !resultsPanel.classList.contains("hidden")) {
+        showHomePage();
+      }
+
+      if (targetId) {
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          e.preventDefault();
+          targetEl.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    });
   });
 
   // --- Sidebar Drawer Open / Close Logic ---
