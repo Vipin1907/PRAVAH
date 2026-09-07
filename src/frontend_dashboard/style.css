@@ -1141,332 +1141,192 @@ body.dark .df-row {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   5.5. HOW IT WORKS SECTION (7-STEP FLOW WITH GRAPHIC LOGOS)
+   5.5. HOW IT WORKS SECTION (CLEAN COMPACT LIGHT FLOW ROW)
    ───────────────────────────────────────────────────────────── */
 .how-it-works-section {
-  background: linear-gradient(180deg, #070e17 0%, #0a1626 50%, #070e17 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 56px 36px;
-  margin-top: 40px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 32px 24px;
+  margin-top: 36px;
   margin-bottom: 20px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sm);
   position: relative;
-  overflow: hidden;
-}
-
-.how-it-works-section::before {
-  content: "";
-  position: absolute;
-  top: -100px;
-  right: -100px;
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(2, 132, 199, 0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.how-it-works-section::after {
-  content: "";
-  position: absolute;
-  bottom: -100px;
-  left: -100px;
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(255, 107, 0, 0.08) 0%, transparent 70%);
-  pointer-events: none;
 }
 
 .hiw-container {
-  position: relative;
-  z-index: 2;
   max-width: 1260px;
   margin: 0 auto;
 }
 
 .hiw-header {
   text-align: center;
-  margin-bottom: 44px;
+  margin-bottom: 28px;
 }
 
 .hiw-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(2, 132, 199, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  color: #38bdf8;
-  padding: 6px 16px;
-  border-radius: 30px;
-  font-size: 11.5px;
+  gap: 6px;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  color: #0284c7;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  margin-bottom: 14px;
-  box-shadow: 0 0 15px rgba(2, 132, 199, 0.15);
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
 }
 
 .hiw-title {
-  color: #ffffff;
-  font-size: 34px;
+  color: #0f172a;
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin-bottom: 10px;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  margin-bottom: 6px;
 }
 
 .hiw-subtitle {
-  color: #94a3b8;
-  font-size: 16px;
+  color: #64748b;
+  font-size: 14px;
   font-weight: 400;
   max-width: 600px;
   margin: 0 auto;
-  line-height: 1.5;
 }
 
-/* 7-Step Grid */
-.hiw-steps-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 14px;
-  align-items: stretch;
-  margin-bottom: 36px;
-}
-
-.hiw-flow-arrow {
-  display: none;
-}
-
-/* Step Card Base */
-.hiw-step-card {
-  background: linear-gradient(160deg, #101d2d 0%, #0b1522 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 20px 14px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
-
-.hiw-step-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.hiw-card-top {
+/* 7-Step Compact Flow Row */
+.hiw-flow-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  gap: 6px;
+  width: 100%;
 }
 
-.hiw-step-num {
-  font-size: 13px;
-  font-weight: 900;
-  color: #64748b;
-  letter-spacing: 0.05em;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 2px 8px;
-  border-radius: 6px;
+/* Square Card */
+.hiw-square-card {
+  flex: 1;
+  min-width: 0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 8px 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.22s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
-/* Image / Logo Box */
-.hiw-step-img-box {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
+.hiw-square-card:hover {
   background: #ffffff;
+  border-color: #0284c7;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(2, 132, 199, 0.1);
+}
+
+.hiw-card-num {
+  font-size: 10px;
+  font-weight: 800;
+  color: #0284c7;
+  background: #e0f2fe;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  letter-spacing: 0.03em;
+}
+
+.hiw-card-img-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 5px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-  transition: transform 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  margin-bottom: 8px;
+  transition: transform 0.2s ease;
 }
 
-.hiw-step-card:hover .hiw-step-img-box {
-  transform: scale(1.08) rotate(-2deg);
+.hiw-square-card:hover .hiw-card-img-box {
+  transform: scale(1.08);
 }
 
-.hiw-step-img {
+.hiw-card-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
-.hiw-step-title {
-  color: #ffffff;
-  font-size: 14.5px;
+.hiw-card-title {
+  font-size: 12.5px;
   font-weight: 700;
-  line-height: 1.3;
-  margin-bottom: 10px;
-}
-
-.hiw-step-desc {
-  color: #94a3b8;
-  font-size: 12.5px;
-  line-height: 1.5;
-  flex: 1;
-  font-weight: 400;
-}
-
-.hiw-step-bar {
-  height: 3px;
-  border-radius: 3px;
-  margin-top: 16px;
-  width: 100%;
-  opacity: 0.85;
-}
-
-/* Step Color Variants */
-/* Step 1: User Input (Blue) */
-.step-blue .hiw-step-bar {
-  background: linear-gradient(90deg, #0284c7, #38bdf8);
-}
-.step-blue:hover {
-  border-color: rgba(56, 189, 248, 0.4);
-}
-
-/* Step 2: Live Weather Forecast (Cyan) */
-.step-cyan .hiw-step-bar {
-  background: linear-gradient(90deg, #06b6d4, #22d3ee);
-}
-.step-cyan:hover {
-  border-color: rgba(34, 211, 238, 0.4);
-}
-
-/* Step 3: Flood Risk Prediction (Orange ML) */
-.step-orange .hiw-step-bar {
-  background: linear-gradient(90deg, #ea580c, #fb923c);
-}
-.step-orange:hover {
-  border-color: rgba(251, 146, 60, 0.4);
-}
-
-/* Step 4: Affected Area Detection (Red) */
-.step-red .hiw-step-bar {
-  background: linear-gradient(90deg, #dc2626, #f87171);
-}
-.step-red:hover {
-  border-color: rgba(248, 113, 113, 0.4);
-}
-
-/* Step 5: Safe Routing System (Green) */
-.step-green .hiw-step-bar {
-  background: linear-gradient(90deg, #16a34a, #4ade80);
-}
-.step-green:hover {
-  border-color: rgba(74, 222, 128, 0.4);
-}
-
-/* Step 6: Nearby Shelter (Purple) */
-.step-purple .hiw-step-bar {
-  background: linear-gradient(90deg, #9333ea, #c084fc);
-}
-.step-purple:hover {
-  border-color: rgba(192, 132, 252, 0.4);
-}
-
-/* Step 7: Alert Message (Amber) */
-.step-amber .hiw-step-bar {
-  background: linear-gradient(90deg, #d97706, #fbbf24);
-}
-.step-amber:hover {
-  border-color: rgba(251, 191, 36, 0.4);
-}
-
-/* Flow Pipeline Strip */
-.hiw-pipeline-strip {
-  background: rgba(15, 26, 41, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 14px 22px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 40px;
-}
-
-.hps-label {
-  font-size: 11px;
-  font-weight: 800;
-  color: #38bdf8;
-  letter-spacing: 0.06em;
+  color: #0f172a;
+  line-height: 1.25;
+  margin-bottom: 3px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.hps-items-scroll {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  font-size: 12.5px;
-  color: #e2e8f0;
-  font-weight: 600;
+.hiw-card-sub {
+  font-size: 10.5px;
+  color: #64748b;
+  line-height: 1.2;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.hps-items-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.hps-node {
-  background: rgba(255, 255, 255, 0.06);
-  padding: 5px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.hps-ico {
-  color: #38bdf8;
-  font-size: 11px;
-}
-
-.hps-sep {
-  color: #475569;
-  font-size: 11px;
-}
-
-/* Final Orange CTA Button */
-.hiw-cta-container {
+/* Arrow Divider */
+.hiw-arrow-divider {
   display: flex;
+  align-items: center;
   justify-content: center;
+  color: #94a3b8;
+  font-size: 14px;
+  flex-shrink: 0;
+  padding: 0 2px;
 }
 
-.hiw-cta-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(135deg, #ff6b00 0%, #ff8800 100%);
+body.dark .how-it-works-section {
+  background: #0d1b2a;
+  border-color: #1e2f47;
+}
+
+body.dark .hiw-title {
   color: #ffffff;
-  padding: 16px 36px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  text-decoration: none;
-  box-shadow: 0 10px 25px rgba(255, 107, 0, 0.35);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  cursor: pointer;
 }
 
-.hiw-cta-button:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 14px 32px rgba(255, 107, 0, 0.5);
-  background: linear-gradient(135deg, #ff7a1a 0%, #ff951a 100%);
+body.dark .hiw-square-card {
+  background: #102135;
+  border-color: #1c3350;
 }
 
-.hiw-cta-button i {
-  font-size: 15px;
+body.dark .hiw-square-card:hover {
+  background: #142a44;
+  border-color: #38bdf8;
+}
+
+body.dark .hiw-card-title {
+  color: #ffffff;
+}
+
+body.dark .hiw-card-sub {
+  color: #94a3b8;
+}
+
+body.dark .hiw-arrow-divider {
+  color: #475569;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -1988,12 +1848,6 @@ body.dark .safe-box {
 /* ─────────────────────────────────────────────────────────────
    8. RESPONSIVE BREAKPOINTS
    ───────────────────────────────────────────────────────────── */
-@media (max-width: 1200px) {
-  .hiw-steps-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
 @media (max-width: 1024px) {
   .hero-top-grid {
     grid-template-columns: 1fr;
@@ -2008,8 +1862,17 @@ body.dark .safe-box {
   .comparison-layout, .dash-grid {
     grid-template-columns: 1fr;
   }
-  .hiw-steps-grid {
-    grid-template-columns: repeat(3, 1fr);
+  .hiw-flow-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+  .hiw-square-card {
+    flex: 0 0 calc(25% - 14px);
+    min-width: 120px;
+  }
+  .hiw-arrow-divider {
+    display: none;
   }
 }
 
@@ -2047,25 +1910,21 @@ body.dark .safe-box {
     justify-content: center;
   }
   .how-it-works-section {
-    padding: 36px 20px;
-    border-radius: 18px;
+    padding: 24px 16px;
+    border-radius: 16px;
   }
   .hiw-title {
-    font-size: 26px;
+    font-size: 22px;
   }
-  .hiw-steps-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .hiw-flow-row {
+    flex-wrap: wrap;
+    gap: 10px;
   }
-  .hiw-pipeline-strip {
-    flex-direction: column;
-    align-items: flex-start;
+  .hiw-square-card {
+    flex: 0 0 calc(50% - 6px);
   }
-  .hiw-cta-button {
-    width: 100%;
-    justify-content: center;
-    padding: 14px 20px;
-    font-size: 15px;
+  .hiw-arrow-divider {
+    display: none;
   }
 }
 
