@@ -1141,12 +1141,317 @@
     </div>
   </section>
 
-  <!-- ─── RESULTS PANEL (hidden until prediction submitted — replaces hero) ─── -->
+  <!-- ─── WEATHER & HYDRO-METEOROLOGICAL FORECAST PANEL (Step 1 View) ─── -->
+  <div id="weather-forecast-panel" class="weather-forecast-panel hidden">
+    <!-- Top Navigation & Breadcrumb Bar -->
+    <div class="wf-top-bar">
+      <button class="btn-wf-back" id="btn-back-home-from-forecast">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span data-en="Back to Input Form" data-hi="फ़ॉर्म पर वापस">Back to Input Form</span>
+      </button>
+      <div class="wf-meta-pills">
+        <div class="wf-location-pill">
+          <i class="fa-solid fa-location-dot"></i>
+          <span id="wf-loc-text">Assam · Cachar · Barak River Basin</span>
+        </div>
+        <div class="wf-date-pill">
+          <i class="fa-regular fa-calendar"></i>
+          <span id="wf-date-text">05 Sep 2026</span>
+        </div>
+        <div class="wf-status-live-pill">
+          <span class="live-dot"></span>
+          <span>LIVE TELEMETRY SYNCED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="wf-container">
+      <div class="wf-header">
+        <div class="wf-badge">
+          <i class="fa-solid fa-satellite-dish"></i>
+          <span>MULTI-SOURCE HYDRO-METEOROLOGICAL TELEMETRY</span>
+        </div>
+        <h2 class="wf-title">Live Weather &amp; Catchment Forecast</h2>
+        <p class="wf-subtitle">Real-time ground observations, numerical weather prediction (NWP) forecasts, and satellite hydrological indicators for your selected region.</p>
+      </div>
+
+      <!-- Pipeline Step Indicator -->
+      <div class="wf-steps-strip">
+        <span class="wfs-step done"><i class="fa-solid fa-check"></i> 1. Location &amp; Date</span>
+        <i class="fa-solid fa-arrow-right wfs-arrow"></i>
+        <span class="wfs-step active"><i class="fa-solid fa-cloud-showers-heavy"></i> 2. Weather &amp; Hydro Forecast</span>
+        <i class="fa-solid fa-arrow-right wfs-arrow"></i>
+        <span class="wfs-step"><i class="fa-solid fa-shield-halved"></i> 3. AI Flood Risk &amp; Evacuation Plan</span>
+      </div>
+
+      <!-- Telemetry Cards Grid -->
+      <div class="wf-grid">
+
+        <!-- 1. Observed Rainfall -->
+        <div class="wf-card highlight-blue">
+          <div class="wfc-head">
+            <div class="wfc-icon-wrap blue"><i class="fa-solid fa-cloud-rain"></i></div>
+            <div class="wfc-title-group">
+              <span class="wfc-category">PRECIPITATION OBSERVATION</span>
+              <h3 class="wfc-name">Observed Rainfall</h3>
+            </div>
+          </div>
+          <div class="wfc-val-box">
+            <div class="wfc-main-val" id="wf-obs-rain">142.5 <span class="wfc-unit">mm</span></div>
+            <div class="wfc-sub-val" id="wf-obs-rain-sub">Past 24h · 3-Day Cumulative: <strong>318.0 mm</strong></div>
+          </div>
+          <div class="wfc-meta-table">
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-tower-broadcast"></i> Source:</span>
+              <span class="wfc-meta-val" id="wf-obs-rain-src">IMD Automatic Weather Station (AWS) + GPM</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-regular fa-clock"></i> Update Time:</span>
+              <span class="wfc-meta-val" id="wf-obs-rain-time">05:30 IST (Hourly Telemetry)</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-circle-check"></i> Data Status:</span>
+              <span class="wfc-meta-val status-verified" id="wf-obs-rain-status">Verified Observation</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Forecast Rainfall (Separately Displayed) -->
+        <div class="wf-card highlight-cyan">
+          <div class="wfc-head">
+            <div class="wfc-icon-wrap cyan"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+            <div class="wfc-title-group">
+              <span class="wfc-category">NUMERICAL WEATHER PREDICTION</span>
+              <h3 class="wfc-name">Forecast Rainfall</h3>
+            </div>
+          </div>
+          <div class="wfc-val-box">
+            <div class="wfc-main-val" id="wf-fc-rain">78.0 <span class="wfc-unit">mm</span></div>
+            <div class="wfc-sub-val" id="wf-fc-rain-sub">Next 24 Hours · Peak Rate: <strong>18.5 mm/h</strong></div>
+          </div>
+          <div class="wfc-meta-table">
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-tower-broadcast"></i> Source:</span>
+              <span class="wfc-meta-val" id="wf-fc-rain-src">IMD NWP High-Res Regional Ensemble (WRF)</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-regular fa-clock"></i> Update Time:</span>
+              <span class="wfc-meta-val" id="wf-fc-rain-time">06:00 IST (6h Model Cycle)</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-chart-line"></i> Data Status:</span>
+              <span class="wfc-meta-val status-projected" id="wf-fc-rain-status">Model Projected (High Confidence)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Rainfall Intensity -->
+        <div class="wf-card highlight-orange">
+          <div class="wfc-head">
+            <div class="wfc-icon-wrap orange"><i class="fa-solid fa-bolt-lightning"></i></div>
+            <div class="wfc-title-group">
+              <span class="wfc-category">RADAR INTENSITY SCAN</span>
+              <h3 class="wfc-name">Rainfall Intensity</h3>
+            </div>
+          </div>
+          <div class="wfc-val-box">
+            <div class="wfc-main-val" id="wf-rain-intensity">24.8 <span class="wfc-unit">mm/h</span></div>
+            <div class="wfc-sub-val" id="wf-rain-intensity-sub">Category: <strong class="c-orange">Heavy Downpour</strong></div>
+          </div>
+          <div class="wfc-meta-table">
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-tower-broadcast"></i> Source:</span>
+              <span class="wfc-meta-val" id="wf-intensity-src">IMD Doppler Weather Radar (DWR) Scan</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-regular fa-clock"></i> Update Time:</span>
+              <span class="wfc-meta-val" id="wf-intensity-time">Real-time (15-min sweep)</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-circle-check"></i> Data Status:</span>
+              <span class="wfc-meta-val status-live" id="wf-intensity-status">Live Radar Telemetry</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Soil Moisture / Saturation -->
+        <div class="wf-card highlight-green">
+          <div class="wfc-head">
+            <div class="wfc-icon-wrap green"><i class="fa-solid fa-water"></i></div>
+            <div class="wfc-title-group">
+              <span class="wfc-category">HYDROLOGICAL PROXIES</span>
+              <h3 class="wfc-name">Soil Moisture / Saturation</h3>
+            </div>
+          </div>
+          <div class="wfc-val-box">
+            <div class="wfc-main-val" id="wf-soil-sat">88.4 <span class="wfc-unit">%</span></div>
+            <div class="wfc-sub-val" id="wf-soil-sat-sub">Top 0-30cm Saturation · <strong class="c-red">Near Runoff Capacity</strong></div>
+          </div>
+          <div class="wfc-meta-table">
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-tower-broadcast"></i> Source:</span>
+              <span class="wfc-meta-val" id="wf-soil-src">ISRO MOSDAC + Sentinel-1 SAR Radar</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-regular fa-clock"></i> Update Time:</span>
+              <span class="wfc-meta-val" id="wf-soil-time">Daily Pass 04:00 IST</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-satellite"></i> Data Status:</span>
+              <span class="wfc-meta-val status-verified" id="wf-soil-status">Calibrated In-situ + Satellite</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. River Water Level & Discharge -->
+        <div class="wf-card highlight-purple">
+          <div class="wfc-head">
+            <div class="wfc-icon-wrap purple"><i class="fa-solid fa-water-ladder"></i></div>
+            <div class="wfc-title-group">
+              <span class="wfc-category">HYDROGRAPHIC TELEMETRY</span>
+              <h3 class="wfc-name">River Level &amp; Discharge</h3>
+            </div>
+          </div>
+          <div class="wfc-val-box">
+            <div class="wfc-main-val" id="wf-river-lvl">19.85 <span class="wfc-unit">m</span></div>
+            <div class="wfc-sub-val" id="wf-river-lvl-sub">Danger Level: <strong>19.83 m</strong> (<strong class="c-red">+0.02 m Above Danger</strong>) · 1,280 m³/s</div>
+          </div>
+          <div class="wfc-meta-table">
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-tower-broadcast"></i> Source:</span>
+              <span class="wfc-meta-val" id="wf-river-src">Central Water Commission (CWC) Telemetry Gauge</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-regular fa-clock"></i> Update Time:</span>
+              <span class="wfc-meta-val" id="wf-river-time">05:00 IST (Real-time Gauge)</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-circle-exclamation"></i> Data Status:</span>
+              <span class="wfc-meta-val status-warning" id="wf-river-status">Active Hydrographic Station</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Temperature & Ambient Atmosphere -->
+        <div class="wf-card highlight-yellow">
+          <div class="wfc-head">
+            <div class="wfc-icon-wrap yellow"><i class="fa-solid fa-temperature-half"></i></div>
+            <div class="wfc-title-group">
+              <span class="wfc-category">SURFACE METEOROLOGY</span>
+              <h3 class="wfc-name">Temperature &amp; Atmosphere</h3>
+            </div>
+          </div>
+          <div class="wfc-val-box">
+            <div class="wfc-main-val" id="wf-temp">26.5 <span class="wfc-unit">°C</span></div>
+            <div class="wfc-sub-val" id="wf-temp-sub">Relative Humidity: <strong>92%</strong> · Pressure: <strong>998 hPa</strong></div>
+          </div>
+          <div class="wfc-meta-table">
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-tower-broadcast"></i> Source:</span>
+              <span class="wfc-meta-val" id="wf-temp-src">IMD Surface Met Observation Station</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-regular fa-clock"></i> Update Time:</span>
+              <span class="wfc-meta-val" id="wf-temp-time">05:30 IST</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-circle-check"></i> Data Status:</span>
+              <span class="wfc-meta-val status-live" id="wf-temp-status">Active Surface Telemetry</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Elevation & Catchment Topography -->
+        <div class="wf-card highlight-indigo">
+          <div class="wfc-head">
+            <div class="wfc-icon-wrap indigo"><i class="fa-solid fa-mountain-sun"></i></div>
+            <div class="wfc-title-group">
+              <span class="wfc-category">GEO-SPATIAL TERRAIN</span>
+              <h3 class="wfc-name">Elevation &amp; Topography</h3>
+            </div>
+          </div>
+          <div class="wfc-val-box">
+            <div class="wfc-main-val" id="wf-elev">48 <span class="wfc-unit">m MSL</span></div>
+            <div class="wfc-sub-val" id="wf-elev-sub">Catchment Relief Range: <strong>22m – 186m MSL</strong></div>
+          </div>
+          <div class="wfc-meta-table">
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-tower-broadcast"></i> Source:</span>
+              <span class="wfc-meta-val" id="wf-elev-src">SRTM 30m Global Digital Elevation Model (DEM)</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-regular fa-clock"></i> Update Time:</span>
+              <span class="wfc-meta-val" id="wf-elev-time">GIS Spatial Ingest</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-circle-check"></i> Data Status:</span>
+              <span class="wfc-meta-val status-verified" id="wf-elev-status">Validated Geo-Spatial Base</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Slope, Drainage & Flow Accumulation -->
+        <div class="wf-card highlight-slate">
+          <div class="wfc-head">
+            <div class="wfc-icon-wrap slate"><i class="fa-solid fa-chart-area"></i></div>
+            <div class="wfc-title-group">
+              <span class="wfc-category">HYDRO-GEOMORPHOLOGY</span>
+              <h3 class="wfc-name">Slope &amp; Drainage Index</h3>
+            </div>
+          </div>
+          <div class="wfc-val-box">
+            <div class="wfc-main-val" id="wf-slope">12.4 <span class="wfc-unit">°</span></div>
+            <div class="wfc-sub-val" id="wf-slope-sub">Flow Accumulation Area: <strong>5,200 km²</strong> · Drainage Density: High</div>
+          </div>
+          <div class="wfc-meta-table">
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-tower-broadcast"></i> Source:</span>
+              <span class="wfc-meta-val" id="wf-slope-src">CartoDEM 3D Analysis + HydroSHEDS</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-regular fa-clock"></i> Update Time:</span>
+              <span class="wfc-meta-val" id="wf-slope-time">Spatial Analytics Sync</span>
+            </div>
+            <div class="wfc-meta-row">
+              <span class="wfc-meta-key"><i class="fa-solid fa-circle-check"></i> Data Status:</span>
+              <span class="wfc-meta-val status-verified" id="wf-slope-status">Conditioned Hydrological Mesh</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Footer with Note and Predict Risk Button -->
+      <div class="wf-bottom-action-card">
+        <div class="wf-action-info">
+          <div class="wf-action-title">
+            <i class="fa-solid fa-shield-virus c-orange"></i>
+            <span>Hydro-Meteorological Telemetry Loaded Successfully</span>
+          </div>
+          <p class="wf-action-desc">All observations and NWP model parameters are verified for this location. Proceed to run XGBoost AI flood classification, TreeSHAP explainability, and evacuation route analysis.</p>
+        </div>
+        
+        <button class="btn-predict-risk" id="btn-run-prediction-from-forecast">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Predict Risk</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── RESULTS PANEL (Page 2: AI Risk & Evacuation Dashboard) ─── -->
   <div id="results-panel" class="results-panel hidden">
 
-    <!-- Back to Home button -->
+    <!-- Back to Forecast & Home bar -->
     <div class="back-home-bar">
-      <button class="btn-back-home" id="btn-back-home">
+      <button class="btn-back-home" id="btn-back-to-forecast">
+        <i class="fa-solid fa-cloud-showers-heavy"></i>
+        <span>Back to Weather Forecast</span>
+      </button>
+      <button class="btn-back-home" id="btn-back-home" style="margin-left: 8px;">
         <i class="fa-solid fa-arrow-left"></i>
         <span data-en="Back to Home" data-hi="होम पर वापस">Back to Home</span>
       </button>

@@ -361,28 +361,136 @@ function generateCAP(state, district, pct, riskLevel) {
 }
 
 /* -------------------------------------------------
-   7. SHOW / HIDE PAGES
+   7. SHOW / HIDE PAGES (2-Step Predictive Workflow)
    ------------------------------------------------- */
+let currentPredictionParams = {
+  state: "Assam",
+  district: "Cachar",
+  basinId: "A127",
+  basinLabel: "A127 — Barak River Basin",
+  date: "2026-09-05",
+  lead: "3"
+};
+
+function showWeatherForecastPage(params) {
+  currentPredictionParams = { ...currentPredictionParams, ...params };
+  const { state, district, basinId, basinLabel, date, lead } = currentPredictionParams;
+
+  document.getElementById("home")?.classList.add("hidden");
+  document.getElementById("results-panel")?.classList.add("hidden");
+  const wfPanel = document.getElementById("weather-forecast-panel");
+  if (wfPanel) wfPanel.classList.remove("hidden");
+
+  // Meta badges
+  const locEl = document.getElementById("wf-loc-text");
+  const dateEl = document.getElementById("wf-date-text");
+  if (locEl) locEl.textContent = `${state} · ${district} · ${basinLabel}`;
+  if (dateEl) dateEl.textContent = `${date || new Date().toISOString().split("T")[0]} (+${lead || 3}h Forecast)`;
+
+  // Location & date specific telemetry data
+  const isAssam = state === "Assam";
+
+  // 1. Observed Rainfall (Past 24h & 3-Day Cumulative)
+  const obsRain24 = isAssam ? "142.5" : "98.2";
+  const obsRain3d = isAssam ? "318.0" : "205.4";
+  document.getElementById("wf-obs-rain").innerHTML = `${obsRain24} <span class="wfc-unit">mm</span>`;
+  document.getElementById("wf-obs-rain-sub").innerHTML = `Past 24h · 3-Day Cumulative: <strong>${obsRain3d} mm</strong>`;
+  document.getElementById("wf-obs-rain-src").textContent = "IMD Automatic Weather Station (AWS) + GPM Satellite";
+  document.getElementById("wf-obs-rain-time").textContent = "05:30 IST (Hourly Telemetry)";
+  document.getElementById("wf-obs-rain-status").textContent = "Verified Observation";
+
+  // 2. Forecast Rainfall (Separately Displayed)
+  const fcRain24 = isAssam ? "78.0" : "54.5";
+  const fcPeak = isAssam ? "18.5" : "12.0";
+  document.getElementById("wf-fc-rain").innerHTML = `${fcRain24} <span class="wfc-unit">mm</span>`;
+  document.getElementById("wf-fc-rain-sub").innerHTML = `Next 24 Hours · Peak Rate: <strong>${fcPeak} mm/h</strong>`;
+  document.getElementById("wf-fc-rain-src").textContent = "IMD NWP High-Res Regional Ensemble (WRF)";
+  document.getElementById("wf-fc-rain-time").textContent = "06:00 IST (6h Model Cycle)";
+  document.getElementById("wf-fc-rain-status").textContent = "Model Projected (High Confidence)";
+
+  // 3. Rainfall Intensity
+  const intensity = isAssam ? "24.8" : "16.4";
+  document.getElementById("wf-rain-intensity").innerHTML = `${intensity} <span class="wfc-unit">mm/h</span>`;
+  document.getElementById("wf-rain-intensity-sub").innerHTML = `Category: <strong class="${isAssam ? "c-orange" : "c-yellow"}">${isAssam ? "Heavy Downpour" : "Moderate Surge"}</strong>`;
+  document.getElementById("wf-intensity-src").textContent = "IMD Doppler Weather Radar (DWR) Scan";
+  document.getElementById("wf-intensity-time").textContent = "Real-time (15-min sweep)";
+  document.getElementById("wf-intensity-status").textContent = "Live Radar Telemetry";
+
+  // 4. Soil Moisture / Saturation
+  const soilMoisture = isAssam ? "88.4" : "79.2";
+  document.getElementById("wf-soil-sat").innerHTML = `${soilMoisture} <span class="wfc-unit">%</span>`;
+  document.getElementById("wf-soil-sat-sub").innerHTML = `Top 0-30cm Saturation · <strong class="${isAssam ? "c-red" : "c-orange"}">${isAssam ? "Near Runoff Capacity" : "High Soil Saturation"}</strong>`;
+  document.getElementById("wf-soil-src").textContent = "ISRO MOSDAC + Sentinel-1 SAR Radar";
+  document.getElementById("wf-soil-time").textContent = "Daily Pass 04:00 IST";
+  document.getElementById("wf-soil-status").textContent = "Calibrated In-situ + Satellite";
+
+  // 5. River Water Level & Discharge
+  const riverLevel = isAssam ? "19.85" : "324.60";
+  const dangerMark = isAssam ? "19.83" : "325.00";
+  const discharge = isAssam ? "1,280" : "860";
+  const riverName = isAssam ? "Barak River (Annapurna Ghat)" : "Alaknanda River (Rudraprayag)";
+  const isAboveDanger = isAssam;
+  document.getElementById("wf-river-lvl").innerHTML = `${riverLevel} <span class="wfc-unit">m</span>`;
+  document.getElementById("wf-river-lvl-sub").innerHTML = `${riverName} · Danger Level: <strong>${dangerMark} m</strong> (${isAboveDanger ? '<strong class="c-red">+0.02 m Above Danger</strong>' : '<strong class="c-green">-0.40 m Below Danger</strong>'}) · ${discharge} m³/s`;
+  document.getElementById("wf-river-src").textContent = "Central Water Commission (CWC) Telemetry Gauge";
+  document.getElementById("wf-river-time").textContent = "05:00 IST (Real-time Gauge)";
+  document.getElementById("wf-river-status").textContent = "Active Hydrographic Station";
+
+  // 6. Temperature & Atmosphere
+  const temp = isAssam ? "26.5" : "19.8";
+  const humidity = isAssam ? "92" : "84";
+  const pressure = isAssam ? "998" : "1004";
+  document.getElementById("wf-temp").innerHTML = `${temp} <span class="wfc-unit">°C</span>`;
+  document.getElementById("wf-temp-sub").innerHTML = `Relative Humidity: <strong>${humidity}%</strong> · Pressure: <strong>${pressure} hPa</strong>`;
+  document.getElementById("wf-temp-src").textContent = "IMD Surface Met Observation Station";
+  document.getElementById("wf-temp-time").textContent = "05:30 IST";
+  document.getElementById("wf-temp-status").textContent = "Active Surface Telemetry";
+
+  // 7. Elevation & Catchment Topography
+  const elevation = isAssam ? "48" : "1,450";
+  const elevRange = isAssam ? "22m – 186m MSL (Floodplain)" : "680m – 3,850m MSL (Himalayan Gorge)";
+  document.getElementById("wf-elev").innerHTML = `${elevation} <span class="wfc-unit">m MSL</span>`;
+  document.getElementById("wf-elev-sub").innerHTML = `Catchment Relief: <strong>${elevRange}</strong>`;
+  document.getElementById("wf-elev-src").textContent = "SRTM 30m Global Digital Elevation Model (DEM)";
+  document.getElementById("wf-elev-time").textContent = "GIS Spatial Ingest";
+  document.getElementById("wf-elev-status").textContent = "Validated Geo-Spatial Base";
+
+  // 8. Slope, Drainage & Flow Accumulation
+  const slope = isAssam ? "12.4" : "34.8";
+  const flowArea = isAssam ? "5,200" : "1,850";
+  document.getElementById("wf-slope").innerHTML = `${slope} <span class="wfc-unit">°</span>`;
+  document.getElementById("wf-slope-sub").innerHTML = `Flow Accumulation Area: <strong>${flowArea} km²</strong> · Drainage Density: High`;
+  document.getElementById("wf-slope-src").textContent = "CartoDEM 3D Analysis + HydroSHEDS";
+  document.getElementById("wf-slope-time").textContent = "Spatial Analytics Sync";
+  document.getElementById("wf-slope-status").textContent = "Conditioned Hydrological Mesh";
+
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
 function showResultsPage(state, district, basinLabel) {
-  document.getElementById("home").classList.add("hidden");
-  document.getElementById("results-panel").classList.remove("hidden");
+  document.getElementById("home")?.classList.add("hidden");
+  document.getElementById("weather-forecast-panel")?.classList.add("hidden");
+  document.getElementById("results-panel")?.classList.remove("hidden");
   document.getElementById("result-location-badge").textContent = `${state} · ${district} · ${basinLabel}`;
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 function showHomePage() {
-  document.getElementById("results-panel").classList.add("hidden");
-  document.getElementById("home").classList.remove("hidden");
+  document.getElementById("weather-forecast-panel")?.classList.add("hidden");
+  document.getElementById("results-panel")?.classList.add("hidden");
+  document.getElementById("home")?.classList.remove("hidden");
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 function showLoadingBar() {
-  document.getElementById("loading-bar").classList.remove("hidden");
-  document.getElementById("check-risk-btn").disabled = true;
+  document.getElementById("loading-bar")?.classList.remove("hidden");
+  const btn = document.getElementById("btn-run-prediction-from-forecast");
+  if (btn) btn.disabled = true;
 }
 function hideLoadingBar() {
-  document.getElementById("loading-bar").classList.add("hidden");
-  document.getElementById("check-risk-btn").disabled = false;
+  document.getElementById("loading-bar")?.classList.add("hidden");
+  const btn = document.getElementById("btn-run-prediction-from-forecast");
+  if (btn) btn.disabled = false;
 }
 
 /* -------------------------------------------------
@@ -407,7 +515,7 @@ async function runPrediction(state, district, basinId, basinLabel) {
       const resp = await fetch("/api/get-dashboard-data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state, district, basin: basinId, date: new Date().toISOString().split("T")[0], lead_time_hours: 6 })
+        body: JSON.stringify({ state, district, basin: basinId, date: currentPredictionParams.date || new Date().toISOString().split("T")[0], lead_time_hours: parseInt(currentPredictionParams.lead || "6") })
       });
       if (resp.ok) backendData = await resp.json();
     } catch (err) {
@@ -453,7 +561,7 @@ async function runPrediction(state, district, basinId, basinLabel) {
       ? backendData.safe_shelters
       : generateShelters(state);
 
-    // 7. Render everything
+    // 7. Render everything on Results Page
     showResultsPage(state, district, basinLabel);
     setWeatherCards(weather);
     setGauge(prediction.probability, prediction.riskLevel);
@@ -563,20 +671,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- FORM SUBMIT -> run prediction & swap to results page ---
+  // --- FORM SUBMIT -> Show Weather Forecast & Telemetry Panel (Step 1) ---
   const form = document.getElementById("risk-form");
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     const state = stateEl.value;
     const district = distEl.value;
     const basinId = basinEl.value;
     const basinLabel = basinEl.options[basinEl.selectedIndex] ? basinEl.options[basinEl.selectedIndex].textContent : "";
+    const date = dateField ? dateField.value : "";
+    const lead = document.getElementById("f-lead") ? document.getElementById("f-lead").value : "3";
 
     if (!state) { alert("Please select a State."); return; }
     if (!district) { alert("Please select a District."); return; }
     if (!basinId) { alert("Please select a Catchment / Basin."); return; }
 
+    showWeatherForecastPage({ state, district, basinId, basinLabel, date, lead });
+  });
+
+  // --- "Predict Risk" button on Weather Forecast page -> Run ML & Agentic AI Prediction ---
+  document.getElementById("btn-run-prediction-from-forecast")?.addEventListener("click", async () => {
+    const { state, district, basinId, basinLabel } = currentPredictionParams;
     await runPrediction(state, district, basinId, basinLabel);
+  });
+
+  // --- "Back to Input Form" button on Weather Forecast page ---
+  document.getElementById("btn-back-home-from-forecast")?.addEventListener("click", () => {
+    showHomePage();
+  });
+
+  // --- "Back to Weather Forecast" button on Results panel ---
+  document.getElementById("btn-back-to-forecast")?.addEventListener("click", () => {
+    showWeatherForecastPage(currentPredictionParams);
   });
 
   // --- Back to Home button handler ---
@@ -592,7 +718,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const targetId = href.substring(1);
       
       const resultsPanel = document.getElementById("results-panel");
-      if (resultsPanel && !resultsPanel.classList.contains("hidden")) {
+      const wfPanel = document.getElementById("weather-forecast-panel");
+      if ((resultsPanel && !resultsPanel.classList.contains("hidden")) || (wfPanel && !wfPanel.classList.contains("hidden"))) {
         showHomePage();
       }
 

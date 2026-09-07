@@ -2513,7 +2513,404 @@ body.dark .pe-note-box {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   6. RESULTS DASHBOARD PANEL (Shown after Submit)
+   5.9 WEATHER & HYDRO-METEOROLOGICAL FORECAST PANEL (Step 1 View)
+   ───────────────────────────────────────────────────────────── */
+.weather-forecast-panel {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  animation: fadeInPanel 0.3s ease;
+}
+
+.wf-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.btn-wf-back {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+.btn-wf-back:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  transform: translateX(-2px);
+}
+
+.wf-meta-pills {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wf-location-pill, .wf-date-pill {
+  background: #09121d;
+  color: #f1f5f9;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wf-status-live-pill {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.03em;
+}
+
+.wf-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.wf-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.wf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.wf-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #0f172a;
+  margin-bottom: 6px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.wf-subtitle {
+  color: #64748b;
+  font-size: 14.5px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.wf-steps-strip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.wfs-step.done {
+  color: #059669;
+}
+
+.wfs-step.active {
+  color: #ff6b00;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.wfs-arrow {
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+/* Grid of Telemetry Cards */
+.wf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 900px) {
+  .wf-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wf-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
+  border-left: 4px solid #94a3b8;
+}
+
+.wf-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.wf-card.highlight-blue { border-left-color: #0284c7; }
+.wf-card.highlight-cyan { border-left-color: #06b6d4; }
+.wf-card.highlight-orange { border-left-color: #f97316; }
+.wf-card.highlight-green { border-left-color: #10b981; }
+.wf-card.highlight-purple { border-left-color: #8b5cf6; }
+.wf-card.highlight-yellow { border-left-color: #eab308; }
+.wf-card.highlight-indigo { border-left-color: #6366f1; }
+.wf-card.highlight-slate { border-left-color: #64748b; }
+
+.wfc-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.wfc-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.wfc-icon-wrap.blue { background: #e0f2fe; color: #0284c7; }
+.wfc-icon-wrap.cyan { background: #cffafe; color: #0891b2; }
+.wfc-icon-wrap.orange { background: #ffedd5; color: #ea580c; }
+.wfc-icon-wrap.green { background: #dcfce7; color: #16a34a; }
+.wfc-icon-wrap.purple { background: #f3e8ff; color: #7c3aed; }
+.wfc-icon-wrap.yellow { background: #fef9c3; color: #ca8a04; }
+.wfc-icon-wrap.indigo { background: #e0e7ff; color: #4f46e5; }
+.wfc-icon-wrap.slate { background: #f1f5f9; color: #475569; }
+
+.wfc-category {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.wfc-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.wfc-val-box {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+
+.wfc-main-val {
+  font-size: 28px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1;
+  font-family: 'Outfit', sans-serif;
+}
+
+.wfc-unit {
+  font-size: 16px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.wfc-sub-val {
+  font-size: 12.5px;
+  color: #64748b;
+  margin-top: 6px;
+}
+
+.wfc-meta-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  background: #fafafa;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.wfc-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.wfc-meta-key {
+  color: #64748b;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.wfc-meta-val {
+  color: #1e293b;
+  font-weight: 700;
+  text-align: right;
+}
+
+.status-verified {
+  color: #059669;
+  background: #ecfdf5;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #a7f3d0;
+}
+
+.status-live {
+  color: #0284c7;
+  background: #f0f9ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #bae6fd;
+}
+
+.status-projected {
+  color: #d97706;
+  background: #fffbeb;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #fde68a;
+}
+
+.status-warning {
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #fecaca;
+}
+
+/* Bottom Action Banner */
+.wf-bottom-action-card {
+  background: linear-gradient(135deg, #09121d 0%, #112338 100%);
+  border: 1px solid #1e3a5f;
+  border-radius: 12px;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  color: #ffffff;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+}
+
+.wf-action-info {
+  max-width: 700px;
+}
+
+.wf-action-title {
+  font-size: 17px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.wf-action-desc {
+  color: #94a3b8;
+  font-size: 13.5px;
+  margin: 0;
+}
+
+.btn-predict-risk {
+  background: linear-gradient(90deg, #ff6b00 0%, #ea580c 100%);
+  border: none;
+  color: #ffffff;
+  font-weight: 900;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  padding: 14px 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 18px rgba(255, 107, 0, 0.45);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.btn-predict-risk:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(255, 107, 0, 0.6);
+}
+
+.btn-predict-risk i {
+  transition: transform 0.2s ease;
+}
+
+.btn-predict-risk:hover i.fa-arrow-right {
+  transform: translateX(4px);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6. RESULTS DASHBOARD PANEL (Shown after Predict Risk)
    ───────────────────────────────────────────────────────────── */
 .results-panel {
   max-width: 1280px;
