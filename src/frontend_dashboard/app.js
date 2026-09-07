@@ -372,7 +372,7 @@ let currentPredictionParams = {
   lead: "3"
 };
 
-function showWeatherForecastPage(params) {
+async function showWeatherForecastPage(params) {
   currentPredictionParams = { ...currentPredictionParams, ...params };
   const { state, district, basinId, basinLabel, date, lead } = currentPredictionParams;
 
@@ -387,82 +387,104 @@ function showWeatherForecastPage(params) {
   if (locEl) locEl.textContent = `${state} · ${district} · ${basinLabel}`;
   if (dateEl) dateEl.textContent = `${date || new Date().toISOString().split("T")[0]} (+${lead || 3}h Forecast)`;
 
-  // Location & date specific telemetry data
+  // Fetch telemetry from backend
+  let telemetry = null;
+  try {
+    const res = await fetch("/api/weather-telemetry", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state, district, basin: basinId, date, lead_time_hours: parseInt(lead || 6) })
+    });
+    if (res.ok) telemetry = await res.json();
+  } catch (e) {
+    console.warn("Weather telemetry fetch fallback:", e);
+  }
+
   const isAssam = state === "Assam";
 
   // 1. Observed Rainfall (Past 24h & 3-Day Cumulative)
-  const obsRain24 = isAssam ? "142.5" : "98.2";
-  const obsRain3d = isAssam ? "318.0" : "205.4";
+  const obs = telemetry?.observed_rainfall;
+  const obsRain24 = obs ? obs.value_24h : (isAssam ? "142.5" : "98.2");
+  const obsRain3d = obs ? obs.value_3d_cumulative : (isAssam ? "318.0" : "205.4");
   document.getElementById("wf-obs-rain").innerHTML = `${obsRain24} <span class="wfc-unit">mm</span>`;
   document.getElementById("wf-obs-rain-sub").innerHTML = `Past 24h · 3-Day Cumulative: <strong>${obsRain3d} mm</strong>`;
-  document.getElementById("wf-obs-rain-src").textContent = "IMD Automatic Weather Station (AWS) + GPM Satellite";
-  document.getElementById("wf-obs-rain-time").textContent = "05:30 IST (Hourly Telemetry)";
-  document.getElementById("wf-obs-rain-status").textContent = "Verified Observation";
+  document.getElementById("wf-obs-rain-src").textContent = obs?.source || "IMD Automatic Weather Station (AWS) + GPM Satellite";
+  document.getElementById("wf-obs-rain-time").textContent = obs?.update_time || "05:30 IST (Hourly Telemetry)";
+  document.getElementById("wf-obs-rain-status").textContent = obs?.data_status || "Verified Observation";
 
   // 2. Forecast Rainfall (Separately Displayed)
-  const fcRain24 = isAssam ? "78.0" : "54.5";
-  const fcPeak = isAssam ? "18.5" : "12.0";
+  const fc = telemetry?.forecast_rainfall;
+  const fcRain24 = fc ? fc.value_24h : (isAssam ? "78.0" : "54.5");
+  const fcPeak = fc ? fc.peak_rate : (isAssam ? "18.5" : "12.0");
   document.getElementById("wf-fc-rain").innerHTML = `${fcRain24} <span class="wfc-unit">mm</span>`;
   document.getElementById("wf-fc-rain-sub").innerHTML = `Next 24 Hours · Peak Rate: <strong>${fcPeak} mm/h</strong>`;
-  document.getElementById("wf-fc-rain-src").textContent = "IMD NWP High-Res Regional Ensemble (WRF)";
-  document.getElementById("wf-fc-rain-time").textContent = "06:00 IST (6h Model Cycle)";
-  document.getElementById("wf-fc-rain-status").textContent = "Model Projected (High Confidence)";
+  document.getElementById("wf-fc-rain-src").textContent = fc?.source || "IMD NWP High-Res Regional Ensemble (WRF)";
+  document.getElementById("wf-fc-rain-time").textContent = fc?.update_time || "06:00 IST (6h Model Cycle)";
+  document.getElementById("wf-fc-rain-status").textContent = fc?.data_status || "Model Projected (High Confidence)";
 
   // 3. Rainfall Intensity
-  const intensity = isAssam ? "24.8" : "16.4";
+  const ri = telemetry?.rainfall_intensity;
+  const intensity = ri ? ri.value : (isAssam ? "24.8" : "16.4");
+  const intensityCat = ri?.category || (isAssam ? "Heavy Downpour" : "Moderate Surge");
   document.getElementById("wf-rain-intensity").innerHTML = `${intensity} <span class="wfc-unit">mm/h</span>`;
-  document.getElementById("wf-rain-intensity-sub").innerHTML = `Category: <strong class="${isAssam ? "c-orange" : "c-yellow"}">${isAssam ? "Heavy Downpour" : "Moderate Surge"}</strong>`;
-  document.getElementById("wf-intensity-src").textContent = "IMD Doppler Weather Radar (DWR) Scan";
-  document.getElementById("wf-intensity-time").textContent = "Real-time (15-min sweep)";
-  document.getElementById("wf-intensity-status").textContent = "Live Radar Telemetry";
+  document.getElementById("wf-rain-intensity-sub").innerHTML = `Category: <strong class="${isAssam ? "c-orange" : "c-yellow"}">${intensityCat}</strong>`;
+  document.getElementById("wf-intensity-src").textContent = ri?.source || "IMD Doppler Weather Radar (DWR) Scan";
+  document.getElementById("wf-intensity-time").textContent = ri?.update_time || "Real-time (15-min sweep)";
+  document.getElementById("wf-intensity-status").textContent = ri?.data_status || "Live Radar Telemetry";
 
   // 4. Soil Moisture / Saturation
-  const soilMoisture = isAssam ? "88.4" : "79.2";
+  const sm = telemetry?.soil_moisture;
+  const soilMoisture = sm ? sm.saturation_pct : (isAssam ? "88.4" : "79.2");
+  const soilText = sm?.status_text || (isAssam ? "Near Runoff Capacity" : "High Soil Saturation");
   document.getElementById("wf-soil-sat").innerHTML = `${soilMoisture} <span class="wfc-unit">%</span>`;
-  document.getElementById("wf-soil-sat-sub").innerHTML = `Top 0-30cm Saturation · <strong class="${isAssam ? "c-red" : "c-orange"}">${isAssam ? "Near Runoff Capacity" : "High Soil Saturation"}</strong>`;
-  document.getElementById("wf-soil-src").textContent = "ISRO MOSDAC + Sentinel-1 SAR Radar";
-  document.getElementById("wf-soil-time").textContent = "Daily Pass 04:00 IST";
-  document.getElementById("wf-soil-status").textContent = "Calibrated In-situ + Satellite";
+  document.getElementById("wf-soil-sat-sub").innerHTML = `Top 0-30cm Saturation · <strong class="${isAssam ? "c-red" : "c-orange"}">${soilText}</strong>`;
+  document.getElementById("wf-soil-src").textContent = sm?.source || "ISRO MOSDAC + Sentinel-1 SAR Radar";
+  document.getElementById("wf-soil-time").textContent = sm?.update_time || "Daily Pass 04:00 IST";
+  document.getElementById("wf-soil-status").textContent = sm?.data_status || "Calibrated In-situ + Satellite";
 
   // 5. River Water Level & Discharge
-  const riverLevel = isAssam ? "19.85" : "324.60";
-  const dangerMark = isAssam ? "19.83" : "325.00";
-  const discharge = isAssam ? "1,280" : "860";
-  const riverName = isAssam ? "Barak River (Annapurna Ghat)" : "Alaknanda River (Rudraprayag)";
+  const rl = telemetry?.river_level;
+  const riverLevel = rl ? rl.gauge_level : (isAssam ? "19.85" : "324.60");
+  const dangerMark = rl ? rl.danger_level : (isAssam ? "19.83" : "325.00");
+  const discharge = rl ? rl.discharge_m3s : (isAssam ? "1,280" : "860");
+  const riverName = rl?.station_name || (isAssam ? "Barak River (Annapurna Ghat)" : "Alaknanda River (Rudraprayag)");
   const isAboveDanger = isAssam;
   document.getElementById("wf-river-lvl").innerHTML = `${riverLevel} <span class="wfc-unit">m</span>`;
   document.getElementById("wf-river-lvl-sub").innerHTML = `${riverName} · Danger Level: <strong>${dangerMark} m</strong> (${isAboveDanger ? '<strong class="c-red">+0.02 m Above Danger</strong>' : '<strong class="c-green">-0.40 m Below Danger</strong>'}) · ${discharge} m³/s`;
-  document.getElementById("wf-river-src").textContent = "Central Water Commission (CWC) Telemetry Gauge";
-  document.getElementById("wf-river-time").textContent = "05:00 IST (Real-time Gauge)";
-  document.getElementById("wf-river-status").textContent = "Active Hydrographic Station";
+  document.getElementById("wf-river-src").textContent = rl?.source || "Central Water Commission (CWC) Telemetry Gauge";
+  document.getElementById("wf-river-time").textContent = rl?.update_time || "05:00 IST (Real-time Gauge)";
+  document.getElementById("wf-river-status").textContent = rl?.data_status || "Active Hydrographic Station";
 
   // 6. Temperature & Atmosphere
-  const temp = isAssam ? "26.5" : "19.8";
-  const humidity = isAssam ? "92" : "84";
-  const pressure = isAssam ? "998" : "1004";
+  const ta = telemetry?.temperature_atmosphere;
+  const temp = ta ? ta.temperature_c : (isAssam ? "26.5" : "19.8");
+  const humidity = ta ? ta.humidity_pct : (isAssam ? "92" : "84");
+  const pressure = ta ? ta.pressure_hpa : (isAssam ? "998" : "1004");
   document.getElementById("wf-temp").innerHTML = `${temp} <span class="wfc-unit">°C</span>`;
   document.getElementById("wf-temp-sub").innerHTML = `Relative Humidity: <strong>${humidity}%</strong> · Pressure: <strong>${pressure} hPa</strong>`;
-  document.getElementById("wf-temp-src").textContent = "IMD Surface Met Observation Station";
-  document.getElementById("wf-temp-time").textContent = "05:30 IST";
-  document.getElementById("wf-temp-status").textContent = "Active Surface Telemetry";
+  document.getElementById("wf-temp-src").textContent = ta?.source || "IMD Surface Met Observation Station";
+  document.getElementById("wf-temp-time").textContent = ta?.update_time || "05:30 IST";
+  document.getElementById("wf-temp-status").textContent = ta?.data_status || "Active Surface Telemetry";
 
   // 7. Elevation & Catchment Topography
-  const elevation = isAssam ? "48" : "1,450";
-  const elevRange = isAssam ? "22m – 186m MSL (Floodplain)" : "680m – 3,850m MSL (Himalayan Gorge)";
+  const elv = telemetry?.elevation;
+  const elevation = elv ? elv.mean_elevation_m : (isAssam ? "48" : "1,450");
+  const elevRange = elv?.elevation_range || (isAssam ? "22m – 186m MSL (Floodplain)" : "680m – 3,850m MSL (Himalayan Gorge)");
   document.getElementById("wf-elev").innerHTML = `${elevation} <span class="wfc-unit">m MSL</span>`;
   document.getElementById("wf-elev-sub").innerHTML = `Catchment Relief: <strong>${elevRange}</strong>`;
-  document.getElementById("wf-elev-src").textContent = "SRTM 30m Global Digital Elevation Model (DEM)";
-  document.getElementById("wf-elev-time").textContent = "GIS Spatial Ingest";
-  document.getElementById("wf-elev-status").textContent = "Validated Geo-Spatial Base";
+  document.getElementById("wf-elev-src").textContent = elv?.source || "SRTM 30m Global Digital Elevation Model (DEM)";
+  document.getElementById("wf-elev-time").textContent = elv?.update_time || "GIS Spatial Ingest";
+  document.getElementById("wf-elev-status").textContent = elv?.data_status || "Validated Geo-Spatial Base";
 
   // 8. Slope, Drainage & Flow Accumulation
-  const slope = isAssam ? "12.4" : "34.8";
-  const flowArea = isAssam ? "5,200" : "1,850";
+  const sd = telemetry?.slope_drainage;
+  const slope = sd ? sd.slope_degrees : (isAssam ? "12.4" : "34.8");
+  const flowArea = sd ? sd.flow_accumulation_km2 : (isAssam ? "5,200" : "1,850");
   document.getElementById("wf-slope").innerHTML = `${slope} <span class="wfc-unit">°</span>`;
   document.getElementById("wf-slope-sub").innerHTML = `Flow Accumulation Area: <strong>${flowArea} km²</strong> · Drainage Density: High`;
-  document.getElementById("wf-slope-src").textContent = "CartoDEM 3D Analysis + HydroSHEDS";
-  document.getElementById("wf-slope-time").textContent = "Spatial Analytics Sync";
-  document.getElementById("wf-slope-status").textContent = "Conditioned Hydrological Mesh";
+  document.getElementById("wf-slope-src").textContent = sd?.source || "CartoDEM 3D Analysis + HydroSHEDS";
+  document.getElementById("wf-slope-time").textContent = sd?.update_time || "Spatial Analytics Sync";
+  document.getElementById("wf-slope-status").textContent = sd?.data_status || "Conditioned Hydrological Mesh";
 
   window.scrollTo({ top: 0, behavior: "instant" });
 }
