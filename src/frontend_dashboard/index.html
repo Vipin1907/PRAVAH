@@ -171,136 +171,119 @@
         </div>
 
         <div class="hero-graphic-col">
-          <div class="gis-interactive-map-frame">
-            
-            <!-- Top Bar Widgets: Layer Dropdown & Overall Risk Card -->
-            <div class="gis-map-top-bar">
-              <div class="gis-layer-dropdown">
-                <span>Layer: Risk Level</span>
-                <i class="fa-solid fa-chevron-down"></i>
-              </div>
-
-              <div class="gis-overall-risk-card">
-                <div class="gor-label">CURRENT OVERALL RISK</div>
-                <div class="gor-val">HIGH <i class="fa-solid fa-triangle-exclamation"></i></div>
-                <div class="gor-sub">for Uttarakhand</div>
-                <a href="#prediction" class="gor-link">View Detailed Analysis <i class="fa-solid fa-arrow-right"></i></a>
-              </div>
-            </div>
-
-            <!-- Topographic Relief & Catchment Heatmap Vector SVG -->
-            <svg class="gis-topo-canvas" viewBox="0 0 680 430" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div class="map-graphic-wrapper">
+            <!-- Transparent Vector Topographic Flood Map SVG -->
+            <svg class="topo-map-svg" viewBox="0 0 540 340" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <!-- Radial mountain relief gradient -->
-                <radialGradient id="mountainRelief" cx="50%" cy="50%" r="65%">
-                  <stop offset="0%" stop-color="#729762" stop-opacity="0.35"/>
-                  <stop offset="60%" stop-color="#4a6b3e" stop-opacity="0.25"/>
-                  <stop offset="100%" stop-color="#2d4824" stop-opacity="0.15"/>
-                </radialGradient>
-                <linearGradient id="riverCyan" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#67e8f9"/>
-                  <stop offset="100%" stop-color="#0284c7"/>
+                <linearGradient id="riverBlueGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+                  <stop offset="0%" stop-color="#0284c7"/>
+                  <stop offset="50%" stop-color="#0ea5e9"/>
+                  <stop offset="100%" stop-color="#38bdf8"/>
                 </linearGradient>
+                <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="8" result="blur"/>
+                  <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                </filter>
               </defs>
 
-              <!-- Mountain Relief Base Texture -->
-              <rect width="680" height="430" rx="14" fill="url(#mountainRelief)" />
-
-              <!-- River Streams Network -->
-              <g stroke="url(#riverCyan)" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.8">
-                <path d="M-10,230 C80,220 160,250 240,210 C320,170 380,130 460,90 C530,50 600,30 690,10" />
-                <path d="M240,210 C270,260 310,310 360,380" stroke-width="2" />
-                <path d="M380,130 C410,180 450,240 490,320" stroke-width="2" />
-                <path d="M460,90 C450,40 430,10 420,-20" stroke-width="1.8" />
-                <path d="M160,250 C180,310 200,360 210,410" stroke-width="1.8" />
+              <!-- Topographic mesh curves -->
+              <g class="topo-mesh" stroke="#86efac" stroke-width="1" opacity="0.45" fill="none">
+                <path d="M-40,80 C80,30 200,90 320,60 C440,30 520,70 580,40" />
+                <path d="M-40,130 C90,80 220,140 340,100 C450,70 530,120 580,90" />
+                <path d="M-40,180 C100,130 230,200 360,160 C470,120 540,170 580,140" />
+                <path d="M-40,230 C110,180 250,250 380,210 C480,180 550,220 580,200" />
+                <path d="M-40,280 C120,240 270,300 400,270 C500,240 560,280 580,260" />
+                <path d="M80,-30 C120,90 140,220 160,370" />
+                <path d="M190,-30 C220,100 240,230 260,370" />
+                <path d="M300,-30 C320,110 350,240 370,370" />
+                <path d="M420,-30 C440,120 460,250 480,370" />
               </g>
 
-              <!-- Catchment Flood Risk Polygons (Choropleth Heatmap) -->
-              <!-- 1. Low Risk (Green Outer Regions) -->
-              <path class="zone-poly zone-low" d="M120,220 C100,160 160,80 280,60 C380,45 480,70 560,110 C620,150 630,220 600,290 C560,360 460,390 350,380 C240,370 140,320 120,220 Z" fill="#84cc16" fill-opacity="0.32" stroke="#65a30d" stroke-width="1.2" />
-
-              <!-- 2. Moderate Risk (Yellow Mid-Polygon) -->
-              <path class="zone-poly zone-mod" d="M180,210 C160,165 210,110 300,95 C390,85 460,115 500,160 C530,210 510,270 460,310 C400,350 310,340 240,310 C190,280 180,240 180,210 Z" fill="#eab308" fill-opacity="0.5" stroke="#ca8a04" stroke-width="1.2" />
-
-              <!-- 3. High Risk (Orange Inner Polygon) -->
-              <path class="zone-poly zone-high" d="M230,200 C220,160 260,125 330,120 C400,115 440,140 450,180 C460,220 440,260 390,285 C340,300 280,280 250,255 C230,235 230,215 230,200 Z" fill="#f97316" fill-opacity="0.75" stroke="#ea580c" stroke-width="1.5" />
-
-              <!-- 4. Critical Risk (Red Epicenter Dharali Polygon) -->
-              <path class="zone-poly zone-crit" d="M300,185 C290,155 320,135 365,138 C405,142 420,165 415,195 C410,225 385,248 350,245 C320,242 305,215 300,185 Z" fill="#ef4444" fill-opacity="0.92" stroke="#b91c1c" stroke-width="2" />
-
-              <!-- Topographic Contours / Elevation Ridge lines -->
-              <g stroke="#ffffff" stroke-width="0.8" opacity="0.4" fill="none">
-                <path d="M140,180 Q240,110 340,150 T540,130" />
-                <path d="M160,240 Q260,170 360,210 T560,190" />
-                <path d="M180,300 Q280,230 380,270 T580,250" />
+              <!-- Tributaries and River Streams -->
+              <g class="river-paths" stroke="url(#riverBlueGrad)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+                <!-- Main River Flow -->
+                <path d="M-20,185 C60,185 110,200 170,195 C230,190 280,165 350,140 C420,115 480,60 520,35" stroke-width="7" />
+                <!-- Tributary branches -->
+                <path d="M215,192 C225,230 250,280 290,340" stroke-width="4" />
+                <path d="M125,198 C135,240 145,290 155,340" stroke-width="3.5" />
+                <path d="M260,172 C255,120 245,60 235,-20" stroke-width="3.5" />
+                <path d="M360,135 C385,80 405,30 420,-20" stroke-width="3" />
+                <path d="M435,90 C465,140 500,200 535,270" stroke-width="3.5" />
               </g>
 
-              <!-- Town & Landmark Geo Labels -->
-              <text x="350" y="70" class="geo-lbl">Gangotri</text>
-              <text x="250" y="115" class="geo-lbl">Uttarkashi</text>
-              <text x="345" y="198" class="geo-lbl bold">Dharali</text>
-              <text x="210" y="240" class="geo-lbl">Barkot</text>
-              <text x="335" y="295" class="geo-lbl">Chinyalisaur</text>
-              <text x="330" y="375" class="geo-lbl">Tehri</text>
-              <text x="500" y="190" class="geo-lbl">Kedarnath</text>
-              <text x="560" y="245" class="geo-lbl">Joshimath</text>
-              <text x="470" y="275" class="geo-lbl">Rudraprayag</text>
+              <!-- Concentric Flood Heatmap Risk Zones -->
+              <!-- 1. Low Risk (Mint Green Outer) -->
+              <path d="M180,200 C170,140 230,95 320,100 C410,105 450,150 440,210 C430,265 370,300 280,295 C200,290 185,250 180,200 Z" fill="#86efac" fill-opacity="0.45" />
+
+              <!-- 2. Moderate Risk (Yellow Middle) -->
+              <path d="M205,195 C198,150 245,115 320,118 C390,122 425,155 418,205 C410,248 360,278 290,274 C225,270 210,235 205,195 Z" fill="#fde047" fill-opacity="0.7" />
+
+              <!-- 3. High Risk (Orange Inner) -->
+              <path d="M230,190 C225,158 262,132 320,135 C375,138 400,165 395,198 C388,235 348,258 295,254 C248,250 234,220 230,190 Z" fill="#fb923c" fill-opacity="0.88" />
+
+              <!-- 4. Very High Risk (Red Epicenter) -->
+              <path d="M255,188 C252,166 280,148 322,150 C362,152 378,172 374,194 C370,220 340,238 300,235 C268,232 258,210 255,188 Z" fill="#ef4444" fill-opacity="0.95" />
             </svg>
 
-            <!-- Epicenter Bullseye Target Pin on Dharali -->
-            <div class="gis-epicenter-target" style="top: 42%; left: 52%;">
-              <div class="target-ring ring-1"></div>
-              <div class="target-ring ring-2"></div>
-              <div class="target-center-dot"></div>
+            <!-- Interactive Pin Markers -->
+            <!-- 1. Raincloud Pin -->
+            <div class="map-marker pin-cloud" style="top: 24%; left: 30%;">
+              <div class="marker-circle">
+                <i class="fa-solid fa-cloud-showers-heavy"></i>
+              </div>
             </div>
 
-            <!-- Dharali Interactive Dark Popover Tooltip Card -->
-            <div class="gis-hotspot-popover" style="top: 27%; left: 57%;">
-              <div class="ghp-head">
-                <strong>Dharali</strong>
-                <span class="ghp-tag red">CRITICAL</span>
+            <!-- 2. Hazard Warning Pin -->
+            <div class="map-marker pin-alert" style="top: 55%; left: 40%;">
+              <div class="marker-circle alert-pulse">
+                <i class="fa-solid fa-triangle-exclamation"></i>
               </div>
-              <div class="ghp-row">
-                <span>Risk Level:</span>
-                <strong class="c-red">Critical</strong>
-              </div>
-              <div class="ghp-row">
-                <span>Probability:</span>
-                <strong>87%</strong>
-              </div>
-              <div class="ghp-row">
-                <span>Rainfall Anomaly:</span>
-                <strong class="c-orange">+142%</strong>
-              </div>
-              <div class="ghp-row">
-                <span>River Level:</span>
-                <strong class="c-blue">Rising</strong>
-              </div>
-              <div class="ghp-row">
-                <span>Soil Saturation:</span>
-                <strong class="c-yellow">91%</strong>
-              </div>
-              <a href="#prediction" class="ghp-action-link">View Details <i class="fa-solid fa-arrow-right"></i></a>
             </div>
 
-            <!-- Floating Left Risk Level Legend -->
-            <div class="gis-legend-card">
-              <div class="gl-title">RISK LEVEL</div>
-              <div class="gl-item"><span class="gl-dot dot-crit"></span> Critical</div>
-              <div class="gl-item"><span class="gl-dot dot-high"></span> High</div>
-              <div class="gl-item"><span class="gl-dot dot-mod"></span> Moderate</div>
-              <div class="gl-item"><span class="gl-dot dot-low"></span> Low</div>
+            <!-- 3. Shelter Pin -->
+            <div class="map-marker pin-shelter" style="top: 32%; left: 63%;">
+              <div class="marker-circle">
+                <i class="fa-solid fa-house"></i>
+              </div>
             </div>
 
-            <!-- Bottom-Right Map Control Toolbar -->
-            <div class="gis-map-controls">
-              <button class="gmc-btn" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
-              <button class="gmc-btn" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
-              <button class="gmc-btn" title="Layers"><i class="fa-solid fa-layer-group"></i></button>
-              <button class="gmc-btn" title="My Location"><i class="fa-solid fa-crosshairs"></i></button>
-              <div class="gmc-scale">10 km</div>
+            <!-- 4. Hospital Pin -->
+            <div class="map-marker pin-hospital" style="top: 65%; left: 56%;">
+              <div class="marker-circle">
+                <i class="fa-solid fa-plus"></i>
+              </div>
             </div>
 
+            <!-- Floating Rain Cloud Detail -->
+            <div class="floating-cloud-deco" style="top: 8%; left: 24%;">
+              <svg width="55" height="36" viewBox="0 0 60 40" fill="none">
+                <path d="M15 28C10 28 6 24 6 19C6 14.5 9.5 11 14 10.2C15.8 5 20.8 1.5 26.5 1.5C33.5 1.5 39.2 6.5 40.5 13C44.5 13.5 48 16.8 48 21C48 25.5 44.5 29 40 29L15 28Z" fill="#cbd5e1" fill-opacity="0.8"/>
+                <line x1="16" y1="32" x2="14" y2="38" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+                <line x1="24" y1="32" x2="22" y2="38" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+                <line x1="32" y1="32" x2="30" y2="38" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Floating Flood Risk Level Legend Card -->
+            <div class="hero-legend-card">
+              <div class="legend-card-title">FLOOD RISK LEVEL</div>
+              <div class="legend-item">
+                <span class="legend-dot dot-low"></span>
+                <span class="legend-text">Low</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot dot-mod"></span>
+                <span class="legend-text">Moderate</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot dot-high"></span>
+                <span class="legend-text">High</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot dot-vhigh"></span>
+                <span class="legend-text">Very High</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
