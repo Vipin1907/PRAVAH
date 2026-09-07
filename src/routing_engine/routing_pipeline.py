@@ -98,47 +98,48 @@ def build_routing_for_place(place_name, place_tag, shelter_points):
     return output
 
 
-# ---------------------------------------------------
-# List of districts to process — add more here anytime
-# using the same (place_name, place_tag, shelter_points) pattern
-# ---------------------------------------------------
+if __name__ == "__main__":
+    # ---------------------------------------------------
+    # List of districts to process — add more here anytime
+    # using the same (place_name, place_tag, shelter_points) pattern
+    # ---------------------------------------------------
 
-districts = [
-    ("Uttarkashi District, Uttarakhand, India", "uttarkashi",
-     {"Uttarkashi Town": (30.7333, 78.4399), "Barkot": (30.82, 78.20), "Dharasu": (30.6333, 78.3167)}),
-    ("Chamoli District, Uttarakhand, India", "chamoli",
-     {"Gopeshwar": (30.3833, 79.3167), "Joshimath": (30.5667, 79.5667)}),
-    ("Lakhimpur District, Assam, India", "lakhimpur",
-     {"North Lakhimpur": (27.2333, 94.1000)}),
-    ("Pithoragarh District, Uttarakhand, India", "pithoragarh",
-     {"Pithoragarh Town": (29.5833, 80.2167)}),
-    ("Bageshwar District, Uttarakhand, India", "bageshwar",
-     {"Bageshwar Town": (29.8333, 79.7667)}),
-    ("Nainital District, Uttarakhand, India", "nainital",
-     {"Nainital Town": (29.3919, 79.4542)}),
-    ("Champawat District, Uttarakhand, India", "champawat",
-     {"Champawat Town": (29.3350, 80.0900)}),
-    ("Dhemaji District, Assam, India", "dhemaji",
-     {"Dhemaji Town": (27.4833, 94.5667)}),
-    ("Sonitpur District, Assam, India", "sonitpur",
-     {"Tezpur": (26.6338, 92.8000)}),
-    ("Biswanath District, Assam, India", "biswanath",
-     {"Biswanath Chariali": (26.7333, 93.1500)}),
-]
+    districts = [
+        ("Uttarkashi District, Uttarakhand, India", "uttarkashi",
+         {"Uttarkashi Town": (30.7333, 78.4399), "Barkot": (30.82, 78.20), "Dharasu": (30.6333, 78.3167)}),
+        ("Chamoli District, Uttarakhand, India", "chamoli",
+         {"Gopeshwar": (30.3833, 79.3167), "Joshimath": (30.5667, 79.5667)}),
+        ("Lakhimpur District, Assam, India", "lakhimpur",
+         {"North Lakhimpur": (27.2333, 94.1000)}),
+        ("Pithoragarh District, Uttarakhand, India", "pithoragarh",
+         {"Pithoragarh Town": (29.5833, 80.2167)}),
+        ("Bageshwar District, Uttarakhand, India", "bageshwar",
+         {"Bageshwar Town": (29.8333, 79.7667)}),
+        ("Nainital District, Uttarakhand, India", "nainital",
+         {"Nainital Town": (29.3919, 79.4542)}),
+        ("Champawat District, Uttarakhand, India", "champawat",
+         {"Champawat Town": (29.3350, 80.0900)}),
+        ("Dhemaji District, Assam, India", "dhemaji",
+         {"Dhemaji Town": (27.4833, 94.5667)}),
+        ("Sonitpur District, Assam, India", "sonitpur",
+         {"Tezpur": (26.6338, 92.8000)}),
+        ("Biswanath District, Assam, India", "biswanath",
+         {"Biswanath Chariali": (26.7333, 93.1500)}),
+    ]
 
-successful = []
-failed = []
+    successful = []
+    failed = []
 
-for place_name, place_tag, shelter_points in districts:
-    try:
-        build_routing_for_place(place_name, place_tag, shelter_points)
-        successful.append(place_tag)
-    except Exception as e:
-        print(f"\n⚠️ FAILED for {place_name}: {e}\n")
-        failed.append(place_tag)
+    for place_name, place_tag, shelter_points in districts:
+        try:
+            build_routing_for_place(place_name, place_tag, shelter_points)
+            successful.append(place_tag)
+        except Exception as e:
+            print(f"\n⚠️ FAILED for {place_name}: {e}\n")
+            failed.append(place_tag)
 
-print(f"\n{'='*50}")
-print(f"FINAL SUMMARY")
-print(f"{'='*50}")
-print(f"Successful ({len(successful)}): {successful}")
-print(f"Failed ({len(failed)}): {failed}")
+    print(f"\n{'='*50}")
+    print(f"FINAL SUMMARY")
+    print(f"{'='*50}")
+    print(f"Successful ({len(successful)}): {successful}")
+    print(f"Failed ({len(failed)}): {failed}")
