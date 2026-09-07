@@ -1208,10 +1208,11 @@ body.dark .df-row {
 .hiw-square-card {
   flex: 1;
   min-width: 0;
+  aspect-ratio: 1 / 1;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
-  padding: 16px 8px 14px;
+  padding: 10px 6px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -1753,10 +1754,11 @@ body.dark .mlm-demo-result-box {
 .aai-square-card {
   flex: 1;
   min-width: 0;
+  aspect-ratio: 1 / 1;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
-  padding: 16px 8px 14px;
+  padding: 10px 6px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -1774,25 +1776,25 @@ body.dark .mlm-demo-result-box {
 }
 
 .aai-card-num {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 800;
   color: #ea580c;
   background: #ffedd5;
-  padding: 2px 7px;
+  padding: 1px 6px;
   border-radius: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: 0.03em;
 }
 
 .aai-card-icon-box {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  margin-bottom: 8px;
+  font-size: 15px;
+  margin-bottom: 6px;
   transition: transform 0.2s ease;
 }
 
@@ -1809,20 +1811,9 @@ body.dark .mlm-demo-result-box {
 .aai-card-icon-box.amber  { background: #fef3c7; color: #d97706; }
 
 .aai-card-title {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
   color: #0f172a;
-  line-height: 1.25;
-  margin-bottom: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.aai-card-sub {
-  font-size: 10.5px;
-  color: #64748b;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
