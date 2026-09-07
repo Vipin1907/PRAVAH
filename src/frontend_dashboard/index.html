@@ -198,65 +198,71 @@
         </div>
       </div>
 
-      <!-- ─── HERO FLOOD RISK FORM (Navy Floating Card) ─── -->
-      <div class="hero-card" id="prediction">
+      <!-- ─── HERO FLOOD RISK FORM (Clean Modern Card) ─── -->
+      <div class="hero-card modern-light-card" id="prediction">
         <div class="hero-card-title">
           <i class="fa-solid fa-location-crosshairs target-orange-icon"></i>
           <span data-en="CHECK FLOOD RISK FOR YOUR AREA" data-hi="अपने क्षेत्र का बाढ़ जोखिम जांचें">CHECK FLOOD RISK FOR YOUR AREA</span>
         </div>
 
         <form class="hero-form" id="risk-form">
-          <div class="form-inputs-grid">
-            <div class="field-group">
-              <label data-en="State" data-hi="राज्य">State</label>
-              <div class="select-wrapper">
-                <select id="f-state" class="field-input">
-                  <option value="Assam" selected>Assam</option>
-                  <option value="Uttarakhand">Uttarakhand</option>
-                </select>
+          <div class="form-rows-container">
+            <!-- Row 1: State and District -->
+            <div class="form-row-2col">
+              <div class="field-group">
+                <label data-en="State" data-hi="राज्य">State</label>
+                <div class="select-wrapper">
+                  <select id="f-state" class="field-input">
+                    <option value="Assam" selected>Assam</option>
+                    <option value="Uttarakhand">Uttarakhand</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label data-en="District" data-hi="ज़िला">District</label>
+                <div class="select-wrapper">
+                  <select id="f-district" class="field-input">
+                    <option value="Cachar" selected>Cachar</option>
+                    <option value="Nagaon">Nagaon</option>
+                    <option value="Dhemaji">Dhemaji</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <div class="field-group">
-              <label data-en="District" data-hi="ज़िला">District</label>
-              <div class="select-wrapper">
-                <select id="f-district" class="field-input">
-                  <option value="Cachar" selected>Cachar</option>
-                  <option value="Nagaon">Nagaon</option>
-                  <option value="Dhemaji">Dhemaji</option>
-                </select>
+            <!-- Row 2: Catchment, Date, and Forecast Horizon -->
+            <div class="form-row-3col">
+              <div class="field-group">
+                <label data-en="Catchment / Basin" data-hi="जलग्रहण / बेसिन">Catchment / Basin</label>
+                <div class="select-wrapper">
+                  <select id="f-basin" class="field-input">
+                    <option value="A127" selected>A127 — Barak River Basin</option>
+                  </select>
+                </div>
               </div>
-            </div>
 
-            <div class="field-group">
-              <label data-en="Catchment / Basin" data-hi="जलग्रहण / बेसिन">Catchment / Basin</label>
-              <div class="select-wrapper">
-                <select id="f-basin" class="field-input">
-                  <option value="A127" selected>A127 — Barak River Basin</option>
-                </select>
+              <div class="field-group">
+                <label data-en="Select Date" data-hi="तिथि चुनें">Select Date</label>
+                <div class="date-wrap">
+                  <i class="fa-regular fa-calendar date-trigger" id="date-trigger" title="Open calendar"></i>
+                  <input id="f-date" class="field-input" type="date" value="2026-09-05">
+                </div>
               </div>
-            </div>
 
-            <div class="field-group">
-              <label data-en="Select Date" data-hi="तिथि चुनें">Select Date</label>
-              <div class="date-wrap">
-                <i class="fa-regular fa-calendar date-trigger" id="date-trigger" title="Open calendar"></i>
-                <input id="f-date" class="field-input" type="date" value="2026-09-05">
-              </div>
-            </div>
-
-            <div class="field-group">
-              <label>
-                <span data-en="Forecast Horizon" data-hi="पूर्वानुमान अवधि">Forecast Horizon</span>
-                <i class="fa-regular fa-circle-question tip-ico" title="How far ahead to forecast"></i>
-              </label>
-              <div class="select-wrapper">
-                <select id="f-lead" class="field-input">
-                  <option value="3" selected>Next 3 Hours</option>
-                  <option value="6">Next 6 Hours</option>
-                  <option value="12">Next 12 Hours</option>
-                  <option value="24">Next 24 Hours</option>
-                </select>
+              <div class="field-group">
+                <label>
+                  <span data-en="Forecast Horizon" data-hi="पूर्वानुमान अवधि">Forecast Horizon</span>
+                  <i class="fa-regular fa-circle-question tip-ico" title="How far ahead to forecast"></i>
+                </label>
+                <div class="select-wrapper">
+                  <select id="f-lead" class="field-input">
+                    <option value="3" selected>Next 3 Hours</option>
+                    <option value="6">Next 6 Hours</option>
+                    <option value="12">Next 12 Hours</option>
+                    <option value="24">Next 24 Hours</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>

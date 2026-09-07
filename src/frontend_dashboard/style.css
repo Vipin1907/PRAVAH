@@ -728,15 +728,16 @@ body.dark .df-row {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   3. HERO CHECK FLOOD RISK FORM (Navy Bar Card)
+   3. HERO CHECK FLOOD RISK FORM (Clean Modern Light Card)
    ───────────────────────────────────────────────────────────── */
 .hero-card {
-  background: linear-gradient(180deg, #101d2d 0%, #0a1320 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  padding: 24px 28px;
-  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.35);
-  margin-top: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 28px 32px;
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.03);
+  margin-top: 20px;
+  transition: all 0.25s ease;
 }
 
 .hero-card-title {
@@ -744,10 +745,10 @@ body.dark .df-row {
   align-items: center;
   gap: 10px;
   font-weight: 800;
-  font-size: 13px;
-  color: var(--orange);
-  letter-spacing: 0.06em;
-  margin-bottom: 18px;
+  font-size: 14px;
+  color: #0f172a;
+  letter-spacing: 0.04em;
+  margin-bottom: 20px;
 }
 
 .target-orange-icon {
@@ -755,10 +756,24 @@ body.dark .df-row {
   color: var(--orange);
 }
 
-.form-inputs-grid {
+.form-rows-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Row 1: 2 Columns for State & District */
+.form-row-2col {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Row 2: 3 Columns for Catchment, Date, Horizon */
+.form-row-3col {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 20px;
 }
 
 .field-group {
@@ -768,17 +783,17 @@ body.dark .df-row {
 }
 
 .field-group label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .tip-ico {
   font-size: 12px;
-  color: #64748b;
+  color: #94a3b8;
   cursor: help;
 }
 
@@ -787,16 +802,16 @@ body.dark .df-row {
 }
 
 .field-input {
-  background: #172a42;
-  border: 1px solid #243c5c;
-  color: #ffffff;
-  padding: 10px 14px;
-  border-radius: 9px;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  color: #0f172a;
+  padding: 11px 14px;
+  border-radius: 10px;
   font-size: 13.5px;
-  font-weight: 500;
+  font-weight: 600;
   width: 100%;
   outline: none;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   appearance: none;
   -webkit-appearance: none;
 }
@@ -804,17 +819,23 @@ body.dark .df-row {
 .select-wrapper::after {
   content: "▾";
   position: absolute;
-  right: 12px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: #64748b;
   pointer-events: none;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .field-input:focus {
   border-color: var(--orange);
-  box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.2);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
+}
+
+.field-input:hover:not(:focus) {
+  border-color: #94a3b8;
+  background: #ffffff;
 }
 
 .date-wrap {
@@ -822,51 +843,51 @@ body.dark .df-row {
 }
 
 .date-wrap input[type="date"] {
-  background: #172a42;
-  color: #ffffff;
-  border: 1px solid #243c5c;
-  padding-left: 36px;
+  background: #f8fafc;
+  color: #0f172a;
+  border: 1.5px solid #cbd5e1;
+  padding-left: 38px;
+  font-weight: 600;
 }
 
 .date-wrap input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
   opacity: 0;
   cursor: pointer;
 }
 
 .date-trigger {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
-  font-size: 14px;
+  color: #64748b;
+  font-size: 15px;
   cursor: pointer;
   z-index: 2;
 }
 
-/* Bottom Row of Form */
+/* Bottom Action Row of Form */
 .form-bottom-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 20px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 18px;
+  border-top: 1px solid #f1f5f9;
 }
 
 .form-trust-note {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #94a3b8;
-  font-size: 12.5px;
+  color: #64748b;
+  font-size: 13px;
   font-weight: 500;
 }
 
 .trust-shield-icon {
-  color: var(--blue-sky);
-  font-size: 14px;
+  color: #0284c7;
+  font-size: 15px;
 }
 
 .btn-check-risk {
@@ -874,22 +895,31 @@ body.dark .df-row {
   border: none;
   color: #ffffff;
   font-weight: 800;
-  font-size: 13.5px;
-  letter-spacing: 0.03em;
-  padding: 12px 26px;
-  border-radius: 10px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  padding: 13px 30px;
+  border-radius: 28px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35);
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(255, 107, 0, 0.35);
+  transition: all 0.25s ease;
 }
 
 .btn-check-risk:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.45);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.48);
+}
+
+.btn-check-risk i {
+  transition: transform 0.2s ease;
+}
+
+.btn-check-risk:hover i.fa-arrow-right {
+  transform: translateX(3px);
 }
 
 .loading-bar {
