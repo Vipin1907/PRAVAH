@@ -3579,3 +3579,454 @@ body.dark .safe-box {
     width: 100%;
   }
 }
+
+/* ==========================================================
+   WEATHER & HYDRO-METEOROLOGICAL FORECAST PANEL (Step 1 View)
+   ========================================================== */
+.weather-forecast-panel {
+  padding: 30px 20px 70px;
+  background: #f8fafc;
+  min-height: 85vh;
+  display: block;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.weather-forecast-panel.hidden {
+  display: none !important;
+}
+
+.wf-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1240px;
+  margin: 0 auto 24px;
+  padding: 14px 22px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn-wf-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-wf-back:hover {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.wf-meta-pills {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wf-location-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: 1px solid #bae6fd;
+}
+
+.wf-date-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fef3c7;
+  color: #b45309;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: 1px solid #fde68a;
+}
+
+.wf-status-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #dcfce7;
+  color: #15803d;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid #bbf7d0;
+  letter-spacing: 0.5px;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse-live 1.5s infinite;
+}
+
+@keyframes pulse-live {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.wf-container {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.wf-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.wf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #ffedd5;
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.wf-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.wf-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.wf-steps-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin: 0 auto 28px;
+  max-width: 750px;
+  font-size: 13px;
+  font-weight: 700;
+  flex-wrap: wrap;
+}
+
+.wfs-step {
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wfs-step.done {
+  color: #16a34a;
+}
+
+.wfs-step.active {
+  color: #0284c7;
+  background: #e0f2fe;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.wfs-arrow {
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.wf-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.wf-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.25s ease;
+}
+
+.wf-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+}
+
+.highlight-blue    { border-top: 4px solid #0284c7; }
+.highlight-cyan    { border-top: 4px solid #06b6d4; }
+.highlight-orange  { border-top: 4px solid #f97316; }
+.highlight-green   { border-top: 4px solid #22c55e; }
+.highlight-purple  { border-top: 4px solid #a855f7; }
+.highlight-yellow  { border-top: 4px solid #eab308; }
+.highlight-emerald { border-top: 4px solid #10b981; }
+.highlight-teal    { border-top: 4px solid #14b8a6; }
+
+.wfc-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.wfc-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.wfc-icon-wrap.blue    { background: #e0f2fe; color: #0284c7; }
+.wfc-icon-wrap.cyan    { background: #cffafe; color: #0891b2; }
+.wfc-icon-wrap.orange  { background: #ffedd5; color: #ea580c; }
+.wfc-icon-wrap.green   { background: #dcfce7; color: #16a34a; }
+.wfc-icon-wrap.purple  { background: #f3e8ff; color: #9333ea; }
+.wfc-icon-wrap.yellow  { background: #fef9c3; color: #ca8a04; }
+.wfc-icon-wrap.emerald { background: #d1fae5; color: #059669; }
+.wfc-icon-wrap.teal    { background: #ccfbf1; color: #0d9488; }
+
+.wfc-category {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+.wfc-name {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.wfc-val-box {
+  margin-bottom: 14px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  padding: 12px 14px;
+  border-radius: 8px;
+}
+
+.wfc-main-val {
+  font-size: 26px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.wfc-unit {
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.wfc-sub-val {
+  font-size: 12px;
+  color: #475569;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.wfc-meta-table {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11.5px;
+  padding-top: 10px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.wfc-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.wfc-meta-key {
+  color: #64748b;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.wfc-meta-val {
+  color: #0f172a;
+  font-weight: 700;
+  text-align: right;
+  word-break: break-word;
+}
+
+.status-verified { color: #16a34a !important; font-weight: 800; }
+.status-warning  { color: #d97706 !important; font-weight: 800; }
+
+.wf-bottom-action-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  border: 2px solid #86efac;
+  border-radius: 14px;
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.08);
+  flex-wrap: wrap;
+}
+
+.wf-action-info {
+  flex: 1;
+  min-width: 280px;
+}
+
+.wf-action-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.wf-action-desc {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.btn-predict-risk {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 14px 34px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(234, 88, 12, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-predict-risk:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(234, 88, 12, 0.45);
+  background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%);
+}
+
+/* Dark mode overrides for Weather Panel */
+body.dark .weather-forecast-panel {
+  background: #0b1320;
+}
+body.dark .wf-top-bar,
+body.dark .wf-steps-strip,
+body.dark .wf-card {
+  background: #111e33;
+  border-color: #1e314f;
+  color: #f1f5f9;
+}
+body.dark .wf-title,
+body.dark .wfc-name,
+body.dark .wfc-main-val,
+body.dark .wfc-meta-val,
+body.dark .wf-action-title {
+  color: #ffffff;
+}
+body.dark .wf-subtitle,
+body.dark .wfc-sub-val,
+body.dark .wfc-meta-key,
+body.dark .wf-action-desc {
+  color: #94a3b8;
+}
+body.dark .wfc-val-box {
+  background: #162640;
+  border-color: #203554;
+}
+body.dark .btn-wf-back {
+  background: #1e314f;
+  border-color: #294266;
+  color: #f1f5f9;
+}
+body.dark .wf-bottom-action-card {
+  background: linear-gradient(135deg, #111e33 0%, #0e2b26 100%);
+  border-color: #059669;
+}
+
+@media (max-width: 1024px) {
+  .wf-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .wf-grid {
+    grid-template-columns: 1fr;
+  }
+  .wf-top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .wf-bottom-action-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn-predict-risk {
+    justify-content: center;
+    width: 100%;
+  }
+}
