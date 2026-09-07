@@ -117,7 +117,7 @@
 
       <nav class="nav-links">
         <a href="#how-it-works">How It Works</a>
-        <a href="#prediction">ML Model</a>
+        <a href="#ml-model">ML Model</a>
         <a href="#dashboard">Agentic AI</a>
         <a href="#comparison">Past Events</a>
       </nav>
@@ -546,6 +546,165 @@
               <p class="hiw-card-sub">Agentic Warning</p>
             </div>
 
+          </div>
+
+      <!-- ─── AI FLOOD RISK PREDICTION MODEL SECTION ─── -->
+      <section class="ml-model-section" id="ml-model">
+        <div class="mlm-container">
+          
+          <div class="mlm-header">
+            <div class="mlm-badge">
+              <i class="fa-solid fa-brain"></i>
+              <span>ML ARCHITECTURE &amp; PIPELINE</span>
+            </div>
+            <h2 class="mlm-title">AI Flood Risk Prediction Model</h2>
+            <p class="mlm-subtitle">PravahAI analyzes environmental and historical data to predict flood risk.</p>
+          </div>
+
+          <!-- Flow Pipeline Strip -->
+          <div class="mlm-flow-strip">
+            <span class="mlm-node">Input Data</span>
+            <i class="fa-solid fa-arrow-right mlm-arrow"></i>
+            <span class="mlm-node">Data Processing</span>
+            <i class="fa-solid fa-arrow-right mlm-arrow"></i>
+            <span class="mlm-node">Feature Engineering</span>
+            <i class="fa-solid fa-arrow-right mlm-arrow"></i>
+            <span class="mlm-node highlight">XGBoost Model</span>
+            <i class="fa-solid fa-arrow-right mlm-arrow"></i>
+            <span class="mlm-node">Risk Score</span>
+            <i class="fa-solid fa-arrow-right mlm-arrow"></i>
+            <span class="mlm-node">Risk Category</span>
+            <i class="fa-solid fa-arrow-right mlm-arrow"></i>
+            <span class="mlm-node highlight-purple">SHAP Explanation</span>
+          </div>
+
+          <!-- Row 1: 4 Cards (Input Features, Data Processing, ML Algorithm, Prediction Output) -->
+          <div class="mlm-grid-top">
+            
+            <!-- Card 1: Input Features -->
+            <div class="mlm-card">
+              <div class="mlm-icons-row">
+                <div class="mlm-mini-ico blue"><i class="fa-solid fa-cloud-showers-heavy"></i></div>
+                <div class="mlm-mini-ico green"><i class="fa-solid fa-droplet"></i></div>
+                <div class="mlm-mini-ico cyan"><i class="fa-solid fa-temperature-three-quarters"></i></div>
+              </div>
+              <h3 class="mlm-card-title">Input Features</h3>
+              <p class="mlm-card-desc">Rainfall, soil moisture, water level, temperature, humidity, elevation/DEM and past flood records</p>
+            </div>
+
+            <!-- Card 2: Data Processing -->
+            <div class="mlm-card">
+              <div class="mlm-icons-row">
+                <div class="mlm-mini-ico orange"><i class="fa-solid fa-broom"></i></div>
+                <div class="mlm-mini-ico blue"><i class="fa-solid fa-diagram-project"></i></div>
+                <div class="mlm-mini-ico purple"><i class="fa-solid fa-gears"></i></div>
+              </div>
+              <h3 class="mlm-card-title">Data Processing</h3>
+              <p class="mlm-card-desc">Data cleaning, missing-value handling and feature engineering</p>
+            </div>
+
+            <!-- Card 3: ML Algorithm -->
+            <div class="mlm-card">
+              <div class="mlm-icons-row">
+                <div class="mlm-mini-ico purple"><i class="fa-solid fa-brain"></i></div>
+                <span class="mlm-brand-badge">XGBoost</span>
+              </div>
+              <h3 class="mlm-card-title">ML Algorithm</h3>
+              <p class="mlm-card-desc">XGBoost is the core flood-risk prediction model. Explains learning patterns from historical and sensor data</p>
+            </div>
+
+            <!-- Card 4: Prediction Output -->
+            <div class="mlm-card">
+              <div class="mlm-icons-row">
+                <div class="mlm-mini-ico red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="mlm-mini-ico yellow"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="mlm-mini-ico orange"><i class="fa-solid fa-bars-staggered"></i></div>
+              </div>
+              <h3 class="mlm-card-title">Prediction Output</h3>
+              <div class="mlm-risk-tags-grid">
+                <span><span class="dot green"></span> Safe (Green)</span>
+                <span><span class="dot yellow"></span> Moderate Risk</span>
+                <span><span class="dot orange"></span> High Risk</span>
+                <span><span class="dot red"></span> Severe Risk</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Row 2: 3 Cards (Risk Score Demo, Explainable AI, Model Performance) -->
+          <div class="mlm-grid-bottom">
+            
+            <!-- Card 5: Risk Score Demo -->
+            <div class="mlm-card mlm-card-demo">
+              <div class="mlm-card-head-between">
+                <div class="mlm-head-left">
+                  <i class="fa-solid fa-chart-line c-orange"></i>
+                  <h3 class="mlm-card-title inline">Risk Score Demo</h3>
+                </div>
+                <div class="mlm-mini-gauge-ico">
+                  <i class="fa-solid fa-gauge-high c-red"></i>
+                </div>
+              </div>
+              
+              <div class="mlm-pills-row">
+                <span class="mlm-pill orange">Demo Prediction</span>
+                <span class="mlm-pill muted">Real-Time Data</span>
+              </div>
+
+              <div class="mlm-demo-result-box">
+                <div>
+                  <span class="demo-lbl">Show result:</span>
+                  <strong class="demo-val-risk">High Risk</strong>
+                </div>
+                <div class="demo-pct-badge">
+                  <i class="fa-solid fa-fire"></i>
+                  <span>82% probability</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 6: Explainable AI -->
+            <div class="mlm-card mlm-card-shap">
+              <div class="mlm-card-head-between">
+                <div class="mlm-head-left">
+                  <i class="fa-solid fa-magnifying-glass-chart c-blue"></i>
+                  <h3 class="mlm-card-title inline">Explainable AI</h3>
+                </div>
+                <div class="mlm-mini-ico purple"><i class="fa-solid fa-chart-simple"></i></div>
+              </div>
+
+              <h4 class="mlm-sub-heading">SHAP Explanation</h4>
+              <p class="mlm-card-desc">Explains high rainfall, rising water level, high soil moisture increase predicted risk.</p>
+            </div>
+
+            <!-- Card 7: Model Performance -->
+            <div class="mlm-card mlm-card-perf">
+              <div class="mlm-card-head-between">
+                <div class="mlm-head-left">
+                  <i class="fa-solid fa-desktop c-green"></i>
+                  <h3 class="mlm-card-title inline">Model Performance</h3>
+                </div>
+                <div class="mlm-mini-ico blue"><i class="fa-solid fa-chart-pie"></i></div>
+              </div>
+
+              <p class="mlm-metrics-list">Accuracy, Precision, Recall, F1-score</p>
+              
+              <div class="mlm-perf-badge">
+                <i class="fa-solid fa-circle-check c-green"></i>
+                <span>Available after model training · 94.8% ROC-AUC</span>
+              </div>
+              <p class="mlm-tiny-note">Trained on historical catchment records &amp; hydrological proxies</p>
+            </div>
+
+          </div>
+
+          <!-- Bottom Orange CTA Button -->
+          <div class="mlm-cta-wrap">
+            <a href="#prediction" class="mlm-cta-btn">
+              <i class="fa-solid fa-bolt"></i>
+              <span>Try Flood Risk Prediction</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </a>
           </div>
 
         </div>
