@@ -199,31 +199,42 @@ function initMap(state) {
     mapLayers = { risk: [], routes: [], shelters: [] };
 
     const [lat, lng] = coords;
-    const zones = [
-      { center: [lat - 0.05, lng - 0.1], radius: 6000, color: "#ff5a5f", label: "Very High Risk Zone" },
-      { center: [lat + 0.12, lng + 0.05], radius: 8000, color: "#ff9a3d", label: "High Risk Zone" },
-      { center: [lat + 0.18, lng - 0.12], radius: 11000, color: "#ffd23d", label: "Moderate Risk Zone" }
-    ];
-    zones.forEach((z) => {
-      const c = L.circle(z.center, { color: z.color, fillColor: z.color, fillOpacity: 0.25, weight: 2, radius: z.radius }).addTo(appMap);
-      c.bindPopup(`<strong>${z.label}</strong><br/>Flash flood risk area`);
-      mapLayers.risk.push(c);
-    });
+    
+    // Generate simulated heatmap data for the selected state
+    let heatData = [];
+    if (state === "Assam") {
+      // Points for Assam (Cachar, Nagaon, Dhemaji, etc.)
+      heatData = [
+        [24.83, 92.77, 1.0], // Cachar - Red Alert
+        [24.85, 92.75, 0.9],
+        [24.80, 92.80, 0.9],
+        [27.48, 94.58, 0.7], // Dhemaji - Orange Alert
+        [27.50, 94.55, 0.6],
+        [26.34, 92.68, 0.5], // Nagaon - Yellow/Orange Alert
+        [26.30, 92.70, 0.4]
+      ];
+    } else {
+      // Points for Uttarakhand (Chamoli, Uttarkashi, Rudraprayag)
+      heatData = [
+        [30.55, 79.35, 1.0], // Chamoli - Red Alert
+        [30.57, 79.33, 0.9],
+        [30.53, 79.38, 0.9],
+        [30.73, 78.45, 0.7], // Uttarkashi - Orange Alert
+        [30.70, 78.48, 0.6],
+        [30.28, 78.98, 0.8], // Rudraprayag - Orange/Red Alert
+        [30.30, 78.95, 0.7]
+      ];
+    }
 
-    const routeLine = L.polyline([[lat - 0.3, lng - 0.5], [lat + 0.4, lng + 0.6]], { color: "#31d17c", weight: 4, dashArray: "8 6" }).addTo(appMap);
-    routeLine.bindPopup("<strong>Safe alternate route</strong><br/>Low flood exposure path");
-    mapLayers.routes.push(routeLine);
-
-    const shelterIcon = L.divIcon({
-      html: `<div style="background:#3ba7ff;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3)"><i class="fa fa-house-medical"></i></div>`,
-      iconSize: [28, 28], iconAnchor: [14, 14]
-    });
-    [{ pos: [lat + 0.1, lng - 0.15], label: "Relief Shelter 1" }, { pos: [lat - 0.2, lng + 0.21], label: "Relief Shelter 2" }]
-      .forEach((s) => {
-        const m = L.marker(s.pos, { icon: shelterIcon }).addTo(appMap);
-        m.bindPopup(`<strong>${s.label}</strong><br/>Verified safe shelter`);
-        mapLayers.shelters.push(m);
-      });
+    // Add heatmap layer
+    const heatLayer = L.heatLayer(heatData, {
+      radius: 35,
+      blur: 25,
+      maxZoom: 10,
+      gradient: {0.4: 'yellow', 0.7: 'orange', 1.0: 'red'}
+    }).addTo(appMap);
+    
+    mapLayers.risk.push(heatLayer);
 
     setTimeout(() => {
       if (appMap) appMap.invalidateSize();
@@ -237,12 +248,12 @@ function initMap(state) {
    6. RENDER FUNCTIONS
    ------------------------------------------------- */
 function setWeatherCards(w) {
-  document.getElementById("w-temp").textContent = w.temp;
-  document.getElementById("w-rain").textContent = w.rain;
-  document.getElementById("w-rain3d").textContent = w.rain3d;
-  document.getElementById("w-soil").textContent = w.soil;
-  document.getElementById("w-runoff").textContent = w.runoff;
-  document.getElementById("w-discharge").textContent = w.discharge;
+  const t = document.getElementById("w-temp"); if (t) t.textContent = w.temp;
+  const r = document.getElementById("w-rain"); if (r) r.textContent = w.rain;
+  const r3d = document.getElementById("w-rain3d"); if (r3d) r3d.textContent = w.rain3d;
+  const s = document.getElementById("w-soil"); if (s) s.textContent = w.soil;
+  const ro = document.getElementById("w-runoff"); if (ro) ro.textContent = w.runoff;
+  const d = document.getElementById("w-discharge"); if (d) d.textContent = w.discharge;
 }
 
 function setGauge(pct, riskLevel) {
@@ -311,7 +322,10 @@ function setShap(shap) {
 }
 
 function setRoutes(routes) {
-  document.getElementById("nr-name").textContent = routes.normal.name;
+  const nrName = document.getElementById("nr-name");
+  if (!nrName) return; // safeguard if routes panel is removed from DOM
+
+  nrName.textContent = routes.normal.name;
   document.getElementById("nr-dist").textContent = routes.normal.dist;
   document.getElementById("nr-time").textContent = routes.normal.time;
   document.getElementById("nr-exp").textContent = routes.normal.exp;
@@ -325,12 +339,18 @@ function setRoutes(routes) {
 
 function setShelters(shelters) {
   const list = document.getElementById("shelter-list");
+  if (!list) return; // safeguard if shelters panel is removed from DOM
+  
   list.innerHTML = shelters.map((s) => `
     <div class="shelter-row">
       <div class="shelter-ico"><i class="fa-solid fa-${s.isHospital ? "hospital" : "campground"}"></i></div>
-      <div class="shelter-info"><strong>${s.name}</strong><span>Capacity: ${s.capacity} &nbsp;·&nbsp; ${s.dist} away</span></div>
-      <a href="tel:100" class="btn-call">Call</a>
-    </div>`).join("");
+      <div class="shelter-info">
+        <strong>${s.name}</strong>
+        <span>Capacity: ${s.capacity} · ${s.dist} away</span>
+      </div>
+      <button class="btn-call">Call</button>
+    </div>
+  `).join("");
 }
 
 function generateCAP(state, district, pct, riskLevel) {
@@ -632,8 +652,10 @@ async function runPrediction(state, district, basinId, basinLabel) {
     initMap(state);
 
     window._lastCap = generateCAP(state, district, prediction.probability, prediction.riskLevel);
-    document.getElementById("alert-headline").textContent =
-      prediction.riskLevel === "Low" ? "FLOOD ADVISORY" : "FLASH FLOOD WARNING";
+    const alertHeadline = document.getElementById("alert-headline");
+    if (alertHeadline) {
+      alertHeadline.textContent = prediction.riskLevel === "Low" ? "FLOOD ADVISORY" : "FLASH FLOOD WARNING";
+    }
 
   } catch (err) {
     console.error("Prediction flow failed:", err);
@@ -719,12 +741,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const st = stateEl.value;
     const dist = distEl.value;
 
-    basinEl.value = "";
+    basinEl.innerHTML = "";
+    basinEl.disabled = true;
 
     const data = STATE_DATA[st];
     if (!data || !dist) return;
 
     const basinList = data.basins[dist] || [];
+    
+    basinList.forEach((b) => {
+      const opt = document.createElement("option");
+      opt.value = b.value;
+      opt.textContent = b.label;
+      basinEl.appendChild(opt);
+    });
+    
+    basinEl.disabled = false;
+
     // Auto-select first catchment
     if (basinList.length > 0) {
       basinEl.value = basinList[0].value;
@@ -740,13 +773,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const basinId = basinEl.value;
     const basinLabel = STATE_DATA[state]?.basins?.[district]?.find((b) => b.value === basinId)?.label || "Nearest mapped catchment";
     const date = dateField ? dateField.value : "";
-    const area = areaEl ? areaEl.value.trim() : "";
     const time = timeEl ? timeEl.value : "";
     const lead = document.getElementById("f-lead") ? document.getElementById("f-lead").value : "3";
+    
+    // Fallback: area is now catchment name
+    const area = basinLabel;
 
     if (!state) { alert("Please select a State."); return; }
     if (!district) { alert("Please select a District."); return; }
-    if (!area) { alert("Please enter a Village / Area."); return; }
     if (!basinId) { alert("This district does not have an available catchment mapping."); return; }
 
     showWeatherForecastPage({ state, district, basinId, basinLabel, area, time, date, lead });

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PravahAI — Admin Command Center</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    body { background-color: #f8f9fa; color: #1e293b; font-family: 'Inter', sans-serif; margin: 0; }
+    .admin-navbar { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-navbar h1 { font-family: 'Outfit', sans-serif; font-size: 24px; color: #1e293b; margin: 0; }
+    .admin-navbar h1 span { color: #ff5a5f; }
+    .admin-navbar .logout-btn { background: transparent; border: 1px solid #cbd5e1; color: #64748b; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+    .admin-navbar .logout-btn:hover { background: #f1f5f9; color: #1e293b; }
+    
+    .admin-container { padding: 30px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 350px; gap: 30px; }
+    
+    .panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .panel-header { font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    
+    #admin-map { height: 500px; width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; z-index: 1; }
+    
+    .broadcast-form .form-group { margin-bottom: 15px; }
+    .broadcast-form label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #64748b; }
+    .broadcast-form select, .broadcast-form textarea { width: 100%; padding: 10px; background: #ffffff; border: 1px solid #cbd5e1; color: #1e293b; border-radius: 6px; box-sizing: border-box; }
+    .broadcast-form textarea { resize: vertical; height: 100px; }
+    .btn-fire { background: #ff5a5f; color: #fff; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.2s; }
+    .btn-fire:hover { background: #ff3c41; }
+    
+    .toast { position: fixed; bottom: 30px; right: 30px; background: #238636; color: #fff; padding: 15px 25px; border-radius: 6px; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 9999; }
+  </style>
+</head>
+<body>
+
+  <nav class="admin-navbar">
+    <h1>PRAVAH <span>ADMIN COMMAND CENTER</span></h1>
+    <button class="logout-btn" id="btn-logout"><i class="fa-solid fa-sign-out-alt"></i> Logout</button>
+  </nav>
+
+  <div class="admin-container">
+    <!-- Map Panel -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa-solid fa-map-location-dot c-blue"></i> Tactical Evacuation & Shelter Routing</div>
+      <p style="margin-top:-10px; margin-bottom:20px; font-size:14px; color:#8b949e;">Select a state below to view safe routes and verified shelters.</p>
+      
+      <div style="margin-bottom: 15px;">
+        <select id="map-state-select" style="padding: 8px; background: #0d1117; color:#fff; border: 1px solid #30363d; border-radius: 4px;">
+          <option value="Assam">Assam (Cachar)</option>
+          <option value="Uttarakhand">Uttarakhand (Chamoli)</option>
+        </select>
+      </div>
+
+      <div id="admin-map"></div>
+    </div>
+
+    <!-- Broadcast Panel -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa-solid fa-tower-broadcast c-orange"></i> Emergency Broadcast</div>
+      <form class="broadcast-form" id="broadcast-form">
+        <div class="form-group">
+          <label>Target Area</label>
+          <select id="bc-area">
+            <option value="All Assam Districts">All Assam Districts</option>
+            <option value="Cachar, Assam">Cachar, Assam</option>
+            <option value="All Uttarakhand Districts">All Uttarakhand Districts</option>
+            <option value="Chamoli, Uttarakhand">Chamoli, Uttarakhand</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Severity Level</label>
+          <select id="bc-severity">
+            <option value="Critical">🔴 Critical (Red Alert)</option>
+            <option value="Warning">🟠 Warning (Orange Alert)</option>
+            <option value="Advisory">🟡 Advisory (Yellow Alert)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Alert Message</label>
+          <textarea id="bc-message" required placeholder="Type emergency instructions here... e.g. Immediate evacuation ordered for low-lying areas."></textarea>
+        </div>
+        <button type="submit" class="btn-fire"><i class="fa-solid fa-satellite-dish"></i> FIRE ALERT BROADCAST</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="bc-toast"><i class="fa-solid fa-check-circle"></i> Broadcast sent successfully!</div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="/static/admin.js"></script>
+</body>
+</html>

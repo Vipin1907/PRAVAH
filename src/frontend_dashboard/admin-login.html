@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PravahAI — Admin Command Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    body { background-color: #f8f9fa; color: #1e293b; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    .login-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .login-brand { text-align: center; margin-bottom: 30px; }
+    .login-brand h1 { font-family: 'Outfit', sans-serif; font-size: 32px; color: #1e293b; margin: 0; }
+    .login-brand h1 span { color: #ff5a5f; }
+    .login-brand p { color: #64748b; margin-top: 5px; font-size: 14px; }
+    .input-group { margin-bottom: 20px; }
+    .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #334155; }
+    .input-group input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #1e293b; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+    .input-group input:focus { border-color: #ff5a5f; }
+    .btn-login { width: 100%; padding: 12px; background: #ff5a5f; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; transition: background 0.2s; font-size: 16px; }
+    .btn-login:hover { background: #ff3c41; }
+    .error-msg { color: #ff5a5f; font-size: 14px; margin-top: 15px; text-align: center; display: none; }
+    .back-link { display: block; text-align: center; margin-top: 20px; color: #0284c7; text-decoration: none; font-size: 14px; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-brand">
+      <h1>PRAVAH <span>ADMIN</span></h1>
+      <p>Secure Command Center Access</p>
+    </div>
+    <form id="admin-login-form">
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" required placeholder="Enter admin ID" />
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required placeholder="Enter password" />
+      </div>
+      <button type="submit" class="btn-login"><i class="fa-solid fa-lock"></i> Login</button>
+      <div class="error-msg" id="login-error">Invalid credentials. Please try again.</div>
+    </form>
+    <a href="/" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return to Public Dashboard</a>
+  </div>
+
+  <script src="/static/admin.js"></script>
+</body>
+</html>

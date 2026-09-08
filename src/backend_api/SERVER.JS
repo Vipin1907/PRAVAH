@@ -497,6 +497,29 @@ app.post("/api/get-dashboard-data", async (req, res) => {
   }
 });
 
+app.post("/api/admin/login", (req, res) => {
+  const { username, password } = req.body;
+  if (username === "admin" && password === "PravahAdmin@2026") {
+    return res.json({ status: "success", token: "pravah-mock-admin-token-12345" });
+  }
+  return res.status(401).json({ status: "error", message: "Invalid credentials" });
+});
+
+app.post("/api/admin/broadcast", (req, res) => {
+  const { token, message, severity, targetArea } = req.body;
+  if (token !== "pravah-mock-admin-token-12345") {
+    return res.status(403).json({ status: "error", message: "Unauthorized" });
+  }
+  
+  console.log(`\n🚨 [ADMIN BROADCAST]: ${severity.toUpperCase()} ALERT for ${targetArea} - "${message}"\n`);
+  
+  return res.json({ 
+    status: "success", 
+    message: "Broadcast sent successfully to gateways and active clients.",
+    receipt: { severity, targetArea, time: new Date().toISOString() }
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`====================================================`);
   console.log(`✅ PravahAI Gateway running at http://localhost:${PORT}`);

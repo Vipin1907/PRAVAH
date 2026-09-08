@@ -142,10 +142,10 @@
           <span class="notif-badge">0</span>
         </button>
 
-        <!-- Launch Dashboard CTA -->
-        <a href="#prediction" class="btn-launch">
-          <span>LAUNCH DASHBOARD</span>
-          <i class="fa-solid fa-arrow-right"></i>
+        <!-- Admin Portal CTA -->
+        <a href="/static/admin-login.html" class="btn-launch" style="background-color: #24292e;">
+          <span>ADMIN PORTAL</span>
+          <i class="fa-solid fa-shield-halved"></i>
         </a>
       </div>
     </div>
@@ -324,9 +324,12 @@
             <!-- Row 2: area, date, time, and forecast horizon -->
             <div class="form-row-3col">
               <div class="field-group">
-                <label data-en="Village / Area" data-hi="गांव / क्षेत्र">Village / Area</label>
-                <input id="f-area" class="field-input" type="text" value="Silchar" placeholder="Enter village or area" autocomplete="address-level3" />
-                <input id="f-basin" type="hidden" value="A127" />
+                <label data-en="Catchment Basin" data-hi="जलग्रहण बेसिन">Catchment Basin</label>
+                <div class="select-wrapper">
+                  <select id="f-basin" class="field-input">
+                    <option value="A127" selected>A127 — Barak River Basin</option>
+                  </select>
+                </div>
               </div>
 
               <div class="field-group">
@@ -1485,27 +1488,12 @@
         <i class="fa-solid fa-arrow-left"></i>
         <span data-en="Back to Home" data-hi="होम पर वापस">Back to Home</span>
       </button>
+      <a href="/static/admin-login.html" class="btn-back-home" style="margin-left: auto; background: #ff5a5f; color: #fff; text-decoration: none;">
+        <i class="fa-solid fa-user-shield"></i>
+        <span>Admin Portal</span>
+      </a>
       <div class="result-location-badge" id="result-location-badge">Assam · Cachar · Barak River Basin</div>
     </div>
-
-    <!-- ── SECTION 1: REAL-TIME WEATHER ── -->
-    <section class="section-block" id="weather">
-      <div class="section-label blue-label">
-        <i class="fa-solid fa-cloud-showers-heavy"></i>
-        REAL-TIME WEATHER &amp; HYDROLOGICAL FORECAST
-      </div>
-      <h2 class="section-title" data-en="Current Weather Conditions & Hydrological Indicators" data-hi="वर्तमान मौसम और जलविज्ञान संकेतक">Current Weather Conditions &amp; Hydrological Indicators</h2>
-      <p class="section-sub" data-en="Live observation metrics from IMD, GPM satellite precipitation, and soil moisture proxies." data-hi="आईएमडी, जीपीएम उपग्रह और मृदा नमी प्रॉक्सी से लाइव अवलोकन।">Live observation metrics from IMD, GPM satellite precipitation, and soil moisture proxies.</p>
-
-      <div class="weather-grid">
-        <div class="w-card"><i class="fa-solid fa-temperature-three-quarters w-ico orange"></i><div class="w-val" id="w-temp">—</div><div class="w-lbl">Temperature</div></div>
-        <div class="w-card"><i class="fa-solid fa-droplet w-ico blue"></i><div class="w-val" id="w-rain">—</div><div class="w-lbl">Rain Intensity (mm/h)</div></div>
-        <div class="w-card"><i class="fa-solid fa-cloud-rain w-ico cyan"></i><div class="w-val" id="w-rain3d">—</div><div class="w-lbl">3-Day Rainfall (mm)</div></div>
-        <div class="w-card"><i class="fa-solid fa-water w-ico green"></i><div class="w-val" id="w-soil">—</div><div class="w-lbl">Soil Saturation (%)</div></div>
-        <div class="w-card"><i class="fa-solid fa-person-running-water w-ico yellow"></i><div class="w-val" id="w-runoff">—</div><div class="w-lbl">Runoff Potential</div></div>
-        <div class="w-card"><i class="fa-solid fa-water-ladder w-ico purple"></i><div class="w-val" id="w-discharge">—</div><div class="w-lbl">Est. Discharge (m³/s)</div></div>
-      </div>
-    </section>
 
     <!-- ── SECTION 2: FLOOD PREDICTION + HISTORICAL COMPARISON ── -->
     <section class="section-block alt-bg" id="comparison">
@@ -1608,11 +1596,9 @@
           <!-- Map -->
           <div class="db-card">
             <div class="db-card-header">
-              <span><i class="fa-solid fa-map-location c-blue"></i> Interactive Risk Map &amp; Route Warnings</span>
+              <span><i class="fa-solid fa-map-location c-blue"></i> State-Level Flood Risk Heatmap</span>
               <div class="map-toggles">
-                <label><input type="checkbox" id="chk-risk" checked> Risk Zones</label>
-                <label><input type="checkbox" id="chk-routes" checked> Safe Routes</label>
-                <label><input type="checkbox" id="chk-shelters" checked> Shelters</label>
+                <label><input type="checkbox" id="chk-risk" checked> Intensity Heatmap</label>
               </div>
             </div>
             <div id="map-container"></div>
@@ -1625,33 +1611,6 @@
             </div>
           </div>
 
-          <!-- Routes -->
-          <div class="db-card">
-            <div class="db-card-header">
-              <span><i class="fa-solid fa-route c-green"></i> OSM Risk-Aware Safe Routing</span>
-              <span class="pill green" id="route-badge">~70% Less Flood Risk</span>
-            </div>
-            <div class="routes-grid">
-              <div class="route-box danger-box">
-                <div class="rb-head"><i class="fa-solid fa-triangle-exclamation"></i> <span id="nr-name">Normal Direct Route</span> <span class="rtag red">AVOID</span></div>
-                <div class="rb-rows">
-                  <span>Distance: <strong id="nr-dist">48.0 km</strong></span>
-                  <span>Time: <strong id="nr-time">80 mins</strong></span>
-                  <span>Exposure: <strong class="c-red" id="nr-exp">HIGH</strong></span>
-                </div>
-                <p class="rb-note c-red" id="nr-warn"><i class="fa-solid fa-xmark"></i> Crosses flooded river crossing.</p>
-              </div>
-              <div class="route-box safe-box">
-                <div class="rb-head"><i class="fa-solid fa-shield-halved"></i> <span id="sr-name">Safe Highland Bypass</span> <span class="rtag green">SAFE</span></div>
-                <div class="rb-rows">
-                  <span>Distance: <strong id="sr-dist">63.0 km</strong></span>
-                  <span>Time: <strong id="sr-time">95 mins</strong></span>
-                  <span>Exposure: <strong class="c-green" id="sr-exp">LOW</strong></span>
-                </div>
-                <p class="rb-note c-green" id="sr-warn"><i class="fa-solid fa-check"></i> Elevated bypass away from stream overflow.</p>
-              </div>
-            </div>
-          </div>
 
         </div>
 
@@ -1672,44 +1631,6 @@
             </div>
           </div>
 
-          <!-- Alert -->
-          <div class="db-card alert-card">
-            <div class="db-card-header">
-              <span><i class="fa-solid fa-bullhorn c-orange"></i> Agentic Alert &amp; CAP Workflow</span>
-              <span class="pill orange" id="alert-status-pill">PENDING REVIEW</span>
-            </div>
-            <div class="alert-inner">
-              <div class="alert-row"><i class="fa-solid fa-triangle-exclamation c-red big-ico"></i>
-                <div>
-                  <strong class="c-red" id="alert-headline">FLASH FLOOD WARNING</strong>
-                  <p class="tiny-muted">LangGraph Multi-Agent Alert Draft</p>
-                </div>
-              </div>
-              <ul class="action-list" id="action-list">
-                <li><i class="fa-solid fa-check c-green"></i> Evacuate low-lying river bank zones.</li>
-                <li><i class="fa-solid fa-check c-green"></i> Avoid stream crossings during high flow.</li>
-                <li><i class="fa-solid fa-check c-green"></i> Follow official instructions.</li>
-              </ul>
-              <div class="alert-btns">
-                <button class="btn-approve" id="btn-approve"><i class="fa-solid fa-check-circle"></i> <span data-en="Approve & Broadcast" data-hi="स्वीकृत करें">Approve &amp; Broadcast</span></button>
-                <button class="btn-cap" id="btn-cap"><i class="fa-solid fa-code"></i> <span data-en="View CAP XML" data-hi="CAP XML देखें">View CAP XML</span></button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Shelters -->
-          <div class="db-card">
-            <div class="db-card-header">
-              <span><i class="fa-solid fa-house-medical c-blue"></i> Verified Safe Shelters</span>
-            </div>
-            <div class="shelter-list" id="shelter-list">
-              <div class="shelter-row">
-                <div class="shelter-ico"><i class="fa-solid fa-campground"></i></div>
-                <div class="shelter-info"><strong>Udharbond Central Relief Shelter</strong><span>Capacity 1200 · 5.4 km away</span></div>
-                <a href="tel:108" class="btn-call">108</a>
-              </div>
-            </div>
-          </div>
 
         </div>
       </div>
@@ -1734,6 +1655,7 @@
 
   <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/static/app.js"></script>
 </body>
