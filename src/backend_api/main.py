@@ -206,27 +206,26 @@ def fetch_live_telemetry_py(state: str, district: str, basin: str, area: str):
         current_rate = round(float(w_data.get("current", {}).get("precipitation", 0) or 0), 1)
 
         # Demo Trick: Apply extreme weather fallback ONLY for Dhemaji (Assam) and Rudraprayag (Uttarakhand)
-        if obs_rain_24h == 0 and is_assam and district == "Dhemaji":
+        if is_assam and district == "Dhemaji":
             obs_rain_24h, obs_rain_3d, fc_rain_24h, fc_peak, current_rate = 142.5, 318.0, 78.0, 18.5, 24.8
-        elif obs_rain_24h == 0 and not is_assam and district == "Rudraprayag":
-            obs_rain_24h, obs_rain_3d, fc_rain_24h, fc_peak, current_rate = 98.2, 205.4, 54.5, 12.0, 16.4
-
-        soil_moisture_m3 = (hourly.get("soil_moisture_0_to_1cm") or [0.38])[-1]
-        soil_sat = min(round((soil_moisture_m3 / 0.46) * 100, 1), 98.0)
-        if soil_sat < 50 and is_assam and district == "Dhemaji":
             soil_sat = 88.4
-        elif soil_sat < 50 and not is_assam and district == "Rudraprayag":
+        elif (not is_assam) and district == "Rudraprayag":
+            obs_rain_24h, obs_rain_3d, fc_rain_24h, fc_peak, current_rate = 98.2, 205.4, 54.5, 12.0, 16.4
             soil_sat = 79.2
+        else:
+            soil_moisture_m3 = (hourly.get("soil_moisture_0_to_1cm") or [0.25])[-1]
+            soil_sat = min(round((soil_moisture_m3 / 0.46) * 100, 1), 98.0)
 
+        is_demo_flood = (is_assam and district == "Dhemaji") or (not is_assam and district == "Rudraprayag")
         river_discharges = f_data.get("daily", {}).get("river_discharge", [])
-        live_discharge = int(river_discharges[0]) if river_discharges and river_discharges[0] is not None else (1280 if is_assam else 860)
+        live_discharge = int(river_discharges[0]) if river_discharges and river_discharges[0] is not None else ((1280 if is_assam else 860) if is_demo_flood else (240 if is_assam else 180))
 
         temp = round(float(w_data.get("current", {}).get("temperature_2m", 26.5 if is_assam else 19.8)), 1)
         humidity = round(float(w_data.get("current", {}).get("relative_humidity_2m", 92 if is_assam else 84)))
         pressure = round(float(w_data.get("current", {}).get("surface_pressure", 998 if is_assam else 1004)))
         elevation = round(float(w_data.get("elevation", meta["elev"])))
 
-        cat = "Heavy Downpour" if (current_rate >= 20 or fc_peak >= 18) else ("Moderate Surge" if current_rate >= 5 else "Intermittent Drizzle")
+        cat = "Heavy Downpour" if (current_rate >= 20 or fc_peak >= 18) else ("Moderate Surge" if current_rate >= 5 else "Clear / Sunny" if current_rate == 0 else "Intermittent Drizzle")
         # If rainfall is high (either naturally or via fallback), gauge goes above danger. Otherwise, keep it below.
         is_flooding = obs_rain_3d > 100 or fc_rain_24h > 50
         gauge_lvl = round(meta["danger"] + (0.15 if is_flooding else -0.40), 2)
@@ -251,7 +250,7 @@ def fetch_live_telemetry_py(state: str, district: str, basin: str, area: str):
                 "data_status": "Live Numerical Weather Prediction"
             },
             "rainfall_intensity": {
-                "value": current_rate if current_rate > 0 else (24.8 if is_assam else 16.4),
+                "value": current_rate if current_rate > 0 else ((24.8 if is_assam else 16.4) if is_demo_flood else 0.0),
                 "unit": "mm/h",
                 "category": cat,
                 "source": "IMD Doppler Weather Radar (DWR) + Live Satellite Reflectivity",
@@ -312,10 +311,9 @@ def fetch_live_telemetry_py(state: str, district: str, basin: str, area: str):
         intensity = (24.8 if is_assam else 16.4) if is_demo_flood else 0.0
         soil_sat = (88.4 if is_assam else 79.2) if is_demo_flood else 45.0
         
-        river_level = 19.85 if is_assam else 324.60
-
+        river_level = (19.85 if is_assam else 324.60) if is_demo_flood else (19.20 if is_assam else 323.80)
         danger_mark = 19.83 if is_assam else 325.00
-        discharge = 1280 if is_assam else 860
+        discharge = (1280 if is_assam else 860) if is_demo_flood else (240 if is_assam else 180)
         river_name = meta["station"]
         temp = 26.5 if is_assam else 19.8
         humidity = 92 if is_assam else 84
@@ -619,11 +617,19 @@ def get_dashboard_data():
     shelters = DEMO_SHELTERS.get(state, DEMO_SHELTERS["Assam"])
     hist = HISTORICAL_EVENTS.get(state, HISTORICAL_EVENTS["Assam"])
 
+    selected_date = body.get("date", time.strftime("%Y-%m-%d"))
+
     # 3. Agentic AI Reasoning Summary
-    agent_summary = (
-        f"Agentic AI multi-agent supervisor detected compound flood risk for {district}, {state} ({category} - {prob_pct}%). "
-        f"3-day rainfall ({hist['rain3d'] if prob_pct > 70 else '168 mm'}) combined with high soil moisture indicates heightened surface runoff."
-    )
+    if prob_pct >= 50:
+        agent_summary = (
+            f"Agentic AI multi-agent supervisor detected compound flood risk for {district}, {state} ({category} - {prob_pct}%). "
+            f"3-day rainfall ({obs_rain_3d} mm) combined with soil saturation ({int(soil_sat * 100)}%) indicates heightened surface runoff."
+        )
+    else:
+        agent_summary = (
+            f"Hydrological conditions in {district}, {state} remain stable and within safe capacity ({category} - {prob_pct}%). "
+            f"Observed 3-day rainfall is {obs_rain_3d} mm and soil saturation is {int(soil_sat * 100)}% (Below threshold)."
+        )
 
     return jsonify({
         "status": "success",
