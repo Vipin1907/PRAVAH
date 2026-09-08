@@ -68,24 +68,34 @@ const HISTORICAL_EVENTS = {
 /* -------------------------------------------------
    2. WEATHER (real API if key provided, else simulated)
    ------------------------------------------------- */
-const OWM_KEY = ""; // Add your OpenWeatherMap key here for live data
-
-async function fetchRealWeather(lat, lon) {
-  if (!OWM_KEY) throw new Error("No API key configured");
-  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OWM_KEY}&units=metric`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error("OWM fetch failed: " + r.status);
+async function fetchRealWeather(state, district, basinId, area) {
+  const r = await fetch("/api/weather-telemetry", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ state, district, basin: basinId, area })
+  });
+  if (!r.ok) throw new Error("Telemetry fetch failed: " + r.status);
   const d = await r.json();
+
+  const tempVal = d.temperature_atmosphere ? Math.round(d.temperature_atmosphere.temperature_c) : 26;
+  const rainIntensity = d.rainfall_intensity ? `${d.rainfall_intensity.value} mm/h` : "0.0 mm/h";
+  const rain3dVal = d.observed_rainfall ? `${d.observed_rainfall.value_3d_cumulative} mm` : "0 mm";
+  const soilPct = d.soil_moisture ? `${Math.round(d.soil_moisture.saturation_pct)}%` : "55%";
+  const runoffStatus = d.soil_moisture?.status_text || (parseFloat(soilPct) > 75 ? "High" : "Moderate");
+  const dischargeVal = (d.river_level && d.river_level.discharge_m3s !== undefined)
+    ? `${Math.round(d.river_level.discharge_m3s)} m³/s`
+    : "250 m³/s";
+
   return {
-    temp: `${Math.round(d.main.temp)}°C`,
-    humidity: d.main.humidity,
-    rain: `${((d.rain && d.rain["1h"]) || 0).toFixed(1)} mm/h`,
-    rain3d: `${Math.round((d.main.humidity / 100) * (0.4 + Math.random() * 0.3))} mm`,
-    soil: `${Math.round(60 + d.main.humidity / 3)}%`,
-    runoff: d.main.humidity > 80 ? "Very High" : d.main.humidity > 65 ? "High" : "Moderate",
-    discharge: `${Math.round(200 + d.main.humidity * 2)} m³/s`,
-    condition: (d.weather && d.weather[0] && d.weather[0].description) || "—",
-    source: "OpenWeatherMap Live"
+    temp: `${tempVal}°C`,
+    humidity: d.temperature_atmosphere?.humidity_pct || 65,
+    rain: rainIntensity,
+    rain3d: rain3dVal,
+    soil: soilPct,
+    runoff: runoffStatus,
+    discharge: dischargeVal,
+    condition: d.rainfall_intensity?.category || "Live Observations",
+    source: d.source || "Live Satellite & Hydrograph Telemetry"
   };
 }
 
@@ -430,7 +440,7 @@ async function showWeatherForecastPage(params) {
   try {
     const liveResponse = await fetch("/api/live-weather", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ state, district, area, date, forecast_time: time, lead_time_hours: parseInt(lead || 3) })
+      body: JSON.stringify({ state, district, area, basin: basinId, date, forecast_time: time, lead_time_hours: parseInt(lead || 3) })
     });
     const liveWeather = await liveResponse.json();
     renderLiveWeatherTable(liveResponse.ok ? liveWeather : { ...liveWeather, error: liveWeather.error });
@@ -542,51 +552,6 @@ function showHomePage() {
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 
-function showLoadingBar() {
-  document.getElementById("loading-bar")?.classList.remove("hidden");
-  const btn = document.getElementById("btn-run-prediction-from-forecast");
-  if (btn) btn.disabled = true;
-}
-function hideLoadingBar() {
-  document.getElementById("loading-bar")?.classList.add("hidden");
-  const btn = document.getElementById("btn-run-prediction-from-forecast");
-  if (btn) btn.disabled = false;
-}
-
-/* -------------------------------------------------
-   8. MAIN PREDICTION FLOW
-   ------------------------------------------------- */
-async function runPrediction(state, district, basinId, basinLabel) {
-  showLoadingBar();
-  try {
-    const coords = CATCHMENT_COORDS[basinId] || { lat: 24.82, lon: 92.80 };
-
-    // 1. Get weather (real API, fallback to simulated)
-    let weather;
-    try {
-      weather = await fetchRealWeather(coords.lat, coords.lon);
-    } catch (e) {
-      weather = simulateWeather();
-    }
-
-    // 2. Try backend first (optional — safe to fail)
-    let backendData = null;
-    try {
-      const resp = await fetch("/api/get-dashboard-data", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state, district, basin: basinId, date: currentPredictionParams.date || new Date().toISOString().split("T")[0], lead_time_hours: parseInt(currentPredictionParams.lead || "6") })
-      });
-      if (resp.ok) backendData = await resp.json();
-    } catch (err) {
-      console.warn("Backend not reachable, using client-side simulation:", err.message);
-    }
-
-    // 3. Compute prediction (prefer backend, else client-side)
-    let prediction;
-    if (backendData && backendData.risk_summary) {
-      prediction = {
-        probability: backendData.risk_summary.probability_percent,
         riskLevel: backendData.risk_summary.category
       };
       console.log("✅ Using REAL backend ML prediction:", prediction);

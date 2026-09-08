@@ -41,6 +41,7 @@ const EXPLAIN_API_URL = process.env.EXPLAIN_API_URL || "http://localhost:5001/ex
 
 const OPEN_METEO_GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
+const WEATHER_HEADERS = { "User-Agent": "PravahAI-Weather/1.0 (flood-hazard-monitoring; contact@pravah.ai)" };
 
 const weatherDescription = (code) => ({
   0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
@@ -60,23 +61,46 @@ const nearestHourlyIndex = (times, requestedTime) => {
 // Real current weather and hourly forecast. The browser never calls the
 // provider directly, so requests remain consistent and the UI gets one shape.
 app.post("/api/live-weather", async (req, res) => {
-  const { area, district, state, date, forecast_time = "00:00", lead_time_hours = 3 } = req.body || {};
-  const locationQuery = area || district || state;
+  const { area, district, state, date, forecast_time = "00:00", lead_time_hours = 3, basin = "A127" } = req.body || {};
+  const locationQuery = area || district || state || "Assam";
   const horizon = Math.min(Math.max(Number.parseInt(lead_time_hours, 10) || 3, 1), 24);
 
+  const fallbackMeta = BASIN_GEO_MAP[basin] || (state === "Assam" ? BASIN_GEO_MAP["A127"] : BASIN_GEO_MAP["U04"]);
+
+  let place = null;
   try {
     const geocode = await axios.get(OPEN_METEO_GEOCODING_URL, {
-      params: { name: locationQuery, count: 1, language: "en", format: "json" }, timeout: 8000, proxy: false
+      params: { name: locationQuery, count: 1, language: "en", format: "json" },
+      headers: WEATHER_HEADERS,
+      timeout: 8000,
+      proxy: false
     });
-    const place = geocode.data?.results?.[0];
-    if (!place) return res.status(404).json({ error: `Location not found: ${locationQuery}. Enter a village, town, or city name.` });
+    place = geocode.data?.results?.[0];
+  } catch (geoErr) {
+    console.warn("Geocoding lookup notice:", geoErr.message);
+  }
 
+  // If geocoding failed or returned no match, seamlessly use regional basin coordinates
+  if (!place) {
+    place = {
+      name: area || district || fallbackMeta.station || "Catchment Region",
+      admin1: state || fallbackMeta.state,
+      country: "India",
+      latitude: fallbackMeta.lat,
+      longitude: fallbackMeta.lon
+    };
+  }
+
+  try {
     const forecast = await axios.get(OPEN_METEO_FORECAST_URL, {
       params: {
         latitude: place.latitude, longitude: place.longitude, timezone: "auto", forecast_days: 16,
         current: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,weather_code,wind_speed_10m",
         hourly: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,rain,weather_code,wind_speed_10m,soil_moisture_0_to_1cm"
-      }, timeout: 10000, proxy: false
+      },
+      headers: WEATHER_HEADERS,
+      timeout: 10000,
+      proxy: false
     });
     const data = forecast.data;
     const requestedTime = `${date || data.current.time.slice(0, 10)}T${forecast_time}`;
@@ -127,6 +151,7 @@ async function getLiveHydroTelemetry(body) {
     try {
       const geo = await axios.get(OPEN_METEO_GEOCODING_URL, {
         params: { name: `${area}, ${district || state}, India`, count: 1, language: "en", format: "json" },
+        headers: WEATHER_HEADERS,
         timeout: 4000
       });
       if (geo.data?.results?.[0]) {
@@ -151,6 +176,7 @@ async function getLiveHydroTelemetry(body) {
           past_days: 3,
           forecast_days: 2
         },
+        headers: WEATHER_HEADERS,
         timeout: 6000
       }),
       axios.get("https://flood-api.open-meteo.com/v1/flood", {
@@ -160,6 +186,7 @@ async function getLiveHydroTelemetry(body) {
           daily: "river_discharge,river_discharge_mean,river_discharge_median,river_discharge_max",
           forecast_days: 7
         },
+        headers: WEATHER_HEADERS,
         timeout: 6000
       })
     ]);
