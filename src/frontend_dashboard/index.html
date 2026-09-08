@@ -171,9 +171,11 @@
         </div>
 
         <div class="hero-graphic-col">
-          <div class="map-graphic-wrapper">
-            <!-- Transparent Vector Topographic Flood Map SVG -->
-            <svg class="topo-map-svg" viewBox="0 0 540 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div class="map-graphic-wrapper" style="padding: 0; border: none; background: transparent; box-shadow: none;">
+            <div id="hero-map" style="width: 100%; height: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.2); z-index: 1; border: 4px solid #ffffff;"></div>
+            <div style="display: none;">
+              <!-- Transparent Vector Topographic Flood Map SVG -->
+              <svg class="topo-map-svg" viewBox="0 0 540 340" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="riverBlueGrad" x1="0%" y1="50%" x2="100%" y2="50%">
                   <stop offset="0%" stop-color="#0284c7"/>
@@ -263,9 +265,10 @@
                 <line x1="32" y1="32" x2="30" y2="38" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </div>
+            </div>
 
             <!-- Floating Flood Risk Level Legend Card -->
-            <div class="hero-legend-card">
+            <div class="hero-legend-card" style="z-index: 10;">
               <div class="legend-card-title">FLOOD RISK LEVEL</div>
               <div class="legend-item">
                 <span class="legend-dot dot-low"></span>

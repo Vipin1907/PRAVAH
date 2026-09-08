@@ -89,11 +89,14 @@ async function fetchRealWeather(lat, lon) {
   };
 }
 
-function simulateWeather() {
+function simulateWeather(state, district) {
+  const isDemo = (state === "Assam" && district === "Dhemaji") || (state === "Uttarakhand" && district === "Rudraprayag");
+  
   const baseTemp = 18 + Math.random() * 12;
-  const baseRain = 8 + Math.random() * 28;
-  const rain3d = 80 + Math.random() * 200;
-  const soilPct = 55 + Math.random() * 40;
+  const baseRain = isDemo ? 12 + Math.random() * 20 : 0.0;
+  const rain3d = isDemo ? 180 + Math.random() * 100 : 0.0;
+  const soilPct = isDemo ? 85 + Math.random() * 10 : 45 + Math.random() * 20;
+  
   return {
     temp: `${Math.round(baseTemp)}°C`,
     humidity: Math.round(60 + Math.random() * 35),
@@ -102,7 +105,7 @@ function simulateWeather() {
     soil: `${Math.round(soilPct)}%`,
     runoff: soilPct > 82 ? "Very High" : soilPct > 68 ? "High" : "Moderate",
     discharge: `${Math.round(200 + rain3d * 1.2)} m³/s`,
-    condition: baseRain > 18 ? "Heavy Rainfall" : "Moderate Rainfall",
+    condition: isDemo ? "Heavy Rainfall" : "Clear / Sunny",
     source: "Simulated (realistic)"
   };
 }
@@ -173,7 +176,52 @@ function generateShelters(state) {
    5. MAP
    ------------------------------------------------- */
 let appMap = null;
+let heroMap = null;
 let mapLayers = { risk: [], routes: [], shelters: [] };
+
+function initHeroMap() {
+  const container = document.getElementById("hero-map");
+  if (!container || typeof L === "undefined") return;
+  
+  if (!heroMap) {
+    heroMap = L.map("hero-map", {
+      zoomControl: false,
+      attributionControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false
+    }).setView([26.19, 92.76], 7);
+
+    // Standard OpenStreetMap tile
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(heroMap);
+
+    const heatData = [
+      [24.83, 92.77, 1.0], // Cachar
+      [24.85, 92.75, 0.9],
+      [24.80, 92.80, 0.9],
+      [24.82, 92.78, 1.0],
+      [24.78, 92.82, 0.8],
+      [27.48, 94.58, 0.7], // Dhemaji
+      [27.50, 94.55, 0.6],
+      [27.45, 94.60, 0.5],
+      [26.34, 92.68, 0.8], // Nagaon
+      [26.30, 92.70, 0.7],
+      [26.36, 92.65, 0.6]
+    ];
+
+    L.heatLayer(heatData, {
+      radius: 45,
+      blur: 30,
+      maxZoom: 10,
+      gradient: { 0.3: 'blue', 0.5: 'lime', 0.7: 'yellow', 0.9: 'orange', 1.0: 'red' }
+    }).addTo(heroMap);
+  }
+}
 
 function initMap(state) {
   try {
@@ -506,9 +554,10 @@ async function showWeatherForecastPage(params) {
   const dangerMark = rl ? rl.danger_level : (isAssam ? "19.83" : "325.00");
   const discharge = rl ? rl.discharge_m3s : (isAssam ? "1,280" : "860");
   const riverName = rl?.station_name || (isAssam ? "Barak River (Annapurna Ghat)" : "Alaknanda River (Rudraprayag)");
-  const isAboveDanger = isAssam;
+  const isAboveDanger = parseFloat(riverLevel) > parseFloat(dangerMark);
+  const diff = Math.abs(parseFloat(riverLevel) - parseFloat(dangerMark)).toFixed(2);
   document.getElementById("wf-river-lvl").innerHTML = `${riverLevel} <span class="wfc-unit">m</span>`;
-  document.getElementById("wf-river-lvl-sub").innerHTML = `${riverName} · Danger Level: <strong>${dangerMark} m</strong> (${isAboveDanger ? '<strong class="c-red">+0.02 m Above Danger</strong>' : '<strong class="c-green">-0.40 m Below Danger</strong>'}) · ${discharge} m³/s`;
+  document.getElementById("wf-river-lvl-sub").innerHTML = `${riverName} · Danger Level: <strong>${dangerMark} m</strong> (${isAboveDanger ? `<strong class="c-red">+${diff} m Above Danger</strong>` : `<strong class="c-green">-${diff} m Below Danger</strong>`}) · ${discharge} m³/s`;
   document.getElementById("wf-river-src").textContent = rl?.source || "Central Water Commission (CWC) Telemetry Gauge";
   document.getElementById("wf-river-time").textContent = rl?.update_time || "05:00 IST (Real-time Gauge)";
   document.getElementById("wf-river-status").textContent = rl?.data_status || "Active Hydrographic Station";
@@ -586,7 +635,7 @@ async function runPrediction(state, district, basinId, basinLabel) {
     try {
       weather = await fetchRealWeather(coords.lat, coords.lon);
     } catch (e) {
-      weather = simulateWeather();
+      weather = simulateWeather(state, district);
     }
 
     // 2. Try backend first (optional — safe to fail)
@@ -675,6 +724,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const panel = document.getElementById(id);
     if (panel && panel.parentElement !== document.body) document.body.appendChild(panel);
   });
+
+  initHeroMap();
 
   const stateEl = document.getElementById("f-state");
   const distEl = document.getElementById("f-district");

@@ -205,15 +205,18 @@ def fetch_live_telemetry_py(state: str, district: str, basin: str, area: str):
         fc_peak = round(max((float(x or 0) for x in next24), default=0), 1)
         current_rate = round(float(w_data.get("current", {}).get("precipitation", 0) or 0), 1)
 
-        if obs_rain_24h == 0 and is_assam:
+        # Demo Trick: Apply extreme weather fallback ONLY for Dhemaji (Assam) and Rudraprayag (Uttarakhand)
+        if obs_rain_24h == 0 and is_assam and district == "Dhemaji":
             obs_rain_24h, obs_rain_3d, fc_rain_24h, fc_peak, current_rate = 142.5, 318.0, 78.0, 18.5, 24.8
-        elif obs_rain_24h == 0 and not is_assam:
+        elif obs_rain_24h == 0 and not is_assam and district == "Rudraprayag":
             obs_rain_24h, obs_rain_3d, fc_rain_24h, fc_peak, current_rate = 98.2, 205.4, 54.5, 12.0, 16.4
 
         soil_moisture_m3 = (hourly.get("soil_moisture_0_to_1cm") or [0.38])[-1]
         soil_sat = min(round((soil_moisture_m3 / 0.46) * 100, 1), 98.0)
-        if soil_sat < 50:
-            soil_sat = 88.4 if is_assam else 79.2
+        if soil_sat < 50 and is_assam and district == "Dhemaji":
+            soil_sat = 88.4
+        elif soil_sat < 50 and not is_assam and district == "Rudraprayag":
+            soil_sat = 79.2
 
         river_discharges = f_data.get("daily", {}).get("river_discharge", [])
         live_discharge = int(river_discharges[0]) if river_discharges and river_discharges[0] is not None else (1280 if is_assam else 860)
@@ -224,7 +227,9 @@ def fetch_live_telemetry_py(state: str, district: str, basin: str, area: str):
         elevation = round(float(w_data.get("elevation", meta["elev"])))
 
         cat = "Heavy Downpour" if (current_rate >= 20 or fc_peak >= 18) else ("Moderate Surge" if current_rate >= 5 else "Intermittent Drizzle")
-        gauge_lvl = round(meta["danger"] + (0.02 if is_assam else -0.40), 2)
+        # If rainfall is high (either naturally or via fallback), gauge goes above danger. Otherwise, keep it below.
+        is_flooding = obs_rain_3d > 100 or fc_rain_24h > 50
+        gauge_lvl = round(meta["danger"] + (0.15 if is_flooding else -0.40), 2)
 
         return {
             "status": "success",
@@ -296,13 +301,19 @@ def fetch_live_telemetry_py(state: str, district: str, basin: str, area: str):
         }
     except Exception as ex:
         print(f"[Master Backend] Live telemetry remote API error: {ex}")
-        obs_rain_24h = 142.5 if is_assam else 98.2
-        obs_rain_3d = 318.0 if is_assam else 205.4
-        fc_rain_24h = 78.0 if is_assam else 54.5
-        fc_peak = 18.5 if is_assam else 12.0
-        intensity = 24.8 if is_assam else 16.4
-        soil_sat = 88.4 if is_assam else 79.2
+        
+        # Only simulate extreme event for Dhemaji and Rudraprayag if API fails
+        is_demo_flood = (is_assam and district == "Dhemaji") or (not is_assam and district == "Rudraprayag")
+
+        obs_rain_24h = (142.5 if is_assam else 98.2) if is_demo_flood else 0.0
+        obs_rain_3d = (318.0 if is_assam else 205.4) if is_demo_flood else 0.0
+        fc_rain_24h = (78.0 if is_assam else 54.5) if is_demo_flood else 0.0
+        fc_peak = (18.5 if is_assam else 12.0) if is_demo_flood else 0.0
+        intensity = (24.8 if is_assam else 16.4) if is_demo_flood else 0.0
+        soil_sat = (88.4 if is_assam else 79.2) if is_demo_flood else 45.0
+        
         river_level = 19.85 if is_assam else 324.60
+
         danger_mark = 19.83 if is_assam else 325.00
         discharge = 1280 if is_assam else 860
         river_name = meta["station"]
@@ -428,13 +439,18 @@ def predict():
     district = body.get("district", "Cachar")
     basin = body.get("basin", "A127")
     
-    # Calculate hydrological parameters
-    rain_3d = float(body.get("rainfall_3d", 145.0 if state == "Assam" else 92.0))
-    soil = float(body.get("soil_moisture", 82.0 if state == "Assam" else 74.0))
+    area = body.get("area", district)
+
+    # Fetch live or fallback telemetry first!
+    telemetry = fetch_live_telemetry_py(state, district, basin, area)
+    
+    rain_3d = float(telemetry["observed_rainfall"]["value_3d_cumulative"])
+    rain_24h = float(telemetry["observed_rainfall"]["value_24h"])
+    soil = float(telemetry["soil_moisture"]["saturation_pct"])
 
     if ml_model:
         prob, conf, importances = ml_model.predict_sample({
-            "rainfall_1d": rain_3d * 0.45,
+            "rainfall_1d": rain_24h,
             "rainfall_3d": rain_3d,
             "rainfall_7d": rain_3d * 1.8,
             "rainfall_30d": rain_3d * 3.2,
@@ -445,7 +461,7 @@ def predict():
         })
         prob_pct = int(round(prob * 100))
     else:
-        prob_pct = 78 if state == "Assam" else 64
+        prob_pct = 85 if rain_3d > 100 else 12
         conf = 0.88
         importances = {
             "rainfall_3d": 0.38,
@@ -568,23 +584,30 @@ def get_dashboard_data():
     state = body.get("state", "Assam")
     district = body.get("district", "Cachar")
     basin = body.get("basin", "A127")
-    selected_date = body.get("date", time.strftime("%Y-%m-%d"))
+    area = body.get("area", district)
+
+    # Fetch live or fallback telemetry first!
+    telemetry = fetch_live_telemetry_py(state, district, basin, area)
+    
+    obs_rain_3d = float(telemetry["observed_rainfall"]["value_3d_cumulative"])
+    obs_rain_24h = float(telemetry["observed_rainfall"]["value_24h"])
+    soil_sat = float(telemetry["soil_moisture"]["saturation_pct"]) / 100.0
 
     # 1. Run ML Prediction
     if ml_model:
         prob, conf, importances = ml_model.predict_sample({
-            "rainfall_1d": 54.0 if state == "Assam" else 35.0,
-            "rainfall_3d": 168.0 if state == "Assam" else 110.0,
-            "rainfall_7d": 310.0 if state == "Assam" else 190.0,
-            "rainfall_30d": 580.0 if state == "Assam" else 340.0,
-            "soil_saturation_proxy": 0.88 if state == "Assam" else 0.72,
+            "rainfall_1d": obs_rain_24h,
+            "rainfall_3d": obs_rain_3d,
+            "rainfall_7d": obs_rain_3d * 1.8,
+            "rainfall_30d": obs_rain_3d * 3.2,
+            "soil_saturation_proxy": soil_sat,
             "ndvi": 0.58 if state == "Assam" else 0.48,
             "slope_mean": 14.0 if state == "Assam" else 38.0,
             "flow_accumulation": 5200.0 if state == "Assam" else 2400.0
         })
         prob_pct = int(round(prob * 100))
     else:
-        prob_pct = 78 if state == "Assam" else 62
+        prob_pct = 85 if obs_rain_3d > 100 else 12
         conf = 0.86
         importances = {"rainfall_3d": 0.38, "soil_saturation_proxy": 0.28, "slope_mean": 0.16, "flow_accumulation": 0.12}
 
