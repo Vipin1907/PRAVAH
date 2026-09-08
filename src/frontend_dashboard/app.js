@@ -369,12 +369,37 @@ let currentPredictionParams = {
   basinId: "A127",
   basinLabel: "A127 — Barak River Basin",
   date: "2026-09-05",
+  area: "Silchar",
+  time: "06:00",
   lead: "3"
 };
 
+function renderLiveWeatherTable(payload) {
+  const status = document.getElementById("live-weather-status");
+  const meta = document.getElementById("live-weather-meta");
+  const rowsEl = document.getElementById("live-weather-rows");
+  const errorEl = document.getElementById("live-weather-error");
+  if (!status || !meta || !rowsEl) return;
+  if (!payload?.forecast_hours?.length) {
+    status.textContent = "UNAVAILABLE"; status.className = "live-api-status error";
+    meta.textContent = "No live forecast was returned for this location and time.";
+    if (errorEl) { errorEl.textContent = payload?.error || "Please check the location and try again."; errorEl.classList.remove("hidden"); }
+    rowsEl.innerHTML = '<tr><td colspan="8">Live weather is unavailable.</td></tr>';
+    return;
+  }
+  const location = payload.location;
+  status.textContent = "LIVE DATA"; status.className = "live-api-status success";
+  meta.textContent = `${location.name}, ${location.admin1 || location.country} · Source: ${payload.source} · Updated: ${payload.updated_at}`;
+  if (errorEl) errorEl.classList.add("hidden");
+  const current = payload.current;
+  const currentRow = `<tr class="current-row"><td>Now (${current.time})</td><td>${current.condition}</td><td>${current.temperature_2m} °C</td><td>${current.apparent_temperature} °C</td><td>${current.rain} mm</td><td>—</td><td>${current.relative_humidity_2m}%</td><td>${current.wind_speed_10m} km/h</td></tr>`;
+  const forecastRows = payload.forecast_hours.map((hour) => `<tr><td>${hour.label} · ${hour.time}</td><td>${hour.condition}</td><td>${hour.temperature_c} °C</td><td>${hour.feels_like_c} °C</td><td>${hour.rain_mm} mm</td><td>${hour.rain_probability_pct}%</td><td>${hour.humidity_pct}%</td><td>${hour.wind_kmh} km/h</td></tr>`).join("");
+  rowsEl.innerHTML = currentRow + forecastRows;
+}
+
 async function showWeatherForecastPage(params) {
   currentPredictionParams = { ...currentPredictionParams, ...params };
-  const { state, district, basinId, basinLabel, date, lead } = currentPredictionParams;
+  const { state, district, basinId, basinLabel, date, area, time, lead } = currentPredictionParams;
 
   document.getElementById("home")?.classList.add("hidden");
   document.getElementById("results-panel")?.classList.add("hidden");
@@ -384,8 +409,8 @@ async function showWeatherForecastPage(params) {
   // Meta badges
   const locEl = document.getElementById("wf-loc-text");
   const dateEl = document.getElementById("wf-date-text");
-  if (locEl) locEl.textContent = `${state} · ${district} · ${basinLabel}`;
-  if (dateEl) dateEl.textContent = `${date || new Date().toISOString().split("T")[0]} (+${lead || 3}h Forecast)`;
+  if (locEl) locEl.textContent = `${area || district} · ${district}, ${state} · ${basinLabel}`;
+  if (dateEl) dateEl.textContent = `${date || new Date().toISOString().split("T")[0]} · ${time || "00:00"} IST (+${lead || 3}h Forecast)`;
 
   // Fetch telemetry from backend
   let telemetry = null;
@@ -393,11 +418,24 @@ async function showWeatherForecastPage(params) {
     const res = await fetch("/api/weather-telemetry", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ state, district, basin: basinId, date, lead_time_hours: parseInt(lead || 6) })
+      body: JSON.stringify({ state, district, area, basin: basinId, date, forecast_time: time, lead_time_hours: parseInt(lead || 6) })
     });
     if (res.ok) telemetry = await res.json();
   } catch (e) {
     console.warn("Weather telemetry fetch fallback:", e);
+  }
+
+  // Selected area is resolved to coordinates by the backend, then its real
+  // current conditions and hourly forecast are rendered in the table above.
+  try {
+    const liveResponse = await fetch("/api/live-weather", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state, district, area, date, forecast_time: time, lead_time_hours: parseInt(lead || 3) })
+    });
+    const liveWeather = await liveResponse.json();
+    renderLiveWeatherTable(liveResponse.ok ? liveWeather : { ...liveWeather, error: liveWeather.error });
+  } catch (e) {
+    renderLiveWeatherTable({ error: "Could not connect to the live weather service." });
   }
 
   const isAssam = state === "Assam";
@@ -609,13 +647,22 @@ async function runPrediction(state, district, basinId, basinLabel) {
    9. EVENT LISTENERS  (fix: cascading dropdown logic)
    ------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
+  // These workflow panels must live outside the home section. Moving them at
+  // startup prevents a hidden home section from also hiding the forecast view.
+  ["weather-forecast-panel", "results-panel"].forEach((id) => {
+    const panel = document.getElementById(id);
+    if (panel && panel.parentElement !== document.body) document.body.appendChild(panel);
+  });
+
   const stateEl = document.getElementById("f-state");
   const distEl = document.getElementById("f-district");
   const basinEl = document.getElementById("f-basin");
+  const areaEl = document.getElementById("f-area");
+  const timeEl = document.getElementById("f-time");
   const dateField = document.getElementById("f-date");
 
   // Default date = today
-  if (dateField && !dateField.value) {
+  if (dateField) {
     dateField.value = new Date().toISOString().split("T")[0];
   }
 
@@ -672,21 +719,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const st = stateEl.value;
     const dist = distEl.value;
 
-    basinEl.innerHTML = '<option value="">Select Catchment</option>';
-    basinEl.disabled = true;
+    basinEl.value = "";
 
     const data = STATE_DATA[st];
     if (!data || !dist) return;
 
     const basinList = data.basins[dist] || [];
-    basinList.forEach((b) => {
-      const opt = document.createElement("option");
-      opt.value = b.value;
-      opt.textContent = b.label;
-      basinEl.appendChild(opt);
-    });
-    basinEl.disabled = basinList.length === 0;
-
     // Auto-select first catchment
     if (basinList.length > 0) {
       basinEl.value = basinList[0].value;
@@ -700,15 +738,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const state = stateEl.value;
     const district = distEl.value;
     const basinId = basinEl.value;
-    const basinLabel = basinEl.options[basinEl.selectedIndex] ? basinEl.options[basinEl.selectedIndex].textContent : "";
+    const basinLabel = STATE_DATA[state]?.basins?.[district]?.find((b) => b.value === basinId)?.label || "Nearest mapped catchment";
     const date = dateField ? dateField.value : "";
+    const area = areaEl ? areaEl.value.trim() : "";
+    const time = timeEl ? timeEl.value : "";
     const lead = document.getElementById("f-lead") ? document.getElementById("f-lead").value : "3";
 
     if (!state) { alert("Please select a State."); return; }
     if (!district) { alert("Please select a District."); return; }
-    if (!basinId) { alert("Please select a Catchment / Basin."); return; }
+    if (!area) { alert("Please enter a Village / Area."); return; }
+    if (!basinId) { alert("This district does not have an available catchment mapping."); return; }
 
-    showWeatherForecastPage({ state, district, basinId, basinLabel, date, lead });
+    showWeatherForecastPage({ state, district, basinId, basinLabel, area, time, date, lead });
   });
 
   // --- "Predict Risk" button on Weather Forecast page -> Run ML & Agentic AI Prediction ---

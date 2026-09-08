@@ -932,6 +932,21 @@ body.dark .df-row {
   border-top: 1px solid #f1f5f9;
 }
 
+.form-area-note {
+  align-self: end;
+  padding: 10px 14px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.form-area-note p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .form-trust-note {
   display: flex;
   align-items: center;
@@ -2673,6 +2688,31 @@ body.dark .pe-note-box {
   margin-bottom: 32px;
 }
 
+.live-weather-table-card {
+  background: #fff;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, .06);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.live-weather-table-head { display: flex; justify-content: space-between; gap: 18px; padding: 18px 20px; align-items: flex-start; }
+.live-weather-table-head h3 { color: #0f172a; font-size: 17px; margin: 2px 0 4px; }
+.live-weather-table-head p { color: #64748b; font-size: 12px; margin: 0; }
+.live-api-status { color: #0369a1; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .05em; padding: 5px 9px; white-space: nowrap; }
+.live-api-status.success { color: #15803d; background: #dcfce7; border-color: #bbf7d0; }
+.live-api-status.error { color: #b91c1c; background: #fee2e2; border-color: #fecaca; }
+.live-weather-table-wrap { overflow-x: auto; border-top: 1px solid #e2e8f0; }
+.live-weather-table { width: 100%; border-collapse: collapse; min-width: 820px; font-size: 12px; }
+.live-weather-table th { background: #f8fafc; color: #475569; text-align: left; padding: 10px 14px; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+.live-weather-table td { border-top: 1px solid #f1f5f9; padding: 11px 14px; color: #0f172a; font-weight: 600; }
+.live-weather-table tr.current-row td { background: #eff6ff; color: #075985; }
+.live-weather-error { margin: 0 20px 14px; color: #b91c1c; font-size: 13px; }
+body.dark .live-weather-table-card { background: #111e33; border-color: #1e4971; }
+body.dark .live-weather-table-head h3, body.dark .live-weather-table td { color: #f1f5f9; }
+body.dark .live-weather-table th { background: #162640; color: #94a3b8; }
+body.dark .live-weather-table td { border-color: #1e314f; }
+
 @media (max-width: 900px) {
   .wf-grid {
     grid-template-columns: 1fr;
@@ -4029,4 +4069,4 @@ body.dark .wf-bottom-action-card {
     justify-content: center;
     width: 100%;
   }
-}
+}

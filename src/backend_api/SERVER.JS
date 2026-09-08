@@ -39,7 +39,75 @@ const ML_PREDICT_URL = process.env.ML_PREDICT_URL || "http://localhost:5000/pred
 const ROUTE_API_URL = process.env.ROUTE_API_URL || "http://localhost:5002/route";
 const EXPLAIN_API_URL = process.env.EXPLAIN_API_URL || "http://localhost:5001/explain";
 
-// Weather & Hydro Telemetry API
+const OPEN_METEO_GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
+const OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
+
+const weatherDescription = (code) => ({
+  0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+  45: "Fog", 48: "Rime fog", 51: "Light drizzle", 53: "Drizzle",
+  61: "Light rain", 63: "Rain", 65: "Heavy rain", 80: "Rain showers",
+  81: "Moderate showers", 82: "Violent showers", 95: "Thunderstorm"
+}[code] || "Weather condition unavailable");
+
+const nearestHourlyIndex = (times, requestedTime) => {
+  const exact = times.indexOf(requestedTime);
+  if (exact >= 0) return exact;
+  const requested = new Date(requestedTime).getTime();
+  return times.reduce((best, time, index) =>
+    Math.abs(new Date(time).getTime() - requested) < Math.abs(new Date(times[best]).getTime() - requested) ? index : best, 0);
+};
+
+// Real current weather and hourly forecast. The browser never calls the
+// provider directly, so requests remain consistent and the UI gets one shape.
+app.post("/api/live-weather", async (req, res) => {
+  const { area, district, state, date, forecast_time = "00:00", lead_time_hours = 3 } = req.body || {};
+  const locationQuery = area || district || state;
+  const horizon = Math.min(Math.max(Number.parseInt(lead_time_hours, 10) || 3, 1), 24);
+
+  try {
+    const geocode = await axios.get(OPEN_METEO_GEOCODING_URL, {
+      params: { name: locationQuery, count: 1, language: "en", format: "json" }, timeout: 8000, proxy: false
+    });
+    const place = geocode.data?.results?.[0];
+    if (!place) return res.status(404).json({ error: `Location not found: ${locationQuery}. Enter a village, town, or city name.` });
+
+    const forecast = await axios.get(OPEN_METEO_FORECAST_URL, {
+      params: {
+        latitude: place.latitude, longitude: place.longitude, timezone: "auto", forecast_days: 16,
+        current: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,weather_code,wind_speed_10m",
+        hourly: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,rain,weather_code,wind_speed_10m,soil_moisture_0_to_1cm"
+      }, timeout: 10000, proxy: false
+    });
+    const data = forecast.data;
+    const requestedTime = `${date || data.current.time.slice(0, 10)}T${forecast_time}`;
+    const start = nearestHourlyIndex(data.hourly.time, requestedTime);
+    const rows = data.hourly.time.slice(start, start + horizon).map((time, offset) => ({
+      label: offset === 0 ? "Selected hour" : `+${offset}h`, time,
+      temperature_c: data.hourly.temperature_2m[start + offset],
+      feels_like_c: data.hourly.apparent_temperature[start + offset],
+      rain_mm: data.hourly.rain[start + offset],
+      precipitation_mm: data.hourly.precipitation[start + offset],
+      rain_probability_pct: data.hourly.precipitation_probability[start + offset],
+      wind_kmh: data.hourly.wind_speed_10m[start + offset],
+      humidity_pct: data.hourly.relative_humidity_2m[start + offset],
+      weather_code: data.hourly.weather_code[start + offset],
+      condition: weatherDescription(data.hourly.weather_code[start + offset]),
+      soil_moisture_m3m3: data.hourly.soil_moisture_0_to_1cm[start + offset]
+    }));
+
+    return res.json({
+      status: "success", source: "Open-Meteo Forecast API", updated_at: data.current.time,
+      location: { name: place.name, admin1: place.admin1, country: place.country, latitude: place.latitude, longitude: place.longitude, elevation_m: data.elevation },
+      current: { ...data.current, condition: weatherDescription(data.current.weather_code) },
+      forecast_hours: rows, horizon_hours: horizon
+    });
+  } catch (err) {
+    console.error("Live weather error:", err.message);
+    return res.status(502).json({ error: "Live weather provider is unavailable. Please try again.", details: err.message });
+  }
+});
+
+// Legacy hydro telemetry endpoint retained for the flood-model feature inputs.
 app.all("/api/weather-telemetry", async (req, res) => {
   try {
     const payload = req.method === "POST" ? req.body : { state: "Assam", district: "Cachar", basin: "A127", date: "2026-09-08" };

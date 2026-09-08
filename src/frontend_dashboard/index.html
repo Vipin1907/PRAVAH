@@ -321,15 +321,12 @@
               </div>
             </div>
 
-            <!-- Row 2: Catchment, Date, and Forecast Horizon -->
+            <!-- Row 2: area, date, time, and forecast horizon -->
             <div class="form-row-3col">
               <div class="field-group">
-                <label data-en="Catchment / Basin" data-hi="जलग्रहण / बेसिन">Catchment / Basin</label>
-                <div class="select-wrapper">
-                  <select id="f-basin" class="field-input">
-                    <option value="A127" selected>A127 — Barak River Basin</option>
-                  </select>
-                </div>
+                <label data-en="Village / Area" data-hi="गांव / क्षेत्र">Village / Area</label>
+                <input id="f-area" class="field-input" type="text" value="Silchar" placeholder="Enter village or area" autocomplete="address-level3" />
+                <input id="f-basin" type="hidden" value="A127" />
               </div>
 
               <div class="field-group">
@@ -353,6 +350,16 @@
                     <option value="24">Next 24 Hours</option>
                   </select>
                 </div>
+              </div>
+            </div>
+            <div class="form-row-2col">
+              <div class="field-group">
+                <label data-en="Forecast Time" data-hi="पूर्वानुमान समय">Forecast Time</label>
+                <input id="f-time" class="field-input" type="time" value="06:00" />
+              </div>
+              <div class="field-group form-area-note">
+                <label>Coverage</label>
+                <p>Area is mapped to the nearest available catchment for terrain and river indicators.</p>
               </div>
             </div>
           </div>
@@ -1184,6 +1191,29 @@
         <i class="fa-solid fa-arrow-right wfs-arrow"></i>
         <span class="wfs-step"><i class="fa-solid fa-shield-halved"></i> 3. AI Flood Risk &amp; Evacuation Plan</span>
       </div>
+
+      <section class="live-weather-table-card" aria-labelledby="live-weather-title">
+        <div class="live-weather-table-head">
+          <div>
+            <span class="wfc-category">REAL-TIME WEATHER API</span>
+            <h3 id="live-weather-title">Current Weather &amp; Hourly Forecast</h3>
+            <p id="live-weather-meta">Fetching the selected location's live forecast…</p>
+          </div>
+          <span id="live-weather-status" class="live-api-status">CONNECTING</span>
+        </div>
+        <div id="live-weather-error" class="live-weather-error hidden" role="alert"></div>
+        <div class="live-weather-table-wrap">
+          <table class="live-weather-table">
+            <thead>
+              <tr>
+                <th>Forecast time</th><th>Condition</th><th>Temperature</th><th>Feels like</th>
+                <th>Rain</th><th>Rain chance</th><th>Humidity</th><th>Wind</th>
+              </tr>
+            </thead>
+            <tbody id="live-weather-rows"><tr><td colspan="8">Loading live weather…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
 
       <!-- Telemetry Cards Grid -->
       <div class="wf-grid">

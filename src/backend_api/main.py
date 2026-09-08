@@ -175,7 +175,9 @@ def weather_telemetry():
     state = body.get("state", "Assam")
     district = body.get("district", "Cachar")
     basin = body.get("basin", "A127")
+    area = body.get("area", district)
     selected_date = body.get("date", time.strftime("%Y-%m-%d"))
+    forecast_time = body.get("forecast_time", "00:00")
     lead_time = body.get("lead_time_hours", 6)
 
     is_assam = (state == "Assam")
@@ -223,8 +225,10 @@ def weather_telemetry():
         "location": {
             "state": state,
             "district": district,
+            "area": area,
             "basin": basin,
             "date": selected_date,
+            "forecast_time": forecast_time,
             "lead_time_hours": lead_time
         },
         "observed_rainfall": {
