@@ -1458,21 +1458,128 @@
 
       </div>
 
-      <!-- Action Footer with Note and Predict Risk Button -->
+      <!-- ─── GROUND IOT TELEMETRY NODE (ESP32 Sensing Node) ─── -->
+      <section class="wf-iot-section" aria-labelledby="iot-node-title">
+        <div class="wf-iot-header">
+          <div class="wf-iot-header-left">
+            <div class="wf-iot-icon-wrap"><i class="fa-solid fa-microchip"></i></div>
+            <div>
+              <div class="wf-iot-badge-row">
+                <span class="wfc-category">CYBER-PHYSICAL EDGE TELEMETRY</span>
+                <span id="iot-heartbeat-badge" class="iot-status-badge online"><span class="pulse-dot"></span> Live Telemetry Connected</span>
+              </div>
+              <h3 id="iot-node-title" class="wf-iot-title">ESP32 Ground Hydrological Node: <span id="iot-device-id">ESP32_DEMO_01</span></h3>
+              <p class="wf-iot-meta">Subansiri River Basin Gauge · Station Ping: <span id="iot-ping-time">1.1s ago</span> · Calibration: <span class="calib-tag">Simulated Precipitation Equivalent</span></p>
+            </div>
+          </div>
+          <div class="wf-iot-header-right">
+            <span class="iot-source-tag"><i class="fa-solid fa-wifi"></i> Hardware Wi-Fi Mesh</span>
+          </div>
+        </div>
+
+        <div class="wf-grid wf-iot-grid">
+          <!-- IoT 1: Raindrop Sensor -->
+          <div class="wf-card highlight-blue">
+            <div class="wfc-head">
+              <div class="wfc-icon-wrap blue"><i class="fa-solid fa-cloud-showers-water"></i></div>
+              <div class="wfc-title-group">
+                <span class="wfc-category">SURFACE RAIN SENSOR (ADC1_34)</span>
+                <h3 class="wfc-name">Raindrop Sensor Index</h3>
+              </div>
+            </div>
+            <div class="wfc-val-box">
+              <div class="wfc-main-val" id="iot-rain-val">88 <span class="wfc-unit">%</span></div>
+              <div class="wfc-sub-val" id="iot-rain-sub">Simulated Equiv: <strong>281.6 mm</strong> (ADC: <span id="iot-raw-rain">450</span>)</div>
+            </div>
+            <div class="wfc-meta-table">
+              <div class="wfc-meta-row"><span class="wfc-meta-key">Probe Status:</span><span class="wfc-meta-val status-verified" id="iot-rain-status">Active Wet Surface</span></div>
+              <div class="wfc-meta-row"><span class="wfc-meta-key">Estimated R1h:</span><span class="wfc-meta-val" id="iot-rain-1h">30.8 mm/h (Surge)</span></div>
+            </div>
+          </div>
+
+          <!-- IoT 2: River Gauge Water Level -->
+          <div class="wf-card highlight-purple">
+            <div class="wfc-head">
+              <div class="wfc-icon-wrap purple"><i class="fa-solid fa-water"></i></div>
+              <div class="wfc-title-group">
+                <span class="wfc-category">RIVER PROBE SENSOR (ADC1_35)</span>
+                <h3 class="wfc-name">River Level &amp; Submersion</h3>
+              </div>
+            </div>
+            <div class="wfc-val-box">
+              <div class="wfc-main-val" id="iot-water-val">20.45 <span class="wfc-unit">m</span></div>
+              <div class="wfc-sub-val" id="iot-water-sub">Benchmark 20.0m · <strong class="c-red" id="iot-water-diff">+0.45 m Above Danger</strong></div>
+            </div>
+            <div class="wfc-meta-table">
+              <div class="wfc-meta-row"><span class="wfc-meta-key">Discharge:</span><span class="wfc-meta-val" id="iot-discharge-val">1,580 m³/s</span></div>
+              <div class="wfc-meta-row"><span class="wfc-meta-key">Raw Probe ADC:</span><span class="wfc-meta-val" id="iot-raw-water">3400 (Submerged)</span></div>
+            </div>
+          </div>
+
+          <!-- IoT 3: Soil Moisture -->
+          <div class="wf-card highlight-green">
+            <div class="wfc-head">
+              <div class="wfc-icon-wrap green"><i class="fa-solid fa-seedling"></i></div>
+              <div class="wfc-title-group">
+                <span class="wfc-category">SOIL HYGROMETER (ADC1_32)</span>
+                <h3 class="wfc-name">Soil Moisture Saturation</h3>
+              </div>
+            </div>
+            <div class="wfc-val-box">
+              <div class="wfc-main-val" id="iot-soil-val">92 <span class="wfc-unit">%</span></div>
+              <div class="wfc-sub-val" id="iot-soil-sub">Catchment Saturation · <strong class="c-red">Near Runoff Capacity</strong></div>
+            </div>
+            <div class="wfc-meta-table">
+              <div class="wfc-meta-row"><span class="wfc-meta-key">Raw Soil ADC:</span><span class="wfc-meta-val" id="iot-raw-soil">380 (Saturated)</span></div>
+              <div class="wfc-meta-row"><span class="wfc-meta-key">Runoff Status:</span><span class="wfc-meta-val status-verified">Immediate Inflow</span></div>
+            </div>
+          </div>
+
+          <!-- IoT 4: DHT11 Temp & RH -->
+          <div class="wf-card highlight-yellow">
+            <div class="wfc-head">
+              <div class="wfc-icon-wrap yellow"><i class="fa-solid fa-temperature-arrow-up"></i></div>
+              <div class="wfc-title-group">
+                <span class="wfc-category">DHT11 SENSOR (GPIO 4)</span>
+                <h3 class="wfc-name">Ambient Temp &amp; Humidity</h3>
+              </div>
+            </div>
+            <div class="wfc-val-box">
+              <div class="wfc-main-val" id="iot-temp-val">28.5 <span class="wfc-unit">°C</span></div>
+              <div class="wfc-sub-val" id="iot-hum-sub">Relative Humidity: <strong id="iot-hum-val">92% RH</strong></div>
+            </div>
+            <div class="wfc-meta-table">
+              <div class="wfc-meta-row"><span class="wfc-meta-key">Air Pressure Proxy:</span><span class="wfc-meta-val">996 hPa (Low)</span></div>
+              <div class="wfc-meta-row"><span class="wfc-meta-key">Dew Point:</span><span class="wfc-meta-val">27.1 °C</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action Footer with Triple-Action Predict Buttons -->
       <div class="wf-bottom-action-card">
         <div class="wf-action-info">
           <div class="wf-action-title">
-            <i class="fa-solid fa-shield-virus c-orange"></i>
-            <span>Hydro-Meteorological Telemetry Loaded Successfully</span>
+            <i class="fa-solid fa-layer-group c-orange"></i>
+            <span>Choose Prediction Mode (Multi-Source Intelligence)</span>
           </div>
-          <p class="wf-action-desc">All observations and NWP model parameters are verified for this location. Proceed to run XGBoost AI flood classification, TreeSHAP explainability, and evacuation route analysis.</p>
+          <p class="wf-action-desc">Select whether to run XGBoost AI inference on regional satellite NWP weather observations, live physical ESP32 ground sensor telemetry, or compare both side-by-side.</p>
         </div>
         
-        <button class="btn-predict-risk" id="btn-run-prediction-from-forecast">
-          <i class="fa-solid fa-bolt"></i>
-          <span>Predict Risk</span>
-          <i class="fa-solid fa-arrow-right"></i>
-        </button>
+        <div class="triple-actions-wrap">
+          <button class="btn-predict-action btn-weather-mode" id="btn-predict-weather" title="Predict using Open-Meteo and IMD Satellite">
+            <i class="fa-solid fa-cloud-sun-rain"></i>
+            <span>Predict Using Weather</span>
+          </button>
+          <button class="btn-predict-action btn-iot-mode" id="btn-predict-iot" title="Predict using Live Ground ESP32 Sensor">
+            <i class="fa-solid fa-microchip"></i>
+            <span>Predict Using IoT</span>
+          </button>
+          <button class="btn-predict-action btn-compare-mode" id="btn-predict-compare" title="Side-by-side Dual Prediction &amp; Discrepancy Insight">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span>Compare Results</span>
+          </button>
+        </div>
       </div>
 
     </div>
@@ -1652,6 +1759,79 @@
       <div class="modal-foot">
         <button class="btn-dl" id="btn-download-cap"><i class="fa-solid fa-download"></i> Download</button>
         <button class="btn-sec" id="btn-close-cap2">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DUAL COMPARISON MODAL (Satellite vs IoT) ─── -->
+  <div id="compare-modal" class="modal-bg hidden">
+    <div class="modal-box compare-modal-box">
+      <div class="modal-head">
+        <div class="modal-head-title">
+          <i class="fa-solid fa-scale-balanced c-orange"></i>
+          <span>Multi-Source Intelligence: Satellite vs Ground IoT Comparison</span>
+        </div>
+        <button class="close-x" id="close-compare">&times;</button>
+      </div>
+      
+      <!-- Discrepancy Insight Banner -->
+      <div class="discrepancy-banner" id="discrepancy-banner">
+        <div class="discrepancy-badge-wrap">
+          <span class="discrepancy-badge" id="cmp-badge">⚡ Ground Surge Alert (Local Discrepancy)</span>
+          <span class="delta-risk-tag" id="cmp-delta-tag">Δ +58% IoT Surge</span>
+        </div>
+        <p class="discrepancy-desc" id="cmp-insight-text">Analyzing sensor streams and computing discrepancy reasoning...</p>
+      </div>
+
+      <!-- Side-by-Side Dual Risk Cards -->
+      <div class="compare-dual-grid">
+        <!-- Satellite Card -->
+        <div class="compare-card compare-sat-card">
+          <div class="cmp-card-header">
+            <div class="cmp-icon-wrap blue"><i class="fa-solid fa-satellite"></i></div>
+            <div>
+              <span class="cmp-source-tag">Macro / Regional Layer</span>
+              <h4 class="cmp-title">Satellite &amp; IMD NWP</h4>
+            </div>
+          </div>
+          <div class="cmp-score-box">
+            <div class="cmp-score-val" id="cmp-sat-score">38%</div>
+            <div class="cmp-category-pill" id="cmp-sat-cat">Moderate Risk</div>
+          </div>
+          <div class="cmp-metrics-list">
+            <div class="cmp-metric-item"><span>Precipitation (3D):</span> <strong id="cmp-sat-rain">42.0 mm</strong></div>
+            <div class="cmp-metric-item"><span>Soil Saturation:</span> <strong id="cmp-sat-soil">45%</strong></div>
+            <div class="cmp-metric-item"><span>River Gauge:</span> <strong id="cmp-sat-river">19.20 m (Safe)</strong></div>
+          </div>
+        </div>
+
+        <!-- IoT Ground Card -->
+        <div class="compare-card compare-iot-card">
+          <div class="cmp-card-header">
+            <div class="cmp-icon-wrap orange"><i class="fa-solid fa-microchip"></i></div>
+            <div>
+              <span class="cmp-source-tag">Micro / Local Layer</span>
+              <h4 class="cmp-title">ESP32 Ground Node</h4>
+            </div>
+          </div>
+          <div class="cmp-score-box">
+            <div class="cmp-score-val" id="cmp-iot-score">96%</div>
+            <div class="cmp-category-pill pill-danger" id="cmp-iot-cat">Very High Risk</div>
+          </div>
+          <div class="cmp-metrics-list">
+            <div class="cmp-metric-item"><span>Rain Sensor Index:</span> <strong id="cmp-iot-rain">88% (281mm eq)</strong></div>
+            <div class="cmp-metric-item"><span>Soil Saturation:</span> <strong id="cmp-iot-soil">92% (Runoff)</strong></div>
+            <div class="cmp-metric-item"><span>River Channel:</span> <strong id="cmp-iot-river" class="c-red">20.45 m (+0.45m)</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Action -->
+      <div class="modal-foot compare-modal-foot">
+        <button class="btn-sec" id="btn-close-compare">Close Comparison</button>
+        <button class="btn-predict-action btn-iot-mode" id="btn-apply-iot-dash">
+          <i class="fa-solid fa-arrow-right"></i> Open IoT Risk Dashboard
+        </button>
       </div>
     </div>
   </div>

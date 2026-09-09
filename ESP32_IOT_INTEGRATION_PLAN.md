@@ -1,129 +1,220 @@
-# PravahAI — ESP32 Cyber-Physical Flood Early Warning System
-## Hardware Integration & Physics Scaling Architecture Plan
+# PravahAI — Unified IoT + ML Flood Risk Intelligence System
+## Master Integration Plan: Combining Cyber-Physical Sensing, Satellite Telemetry & Agentic AI
 
 ---
 
-## 📌 1. Project Overview & Vision
+## 📌 1. Purpose & System Vision
 
-**PravahAI** is an AI-powered Flash Flood Early Warning and Evacuation Routing System. This document outlines the end-to-end integration of a physical **ESP32 IoT Catchment Node** equipped with multi-sensor telemetry to simulate and demonstrate real-time flash flood triggers during live demonstrations and hackathon judging.
+**PravahAI** integrates two complementary data streams to provide reliable, multi-scale flood forecasting:
+1. **Macro/Regional Layer (Satellite & IMD NWP)**: Captures large-scale monsoon anomalies, 3-day satellite precipitation, and catchment-wide topography.
+2. **Micro/Local Layer (ESP32 IoT Sensor Node)**: Captures ground-level hydro-physical indicators (soil saturation, immediate precipitation accumulation, river gauge surges).
 
-### 🌟 Key Highlights for Demonstration:
-1. **Dual-Mode System**:
-   - **Mode 1 (Satellite / IMD Live Forecast)**: Real-time global meteorological & hydrological satellite telemetry.
-   - **Mode 2 (Physical ESP32 IoT Node)**: Live cyber-physical simulation responding to physical water spray and soil hydration.
-2. **Real-time Machine Learning Inference**:
-   - Ingests scaled physical sensor data into the **XGBoost Classifier** (`FlashFloodMLModel`).
-   - Produces instantaneous **TreeSHAP feature attributions** and confidence scores.
-3. **Automated Agentic Action**:
-   - Triggers Common Alerting Protocol (**CAP XML**) alerts.
-   - Computes **Dijkstra-based safe evacuation corridors** avoiding submerged transit routes.
+This document establishes the architecture for a **demo-ready, explainable, source-aware, and technically honest** flood intelligence system.
+
+```mermaid
+graph TD
+    subgraph Physical Hardware Testbed
+        S1[Raindrop Sensor] -->|GPIO 34 ADC| ESP[ESP32 Microcontroller]
+        S2[Water Level Sensor] -->|GPIO 35 ADC| ESP
+        S3[Soil Moisture Sensor] -->|GPIO 32 ADC| ESP
+        S4[DHT11/22 Temp & Humidity] -->|GPIO 4 Digital| ESP
+    end
+
+    subgraph Communication Bridge
+        ESP -->|Wi-Fi HTTP POST JSON \n Every 2-3 sec| Gateway["PravahAI Gateway / Express (:3000)"]
+        Gateway --> PythonMaster["Python Master Backend (:5000)"]
+    end
+
+    subgraph Multi-Source Intelligence Core
+        PythonMaster --> Calib["Calibration & Physics Scaling Engine"]
+        Calib --> ML_XGBoost["XGBoost ML Flood Classifier"]
+        ML_XGBoost --> SHAP["TreeSHAP Explainability Engine"]
+        SHAP --> Agentic["LangGraph Multi-Agent Supervisor"]
+        Agentic --> Routes["OSM Safe Route & Shelter Allocator"]
+    end
+
+    subgraph Triple-Action Frontend UI
+        PythonMaster --> UI["PravahAI Dashboard (:3000)"]
+        UI --> M1["[Predict Using Weather]"]
+        UI --> M2["[Predict Using IoT]"]
+        UI --> M3["[Compare Results (Satellite vs IoT)]"]
+    end
+```
 
 ---
 
-## 🔌 2. Hardware Setup & Pin Mapping
+## 🛡️ 2. Technical Honesty & Jury Defense Strategy
 
-| Sensor Name | Measurement | Sensor Output | ESP32 GPIO Pin | Description |
+> [!IMPORTANT]
+> **Hackathon & Evaluation Defense Rule**:
+> Low-cost demo sensors (e.g., analog raindrop probes) cannot measure calibrated continuous rainfall volume in exact millimetres. 
+> 
+> In PravahAI, we explicitly label these measurements as:
+> **`Ground IoT Observation (Simulated Rainfall Equivalent Index)`** instead of claiming raw sensor precision.
+
+### 🎯 Pre-empting Jury Cross-Questions:
+
+* **Jury Question**: *"Aapka 2 cm ka rain sensor 200 mm real rainfall kaise measure kar raha hai?"*
+  * **Strong Answer**: *"Sir, physical sensor ground-level wetness aur electrical resistance measure karta hai. Humara Calibration Engine use normalized index ($0-100$) me convert karta hai aur trained catchment hydrology curve ke hisaab se catchment-equivalent precipitation estimate karta hai. UI par hum ise clearly 'Simulated Equivalent Index' label karte hain."*
+
+* **Jury Question**: *"Agar Satellite Weather aur Local Sensor me difference ho toh model kya karega?"*
+  * **Strong Answer**: *"Humne 'Compare Results' feature diya hai jo discrepancy highlight karta hai — agar Satellite dry dikhata hai lekin Ground Sensor sudden flash surge detect karta hai, toh Agentic AI local warning issue karta hai."*
+
+---
+
+## 🔌 3. Hardware Bill of Materials & Pin Configuration
+
+| Component / Sensor | Sensor Output | ESP32 Pin | Voltage | Role in Demonstration |
 |---|---|---|---|---|
-| **Raindrop / Precipitation Sensor** | Surface Water Accumulation | Analog (AO) | `GPIO 34` (ADC1) | Measures physical water spray intensity. |
-| **Water Level Sensor** | River Catchment Depth | Analog (Signal) | `GPIO 35` (ADC1) | Measures water column height in a container. |
-| **Soil Moisture Sensor (Capacitive/Resistive)** | Soil Saturation Index | Analog (AO) | `GPIO 32` (ADC1) | Measures volumetric moisture in a soil pot. |
-| **DHT11 / DHT22 Sensor** | Ambient Atmosphere | Digital Signal | `GPIO 4` | Measures ambient temperature & relative humidity. |
-| **Power Distribution** | VCC / GND | Power Rails | `3.3V / 5V` & `GND` | Common breadboard power bus. |
+| **ESP32 NodeMCU (WROOM-32)** | Wi-Fi 802.11 b/g/n | Microcontroller | 5V / 3.3V | Reads all analog/digital sensors and posts JSON over Wi-Fi. |
+| **Raindrop Sensor Module** | Analog Out (AO) | `GPIO 34` (ADC1) | 3.3V / 5V | Detects water spray / drops to simulate precipitation surge. |
+| **Water Level Sensor Probe** | Analog Signal (S) | `GPIO 35` (ADC1) | 3.3V / 5V | Measures water depth when immersed in a glass/container. |
+| **Soil Moisture Sensor (Capacitive/Resistive)** | Analog Out (AO) | `GPIO 32` (ADC1) | 3.3V / 5V | Measures volumetric moisture difference in a wet soil pot. |
+| **DHT11 / DHT22 Sensor** | Digital Serial | `GPIO 4` | 3.3V / 5V | Captures ambient air temperature and relative humidity. |
+| **Breadboard + Jumpers** | — | — | — | Clean, solder-less sensor connectivity. |
 
 ---
 
-## 📐 3. Mathematical Physics & Calibration Curves
+## 📐 4. Mathematical Physics & Calibration Curves
 
-Because small-scale laboratory demonstrations cannot physically deliver 200–350 mm of precipitation, a **Physics Scaling Engine** maps miniature sensor values into catchment-scale parameters.
+The Python backend converts raw ADC values ($0-4095$) into standardized hydro-meteorological features:
 
-### A. Precipitation Scaling ($R_{3d}$ & $R_{1h}$)
-* **Raw ADC**: Dry ($\approx 4095$) to Saturated Wet ($\approx 400$).
+### A. Rainfall Scaling ($R_{3d}$ & $R_{1h}$)
+* **Raw ADC**: Dry ($\approx 4095$) $\to$ Saturated Wet ($\approx 400$).
 * **Normalized Wetness Index**:
   $$\text{Wetness} = \max\left(0.0, \min\left(1.0, \frac{4095 - \text{RawADC}}{3600}\right)\right)$$
 * **Scaled 3-Day Cumulative Rainfall**:
   $$R_{3d} = \text{Wetness} \times 320.0\text{ mm} \times \text{Multiplier}$$
-* **Live Hourly Intensity**:
+* **Instantaneous Rain Intensity**:
   $$R_{1h} = \text{Wetness} \times 35.0\text{ mm/h}$$
 
-### B. River Depth & Discharge Scaling
+### B. River Catchment Depth & Discharge
 * **Submerged Ratio**:
   $$\text{SubmergedPct} = \max\left(0.0, \min\left(1.0, \frac{\text{RawWater} - 300}{3200}\right)\right)$$
-* **River Gauge Height ($H$)**:
-  $$H = \text{DangerLevel} + (\text{SubmergedPct} - 0.40) \times 1.60\text{ m}$$
-* **Volumetric River Discharge ($Q$)**:
+* **River Gauge Level ($H$) Relative to CWC Danger Benchmark ($D$)**:
+  $$H = D + (\text{SubmergedPct} - 0.40) \times 1.60\text{ m}$$
+* **Catchment Discharge ($Q$)**:
   $$Q = 220 + (\text{SubmergedPct} \times 1400)\text{ m}^3/\text{s}$$
 
-### C. Soil Moisture Saturation
+### C. Soil Saturation Index ($\%$)
 * **Soil Wetness Ratio**:
   $$\text{SoilWetness} = \max\left(0.0, \min\left(1.0, \frac{4095 - \text{RawSoil}}{3200}\right)\right)$$
-* **Soil Saturation Percentage**:
+* **Soil Saturation ($\%$)**:
   $$\text{Soil}_{\%} = \min\left(98.0\%, 35.0\% + (\text{SoilWetness} \times 62.0\%)\right)$$
 
 ---
 
-## 🛰️ 4. Data Flow & Communication Protocol
+## 📡 5. Backend API Specification & Data Flow
 
 ```mermaid
 sequenceDiagram
+    autonumber
     participant ESP as ESP32 Hardware Node
-    participant Flask as PravahAI Backend (:5000)
-    participant ML as XGBoost ML Engine
-    participant UI as Web Dashboard (:3000)
+    participant Gateway as Express Gateway (:3000)
+    participant Python as Master Backend (:5000)
+    participant UI as PravahAI Frontend
 
-    loop Every 2.5 Seconds
-        ESP->>Flask: HTTP POST /api/iot-telemetry (JSON)
-        Flask->>Flask: Calibrate ADC to Hydro Metrics
-        Flask->>ML: predict_sample(Rain, Soil, Slope, Flow)
-        ML-->>Flask: Risk % (e.g., 96%), SHAP attributions
-        UI->>Flask: GET /api/iot-status (Polling/Stream)
-        Flask-->>UI: Calibrated Metrics, Risk %, Route Recommendations
-        UI->>UI: Update Gauges, Radar, and Safe Paths Live
+    ESP->>Gateway: POST /api/iot/readings (JSON)
+    Gateway->>Python: Forward to /api/iot-telemetry
+    Python->>Python: Validate, Average & Calibrate ADC
+    Python->>Python: Update LATEST_IOT_BUFFER (In-Memory)
+    
+    rect rgb(240, 248, 255)
+        note over UI,Python: User clicks [Predict Using IoT]
+        UI->>Gateway: POST /api/predict/iot
+        Gateway->>Python: POST /api/get-dashboard-data {"source": "iot_node"}
+        Python->>Python: Run XGBoost Inference + SHAP
+        Python-->>UI: Probability %, Category, SHAP factors, Safe Routes
+    end
+
+    rect rgb(255, 245, 245)
+        note over UI,Python: User clicks [Compare Results]
+        UI->>Python: POST /api/predict/compare
+        Python-->>UI: Side-by-side (Satellite Score vs IoT Score) + Discrepancy Insight
     end
 ```
 
-### JSON Telemetry Schema:
+### JSON Telemetry Payload (ESP32 $\to$ Backend):
 ```json
 {
-  "device_id": "PRAVAH-ESP32-NODE-01",
+  "device_id": "ESP32_DEMO_01",
+  "location": "Demo Lab",
   "state": "Assam",
   "district": "Dhemaji",
   "basin": "A011",
   "raw_rain": 450,
   "raw_water_level": 3400,
   "raw_soil": 380,
-  "temperature": 27.5,
-  "humidity": 94.0,
-  "multiplier": 1.0
+  "temperature": 28.5,
+  "humidity": 92.0,
+  "demo_mode": true
 }
 ```
 
 ---
 
-## 💻 5. Firmware & Software Files Location
+## 🖥️ 6. Frontend Layout & Triple-Action Workflow
 
-| Component | File Path | Status / Description |
-|---|---|---|
-| **ESP32 Firmware Sketch** | `src/hardware_node/pravah_esp32_firmware.ino` | Complete Arduino C++ sketch with Wi-Fi & HTTP Client. |
-| **Mock Sensor Simulator** | `src/hardware_node/mock_iot_sender.py` | Python test script to simulate dry vs. flood physical packets. |
-| **Master Backend API** | `src/backend_api/main.py` | Hosts `/api/iot-telemetry` & `/api/iot-status` endpoints. |
-| **Dashboard UI** | `src/frontend_dashboard/index.html` & `app.js` | Dual-mode dashboard supporting Live Web vs Hardware Node. |
+### UI Placement:
+The IoT monitoring panel is placed directly beneath the **Location & Weather Forecast Section** on the workflow page.
+
+```
++----------------------------------------------------------------------------------------------------+
+|  📍 LOCATION: Assam · Dhemaji · A011 Subansiri Basin                                               |
++----------------------------------------------------------------------------------------------------+
+|  [ 🌐 SECTION 1: Regional Satellite & IMD Live Forecast (Precipitation: 0.0mm, Soil: 45%) ]       |
++----------------------------------------------------------------------------------------------------+
+|  [ ⚡ SECTION 2: Live Ground ESP32 IoT Observation Node ]                                          |
+|  Status: 🟢 Connected (Ping: 1.1s ago) | Device: ESP32_DEMO_01                                      |
+|  [Rain Index: 88%]  [Water Level: 20.15m (+Danger)]  [Soil: 92%]  [Temp: 28.5°C]  [RH: 92%]        |
++----------------------------------------------------------------------------------------------------+
+|  PREDICTION ACTIONS:                                                                               |
+|  [ 🌐 Predict Using Weather ]   [ ⚡ Predict Using IoT ]   [ ⚖️ Compare Results (Weather vs IoT) ]  |
++----------------------------------------------------------------------------------------------------+
+```
+
+### Triple Action Behavior:
+1. **`[Predict Using Weather]`**: Computes risk exclusively using regional Open-Meteo & IMD AWS datasets.
+2. **`[Predict Using IoT]`**: Runs XGBoost on scaled physical sensor telemetry (water spray / submerged sensor).
+3. **`[Compare Results]`**: Renders side-by-side risk cards:
+   - **Satellite Risk**: e.g., $38\%$ (Moderate Risk)
+   - **IoT Ground Risk**: e.g., $96\%$ (Very High Flood Risk)
+   - **AI Insight**: *"Discrepancy detected. Regional forecast is moderate, but local IoT sensor reports rapid channel surge (+0.32m above danger level). Flash Flood Warning dispatched."*
 
 ---
 
-## 🚀 6. Step-by-Step Live Demonstration Script for Judges
+## 🔒 7. Admin Security, Role-Based Access & Audit Logging
 
-1. **Phase 1: Normal Baseline State (Dry Sensors)**
-   - Sensors sit dry on the table.
-   - Dashboard displays **Low / Moderate Risk ($\approx 15\% - 30\%$)**.
-   - River level indicates **-0.63 m below danger mark** (Green Badge).
+| Security Feature | Implementation Mechanism |
+|---|---|
+| **Authentication** | JWT-based token authentication (`/api/admin/login`). |
+| **Role-Based Access** | Roles: `Admin` (Broadcast alerts), `Operator` (Calibrate sensor offsets), `Viewer` (Read-only monitoring). |
+| **API Protection** | Middleware validation on all `/api/admin/*` and `/api/iot/calibrate` routes. |
+| **Audit Logging** | Every CAP XML broadcast is saved with Timestamp, Severity, Operator ID, and Delivery Status. |
 
-2. **Phase 2: Live Flash Flood Trigger (Physical Interaction)**
-   - Spray water onto the Raindrop Sensor with a small mist spray bottle.
-   - Dip the Water Level Sensor into a glass of water.
-   - Insert the Soil Moisture Sensor into moist soil.
+---
 
-3. **Phase 3: Real-Time AI Reaction**
-   - In $< 2$ seconds, the Dashboard Gauge swings to **$95\%+$ (Very High Risk / Red Alert)**.
-   - River status switches to **$+0.45\text{ m}$ Above Danger Mark**.
-   - SHAP explanation highlights: *“Primary Risk Driver: Rapid Antecedent Rainfall ($318\text{ mm}$) and River Channel Overflow”*.
-   - Evacuation panel displays high-ground routing along **NH Highland Bypass** and lists verified shelter capacities.
+## 🧪 8. End-to-End Test Scenarios
+
+| Test Case | Physical Sensor Action | Expected Scaled Metric | Expected ML Prediction |
+|---|---|---|---|
+| **Scenario 1: Dry Baseline** | Dry sensor, dry soil pot, water sensor in air | Rain: $0\text{ mm}$, Soil: $40\%$, River: Below Danger | **Low Risk ($15\% - 30\%$)** — Green Badge |
+| **Scenario 2: Water Spray Only** | Mist spray applied to Raindrop Sensor | Rain: $280\text{ mm}$, Soil: $45\%$, River: Normal | **Moderate/High Risk ($60\% - 75\%$)** |
+| **Scenario 3: Flash Flood (Full Demo)** | Water spray + Submerge sensor in glass + Wet soil | Rain: $318\text{ mm}$, Soil: $92\%$, River: $+0.45\text{ m}$ Above Danger | **Very High Risk ($95\% - 99\%$)** — Red Alert + Evacuation |
+| **Scenario 4: Node Offline** | Power off ESP32 / Disconnect Wi-Fi | Heartbeat $> 12\text{s}$ | UI shows **⚪ Awaiting Hardware Node** (No false live claims) |
+
+---
+
+## 🚀 9. Phased Development Roadmap
+
+```
+[Phase 1: Firmware & Pinout Test] ➔ Verify Serial Monitor readings on ESP32
+       │
+[Phase 2: Ingestion & Scaling API] ➔ Implement /api/iot-telemetry & physics scaling in main.py
+       │
+[Phase 3: Triple-Action UI Bar] ➔ Add [Weather], [IoT], and [Compare] buttons on Dashboard
+       │
+[Phase 4: Side-by-Side Comparison Engine] ➔ Implement Dual-Gauge + Discrepancy Insight
+       │
+[Phase 5: Live Demonstration Rehearsal] ➔ Spray water test & jury presentation dry run
+```

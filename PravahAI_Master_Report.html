@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PravahAI — Master Integration & Technical Architecture Report</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap');
+
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #1e293b;
+      background: #ffffff;
+      line-height: 1.6;
+      font-size: 10.5pt;
+    }
+
+    h1, h2, h3, h4, .brand-title {
+      font-family: 'Outfit', sans-serif;
+      color: #0f172a;
+    }
+
+    /* Cover / Header Banner */
+    .header-banner {
+      background: linear-gradient(135deg, #09121d 0%, #172a42 100%);
+      color: #ffffff;
+      padding: 28px 32px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      border: 1px solid #223c5d;
+    }
+
+    .doc-tag {
+      display: inline-block;
+      background: rgba(255, 107, 0, 0.2);
+      color: #ff8c38;
+      border: 1px solid rgba(255, 107, 0, 0.4);
+      padding: 3px 12px;
+      border-radius: 9999px;
+      font-size: 8.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+
+    .main-title {
+      font-size: 20pt;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+
+    .main-title span {
+      color: #ff6b00;
+    }
+
+    .sub-title {
+      font-size: 11pt;
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .meta-bar {
+      display: flex;
+      gap: 20px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 8.5pt;
+      color: #cbd5e1;
+    }
+
+    .meta-item strong {
+      color: #ffffff;
+    }
+
+    /* Section Styling */
+    .section {
+      margin-bottom: 22px;
+      page-break-inside: avoid;
+    }
+
+    .section-title {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-num {
+      background: #ff6b00;
+      color: #ffffff;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9pt;
+      font-weight: 800;
+    }
+
+    p {
+      margin-bottom: 10px;
+      color: #334155;
+      text-align: justify;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 16px 0;
+      font-size: 9pt;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 12px 0;
+      font-size: 9.5pt;
+      border-left: 4px solid;
+    }
+
+    .callout-info {
+      background: #f0f9ff;
+      border-color: #0284c7;
+      color: #0369a1;
+    }
+
+    .callout-warning {
+      background: #fff7ed;
+      border-color: #ea580c;
+      color: #9a3412;
+    }
+
+    .callout-success {
+      background: #f0fdf4;
+      border-color: #16a34a;
+      color: #166534;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Code & Formulas */
+    .formula-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin: 8px 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 8.5pt;
+      color: #0f172a;
+    }
+
+    .formula-title {
+      font-weight: 700;
+      color: #ea580c;
+      margin-bottom: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 9pt;
+    }
+
+    /* Architecture Grid */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .arch-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      background: #f8fafc;
+    }
+
+    .arch-card-title {
+      font-weight: 700;
+      font-size: 9.5pt;
+      color: #0f172a;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .arch-card-desc {
+      font-size: 8.5pt;
+      color: #64748b;
+      line-height: 1.45;
+    }
+
+    /* Footer */
+    .doc-footer {
+      margin-top: 30px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 8pt;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER BANNER -->
+  <div class="header-banner">
+    <div class="doc-tag">PravahAI Technical Master Plan &amp; Integration Architecture</div>
+    <h1 class="main-title">Unified Cyber-Physical Sensing &amp; <span>Agentic AI</span> Flood Intelligence</h1>
+    <div class="sub-title">Multi-Scale Flood Forecasting: Combining ESP32 Ground Node, Open-Meteo Satellite NWP &amp; TreeSHAP Explainable ML</div>
+    
+    <div class="meta-bar">
+      <div class="meta-item">Document: <strong>Master Architecture Report v2.4</strong></div>
+      <div class="meta-item">Classification: <strong>Smart India Hackathon (SIH 2026) / Research Whitepaper</strong></div>
+      <div class="meta-item">Status: <strong>System Operational &amp; Calibrated</strong></div>
+    </div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-num">1</span> Purpose &amp; System Vision</h2>
+    <p>
+      <strong>PravahAI</strong> integrates two complementary data streams to provide reliable, multi-scale flood forecasting and life-saving early warning:
+    </p>
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="arch-card-title">🌐 Macro / Regional Layer</div>
+        <div class="arch-card-desc">Open-Meteo &amp; IMD NWP ensemble precipitation, 16-day synoptic projections, and SRTM 30m Digital Elevation Models (DEM).</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-title">⚡ Micro / Local Layer</div>
+        <div class="arch-card-desc">ESP32 cyber-physical sensor node capturing real-time ground wetness, river gauge depth surge, and volumetric soil saturation.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-title">🧠 Multi-Source Fusion</div>
+        <div class="arch-card-desc">Dual XGBoost inference + TreeSHAP explainability engine + OSM Dijkstra safe evacuation route &amp; shelter allocator.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-num">2</span> Technical Honesty &amp; Jury Defense Strategy</h2>
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ Mandatory Evaluation &amp; Hackathon Defense Rule:</div>
+      Low-cost physical analog probes (e.g. 2 cm raindrop sensors) measure surface conductivity and electrical resistance, not calibrated physical millimetres in free atmosphere. In PravahAI, we explicitly label these measurements as <strong>"Ground IoT Observation (Simulated Rainfall Equivalent Index)"</strong>.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 35%;">Anticipated Jury Question</th>
+          <th style="width: 65%;">Defensible Technical Answer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>"Aapka 2 cm ka rain sensor 200 mm real rainfall kaise measure kar raha hai?"</strong></td>
+          <td>Physical sensor ground-level wetness aur electrical resistance measure karta hai. Humara Calibration Engine use normalized index ($0-100\%$) me convert karta hai aur trained catchment hydrology curve ke hisaab se catchment-equivalent precipitation ($R_{3d} \le 320\text{ mm}$) estimate karta hai. UI par ise clearly 'Simulated Equivalent Index' label kiya gaya hai.</td>
+        </tr>
+        <tr>
+          <td><strong>"Agar Satellite Weather aur Local Sensor me difference ho toh model kya karega?"</strong></td>
+          <td>Humne <strong>'Compare Results (Discrepancy Engine)'</strong> diya hai — agar satellite dry dikhata hai lekin ground sensor sudden channel surge detect karta hai, toh Agentic AI instantly Localized Flash Flood Warning trigger karta hai without waiting for satellite orbital pass.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-num">3</span> Hardware Configuration &amp; ESP32 Pinout</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Component / Sensor</th>
+          <th>Sensor Output</th>
+          <th>ESP32 Pin</th>
+          <th>Operating Voltage</th>
+          <th>Role in Demonstration</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>ESP32 NodeMCU (WROOM-32)</strong></td>
+          <td>Wi-Fi 802.11 b/g/n</td>
+          <td>Microcontroller</td>
+          <td>3.3V / 5V</td>
+          <td>Reads analog/digital sensors and transmits JSON payload via HTTP POST.</td>
+        </tr>
+        <tr>
+          <td><strong>Raindrop Sensor Module</strong></td>
+          <td>Analog Out (AO)</td>
+          <td><code>GPIO 34</code> (ADC1_CH6)</td>
+          <td>3.3V / 5V</td>
+          <td>Detects surface mist/water spray to simulate precipitation accumulation.</td>
+        </tr>
+        <tr>
+          <td><strong>Water Level Sensor Probe</strong></td>
+          <td>Analog Signal (S)</td>
+          <td><code>GPIO 35</code> (ADC1_CH7)</td>
+          <td>3.3V / 5V</td>
+          <td>Measures water depth when submerged in a water container.</td>
+        </tr>
+        <tr>
+          <td><strong>Soil Moisture Sensor</strong></td>
+          <td>Analog Out (AO)</td>
+          <td><code>GPIO 32</code> (ADC1_CH4)</td>
+          <td>3.3V / 5V</td>
+          <td>Measures soil moisture saturation in demo pot.</td>
+        </tr>
+        <tr>
+          <td><strong>DHT11 Sensor</strong></td>
+          <td>Digital Serial</td>
+          <td><code>GPIO 4</code> (Digital I/O)</td>
+          <td>3.3V / 5V</td>
+          <td>Captures ambient temperature and relative humidity.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 4 -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-num">4</span> Mathematical Physics &amp; Calibration Curves</h2>
+    <p>The Python Master Backend converts raw 12-bit ADC values ($0-4095$) into domain hydrological features:</p>
+    
+    <div class="formula-box">
+      <div class="formula-title">A. Rainfall Scaling (Dry ≈ 4095, Saturated Wet ≈ 400 ADC):</div>
+      Wetness_Ratio = max(0.0, min(1.0, (4095 - Raw_Rain) / 3600))<br>
+      Rain_Index_% = Wetness_Ratio × 100%<br>
+      Scaled_R3d = Wetness_Ratio × 320.0 mm<br>
+      Scaled_R1h = Wetness_Ratio × 35.0 mm/h
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-title">B. River Catchment Depth &amp; Submersion Relative to Danger Benchmark:</div>
+      Submerged_Ratio = max(0.0, min(1.0, (Raw_Water - 300) / 3200))<br>
+      River_Gauge_Level (H) = 20.00m + (Submerged_Ratio - 0.40) × 1.60m<br>
+      Difference_to_Danger = H - 20.00m<br>
+      River_Discharge (Q) = 220 + (Submerged_Ratio × 1400) m³/s
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-title">C. Soil Moisture Saturation Index:</div>
+      Soil_Wetness_Ratio = max(0.0, min(1.0, (4095 - Raw_Soil) / 3200))<br>
+      Soil_Saturation_% = min(98.0%, 35.0% + (Soil_Wetness_Ratio × 62.0%))
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-num">5</span> Triple-Action Workflow &amp; Dual Inference</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Prediction Action</th>
+          <th>Data Source Used</th>
+          <th>Primary Use-Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>[ 🌐 Predict Using Weather ]</strong></td>
+          <td>Open-Meteo + IMD NWP Forecast</td>
+          <td>Macro-regional forecasting up to 16 days in advance across state basins.</td>
+        </tr>
+        <tr>
+          <td><strong>[ ⚡ Predict Using IoT ]</strong></td>
+          <td>ESP32 Ground Physical Node (Live)</td>
+          <td>Immediate catchment runoff and rapid river stage surge evaluation.</td>
+        </tr>
+        <tr>
+          <td><strong>[ ⚖️ Compare Results ]</strong></td>
+          <td>Dual Satellite vs IoT Inference</td>
+          <td>Detects ground-flash discrepancies ($\Delta\text{Risk}$) and generates explainable early advisories.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-num">6</span> End-to-End Test Scenarios &amp; Validation</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Scenario</th>
+          <th>Physical / Simulator State</th>
+          <th>Scaled Hydro Metric</th>
+          <th>ML Output &amp; Alert Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Scenario 1: Baseline Dry</strong></td>
+          <td>Dry sensor, dry soil, water probe in air</td>
+          <td>Rain: 0 mm, Soil: 35%, River: -0.64m below danger</td>
+          <td><span style="color: #16a34a; font-weight: 700;">Low Risk (15-25%)</span> — Normal Monitoring</td>
+        </tr>
+        <tr>
+          <td><strong>Scenario 2: Rain Spray Surge</strong></td>
+          <td>Water spray mist on raindrop sensor</td>
+          <td>Rain: 210 mm, Soil: 68%, River: Safe depth</td>
+          <td><span style="color: #ea580c; font-weight: 700;">Moderate/High Risk (65-75%)</span> — Advisory</td>
+        </tr>
+        <tr>
+          <td><strong>Scenario 3: Extreme Flash Flood</strong></td>
+          <td>Soaked sensor + submerged probe + wet soil</td>
+          <td>Rain: 320 mm, Soil: 97%, River: +0.96m above danger</td>
+          <td><span style="color: #dc2626; font-weight: 700;">Very High Risk (99%)</span> — Evacuation &amp; CAP XML</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-footer">
+    <span>PravahAI Project Report · Generated for Academic &amp; Hackathon Evaluation</span>
+    <span>Document ID: PRAVAH-IOT-ML-2026-v2.4 · Confidential</span>
+  </div>
+
+</body>
+</html>

@@ -626,6 +626,11 @@ function hideLoadingBar() {
    8. MAIN PREDICTION FLOW
    ------------------------------------------------- */
 async function runPrediction(state, district, basinId, basinLabel) {
+  state = state || currentPredictionParams.state || "Assam";
+  district = district || currentPredictionParams.district || "Cachar";
+  basinId = basinId || currentPredictionParams.basinId || "A127";
+  basinLabel = basinLabel || currentPredictionParams.basinLabel || "A127 — Barak River Basin";
+
   showLoadingBar();
   try {
     const coords = CATCHMENT_COORDS[basinId] || { lat: 24.82, lon: 92.80 };
@@ -715,12 +720,222 @@ async function runPrediction(state, district, basinId, basinLabel) {
 }
 
 /* -------------------------------------------------
+   8B. IOT PREDICTION FLOW
+   ------------------------------------------------- */
+async function runIotPrediction(state, district, basinId, basinLabel) {
+  state = state || currentPredictionParams.state || "Assam";
+  district = district || currentPredictionParams.district || "Cachar";
+  basinId = basinId || currentPredictionParams.basinId || "A127";
+  basinLabel = basinLabel || currentPredictionParams.basinLabel || "A127 — Barak River Basin";
+
+  showLoadingBar();
+  try {
+    const resp = await fetch("/api/predict/iot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state, district, basin: basinId })
+    });
+    const data = await resp.json();
+    if (data.status !== "success") throw new Error(data.message || "IoT prediction failed");
+
+    const prob = data.risk_summary.probability_percent;
+    const cat = data.risk_summary.category;
+
+    showResultsPage(state, district, `${basinLabel} (ESP32 Ground IoT Node)`);
+    
+    // Set custom IoT weather card proxy and historical comparison
+    const hist = HISTORICAL_EVENTS[state] || HISTORICAL_EVENTS["Assam"];
+    const calib = data.calibrated_telemetry_snapshot || {};
+    const rain3dVal = Math.round(calib.scaled_rain_3d_mm || (calib.rain_intensity_mmh ? calib.rain_intensity_mmh * 7.5 : 110));
+    const soilVal = Math.round(calib.soil_saturation_pct || 40);
+    const dischargeVal = Math.round(calib.river_discharge_m3s || 220);
+    const riverLevelVal = calib.river_gauge_m || 19.4;
+
+    const iotWeather = {
+      temp: `${calib.temperature_c || 28.5}°C`,
+      rain: `${calib.rain_intensity_mmh || 0} mm/h`,
+      rain3d: `${rain3dVal} mm`,
+      soil: `${soilVal}%`,
+      runoff: `${Math.round(soilVal * 0.85)}%`,
+      discharge: `${dischargeVal} m³/s`,
+      riverLevel: riverLevelVal,
+      soilMoisture: soilVal,
+      elevRange: "Ground Level Sensor Probe",
+      windSpeed: 14,
+      pressure: 998,
+      source_badge: "ESP32 Ground IoT Hardware Node (Calibrated)"
+    };
+
+    setWeatherCards(iotWeather);
+    setGauge(prob, cat);
+    setHistComparison(state, iotWeather, hist);
+    
+    const shap = {
+      summary: data.explainable_ai?.summary || `Ground ESP32 sensor telemetry indicates ${cat.toLowerCase()} flood vulnerability based on real-time water probe submersion and soil saturation.`,
+      factors: (data.explainable_ai?.factors || []).map(f => ({ name: f.feature, value: f.score }))
+    };
+    setShap(shap);
+
+    const routes = data.routes_and_safety || generateRoutes(state);
+    const shelters = data.safe_shelters || generateShelters(state);
+    setRoutes(routes);
+    setShelters(shelters);
+    initMap(state);
+
+    window._lastCap = generateCAP(state, district, prob, cat);
+    const alertHeadline = document.getElementById("alert-headline");
+    if (alertHeadline) {
+      alertHeadline.textContent = prob >= 75 ? "LOCAL FLASH FLOOD WARNING (IOT)" : "GROUND ADVISORY (IOT)";
+    }
+  } catch (err) {
+    console.error("IoT Prediction error:", err);
+    alert("Could not complete IoT prediction. Please ensure backend is running.");
+  } finally {
+    hideLoadingBar();
+  }
+}
+
+/* -------------------------------------------------
+   8C. DUAL COMPARISON FLOW
+   ------------------------------------------------- */
+async function runComparisonFlow(state, district, basinId, basinLabel) {
+  state = state || currentPredictionParams.state || "Assam";
+  district = district || currentPredictionParams.district || "Cachar";
+  basinId = basinId || currentPredictionParams.basinId || "A127";
+  basinLabel = basinLabel || currentPredictionParams.basinLabel || "A127 — Barak River Basin";
+
+  showLoadingBar();
+  try {
+    const resp = await fetch("/api/predict/compare", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state, district, basin: basinId, area: district })
+    });
+    const data = await resp.json();
+    if (data.status !== "success") throw new Error(data.message || "Comparison failed");
+
+    // Fill Comparison Modal
+    const cmp = data.comparison;
+    const sat = data.satellite_model;
+    const iot = data.iot_ground_model;
+
+    const badgeEl = document.getElementById("cmp-badge");
+    const deltaEl = document.getElementById("cmp-delta-tag");
+    const descEl = document.getElementById("cmp-insight-text");
+
+    if (badgeEl) badgeEl.textContent = cmp.discrepancy_badge;
+    if (deltaEl) {
+      deltaEl.textContent = `Δ ${cmp.delta_risk_percent >= 0 ? '+' : ''}${cmp.delta_risk_percent}% IoT vs Sat`;
+    }
+    if (descEl) descEl.textContent = cmp.ai_discrepancy_insight;
+
+    // Sat card
+    document.getElementById("cmp-sat-score").textContent = `${sat.probability_percent}%`;
+    document.getElementById("cmp-sat-cat").textContent = `${sat.category} Risk`;
+    document.getElementById("cmp-sat-rain").textContent = `${sat.key_metrics.rainfall_3d_mm} mm`;
+    document.getElementById("cmp-sat-soil").textContent = `${sat.key_metrics.soil_saturation_pct}%`;
+    document.getElementById("cmp-sat-river").textContent = `${sat.key_metrics.river_level_m} m`;
+
+    // IoT card
+    document.getElementById("cmp-iot-score").textContent = `${iot.probability_percent}%`;
+    document.getElementById("cmp-iot-cat").textContent = `${iot.category} Risk`;
+    document.getElementById("cmp-iot-rain").textContent = `${iot.key_metrics.rain_index_pct}% (${iot.key_metrics.scaled_rain_3d_mm}mm eq)`;
+    document.getElementById("cmp-iot-soil").textContent = `${iot.key_metrics.soil_saturation_pct}%`;
+    const diffM = iot.key_metrics.diff_to_danger_m;
+    document.getElementById("cmp-iot-river").textContent = `${iot.key_metrics.river_gauge_m}m (${diffM >= 0 ? '+' : ''}${diffM}m)`;
+
+    // Open modal
+    document.getElementById("compare-modal")?.classList.remove("hidden");
+  } catch (err) {
+    console.error("Comparison flow error:", err);
+    alert("Could not load comparison data.");
+  } finally {
+    hideLoadingBar();
+  }
+}
+
+/* -------------------------------------------------
+   8D. LIVE IOT TELEMETRY POLLING
+   ------------------------------------------------- */
+async function pollIotTelemetry() {
+  try {
+    const res = await fetch("/api/iot/latest");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.status !== "success") return;
+
+    const isConnected = data.is_connected;
+    const badge = document.getElementById("iot-heartbeat-badge");
+    const ping = document.getElementById("iot-ping-time");
+    const devId = document.getElementById("iot-device-id");
+
+    if (badge) {
+      if (isConnected) {
+        badge.className = "iot-status-badge online";
+        badge.innerHTML = `<span class="pulse-dot"></span> Live Telemetry Connected`;
+      } else {
+        badge.className = "iot-status-badge offline";
+        badge.innerHTML = `⚪ Awaiting Telemetry`;
+      }
+    }
+
+    if (ping) {
+      ping.textContent = data.seconds_since_last_ping !== null ? `${data.seconds_since_last_ping}s ago` : "Offline";
+    }
+
+    if (devId && data.node_info?.device_id) {
+      devId.textContent = data.node_info.device_id;
+    }
+
+    const calib = data.calibrated;
+    const raw = data.raw;
+
+    if (calib) {
+      const rainVal = document.getElementById("iot-rain-val");
+      const rainSub = document.getElementById("iot-rain-sub");
+      const rain1h = document.getElementById("iot-rain-1h");
+      if (rainVal) rainVal.innerHTML = `${calib.rain_index_pct} <span class="wfc-unit">%</span>`;
+      if (rainSub) rainSub.innerHTML = `Simulated Equiv: <strong>${calib.scaled_rain_3d_mm} mm</strong> (ADC: <span id="iot-raw-rain">${raw?.rain_adc || 4095}</span>)`;
+      if (rain1h) rain1h.textContent = `${calib.scaled_rain_1h_mm} mm/h (${calib.scaled_rain_1h_mm > 20 ? 'Surge' : 'Light'})`;
+
+      const waterVal = document.getElementById("iot-water-val");
+      const waterSub = document.getElementById("iot-water-sub");
+      const dischargeVal = document.getElementById("iot-discharge-val");
+      const rawWater = document.getElementById("iot-raw-water");
+      if (waterVal) waterVal.innerHTML = `${calib.river_gauge_m} <span class="wfc-unit">m</span>`;
+      if (waterSub) {
+        const isAbove = calib.river_difference_m > 0;
+        waterSub.innerHTML = `Benchmark 20.0m · <strong class="${isAbove ? 'c-red' : 'c-green'}">${isAbove ? '+' : ''}${calib.river_difference_m} m ${isAbove ? 'Above Danger' : 'Safe Margin'}</strong>`;
+      }
+      if (dischargeVal) dischargeVal.textContent = `${calib.river_discharge_m3s} m³/s`;
+      if (rawWater) rawWater.textContent = `${raw?.water_level_adc || 300} (${raw?.water_level_adc > 2000 ? 'Submerged' : 'Safe Depth'})`;
+
+      const soilVal = document.getElementById("iot-soil-val");
+      const rawSoil = document.getElementById("iot-raw-soil");
+      if (soilVal) soilVal.innerHTML = `${calib.soil_saturation_pct} <span class="wfc-unit">%</span>`;
+      if (rawSoil) rawSoil.textContent = `${raw?.soil_adc || 3800} (${calib.soil_saturation_pct > 80 ? 'Saturated' : 'Damp'})`;
+
+      const tempVal = document.getElementById("iot-temp-val");
+      const humVal = document.getElementById("iot-hum-val");
+      if (tempVal) tempVal.innerHTML = `${calib.temperature_c} <span class="wfc-unit">°C</span>`;
+      if (humVal) humVal.textContent = `${calib.humidity_pct}% RH`;
+    }
+  } catch (err) {
+    // Silent catch for background poll
+  }
+}
+
+// Start continuous polling every 3 seconds
+setInterval(pollIotTelemetry, 3000);
+pollIotTelemetry();
+
+/* -------------------------------------------------
    9. EVENT LISTENERS  (fix: cascading dropdown logic)
    ------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-  // These workflow panels must live outside the home section. Moving them at
-  // startup prevents a hidden home section from also hiding the forecast view.
-  ["weather-forecast-panel", "results-panel"].forEach((id) => {
+  // These workflow panels and modals must live outside the home section. Moving them at
+  // startup prevents a hidden home section from also hiding the forecast view or modal popups.
+  ["weather-forecast-panel", "results-panel", "compare-modal", "cap-modal"].forEach((id) => {
     const panel = document.getElementById(id);
     if (panel && panel.parentElement !== document.body) document.body.appendChild(panel);
   });
@@ -750,6 +965,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
   updateStatusTime();
+  setInterval(updateStatusTime, 60000);
+
+  // Triple-Action Predict Handlers on Weather Forecast Page
+  document.getElementById("btn-predict-weather")?.addEventListener("click", async () => {
+    const { state, district, basinId, basinLabel } = currentPredictionParams;
+    await runPrediction(state, district, basinId, basinLabel);
+  });
+
+  document.getElementById("btn-predict-iot")?.addEventListener("click", async () => {
+    const { state, district, basinId, basinLabel } = currentPredictionParams;
+    await runIotPrediction(state, district, basinId, basinLabel);
+  });
+
+  document.getElementById("btn-predict-compare")?.addEventListener("click", async () => {
+    const { state, district, basinId, basinLabel } = currentPredictionParams;
+    await runComparisonFlow(state, district, basinId, basinLabel);
+  });
+
+  // Comparison Modal Listeners
+  document.getElementById("close-compare")?.addEventListener("click", () => {
+    document.getElementById("compare-modal")?.classList.add("hidden");
+  });
+  document.getElementById("btn-close-compare")?.addEventListener("click", () => {
+    document.getElementById("compare-modal")?.classList.add("hidden");
+  });
+  document.getElementById("btn-apply-iot-dash")?.addEventListener("click", async () => {
+    document.getElementById("compare-modal")?.classList.add("hidden");
+    const { state, district, basinId, basinLabel } = currentPredictionParams;
+    await runIotPrediction(state, district, basinId, basinLabel);
+  });
+
+  // Legacy button fallback
+  document.getElementById("btn-run-prediction-from-forecast")?.addEventListener("click", async () => {
+    const { state, district, basinId, basinLabel } = currentPredictionParams;
+    await runPrediction(state, district, basinId, basinLabel);
+  });
 
   // Calendar icon opens native picker
   const dateTrigger = document.getElementById("date-trigger");

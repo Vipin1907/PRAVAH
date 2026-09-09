@@ -146,6 +146,82 @@ def compute_risk_category(prob_pct: float) -> str:
     return "Low"
 
 # ---------------------------------------------------------------------------
+# IoT Cyber-Physical Sensor Buffer & Calibration Engine
+# ---------------------------------------------------------------------------
+LATEST_IOT_BUFFER = {
+    "device_id": "ESP32_DEMO_01",
+    "location": "Subansiri River Basin Gauge Node",
+    "state": "Assam",
+    "district": "Dhemaji",
+    "basin": "A011",
+    "last_seen_timestamp": 0.0,
+    "is_connected": False,
+    "demo_mode": False,
+    "raw": {
+        "rain_adc": 4095,
+        "water_level_adc": 300,
+        "soil_adc": 3800,
+        "temperature": 27.5,
+        "humidity": 65.0
+    },
+    "calibrated": {
+        "rain_index_pct": 0.0,
+        "scaled_rain_3d_mm": 0.0,
+        "scaled_rain_1h_mm": 0.0,
+        "river_gauge_m": 19.36,
+        "danger_mark_m": 20.00,
+        "river_difference_m": -0.64,
+        "river_discharge_m3s": 220.0,
+        "soil_saturation_pct": 35.0,
+        "temperature_c": 27.5,
+        "humidity_pct": 65.0,
+        "label": "Ground IoT Observation (Simulated Rainfall Equivalent Index)"
+    }
+}
+
+def calibrate_iot_reading(raw_payload: dict) -> dict:
+    """
+    Converts raw 12-bit ADC readings (0-4095) into domain hydrologic indices.
+    """
+    raw_rain = float(raw_payload.get("raw_rain", 4095))
+    raw_water = float(raw_payload.get("raw_water_level", 300))
+    raw_soil = float(raw_payload.get("raw_soil", 3800))
+    temp = float(raw_payload.get("temperature", 27.5))
+    hum = float(raw_payload.get("humidity", 65.0))
+    
+    # 1. Raindrop Sensor Calibration (Dry ≈ 4095, Saturated Wet ≈ 400)
+    wetness_ratio = max(0.0, min(1.0, (4095.0 - raw_rain) / 3600.0))
+    rain_index_pct = round(wetness_ratio * 100.0, 1)
+    scaled_rain_3d = round(wetness_ratio * 320.0, 1)
+    scaled_rain_1h = round(wetness_ratio * 35.0, 1)
+    
+    # 2. Water Level Sensor Calibration (Dry ≈ 300, Submerged ≈ 3500)
+    submerged_ratio = max(0.0, min(1.0, (raw_water - 300.0) / 3200.0))
+    danger_benchmark = 20.00
+    gauge_level = round(danger_benchmark + (submerged_ratio - 0.40) * 1.60, 2)
+    diff_to_danger = round(gauge_level - danger_benchmark, 2)
+    discharge = round(220.0 + (submerged_ratio * 1400.0), 1)
+    
+    # 3. Soil Moisture Sensor Calibration (Dry ≈ 4000, Saturated wet ≈ 800)
+    soil_wetness_ratio = max(0.0, min(1.0, (4095.0 - raw_soil) / 3200.0))
+    soil_sat_pct = round(min(98.0, 35.0 + (soil_wetness_ratio * 62.0)), 1)
+    
+    return {
+        "rain_index_pct": rain_index_pct,
+        "scaled_rain_3d_mm": scaled_rain_3d,
+        "scaled_rain_1h_mm": scaled_rain_1h,
+        "river_gauge_m": gauge_level,
+        "danger_mark_m": danger_benchmark,
+        "river_difference_m": diff_to_danger,
+        "river_discharge_m3s": discharge,
+        "soil_saturation_pct": soil_sat_pct,
+        "temperature_c": round(temp, 1),
+        "humidity_pct": round(hum, 1),
+        "label": "Ground IoT Observation (Simulated Rainfall Equivalent Index)"
+    }
+
+
+# ---------------------------------------------------------------------------
 # 1. Healthcheck Endpoint
 # ---------------------------------------------------------------------------
 @app.route("/health", methods=["GET"])
@@ -424,6 +500,70 @@ def weather_telemetry():
     return jsonify(telemetry), 200
 
 # ---------------------------------------------------------------------------
+# 2B. ESP32 Cyber-Physical IoT Telemetry Ingestion & Polling Endpoints
+# ---------------------------------------------------------------------------
+@app.route("/api/iot-telemetry", methods=["POST", "GET"])
+def iot_telemetry():
+    global LATEST_IOT_BUFFER
+    if request.method == "POST":
+        body = request.get_json(silent=True) or {}
+        if not body:
+            return jsonify({"status": "error", "message": "Empty or invalid JSON payload"}), 400
+        
+        calibrated = calibrate_iot_reading(body)
+        
+        LATEST_IOT_BUFFER["device_id"] = body.get("device_id", "ESP32_DEMO_01")
+        LATEST_IOT_BUFFER["location"] = body.get("location", "Subansiri River Basin Gauge Node")
+        LATEST_IOT_BUFFER["state"] = body.get("state", "Assam")
+        LATEST_IOT_BUFFER["district"] = body.get("district", "Dhemaji")
+        LATEST_IOT_BUFFER["basin"] = body.get("basin", "A011")
+        LATEST_IOT_BUFFER["last_seen_timestamp"] = time.time()
+        LATEST_IOT_BUFFER["is_connected"] = True
+        LATEST_IOT_BUFFER["demo_mode"] = body.get("demo_mode", False)
+        LATEST_IOT_BUFFER["raw"] = {
+            "rain_adc": int(body.get("raw_rain", 4095)),
+            "water_level_adc": int(body.get("raw_water_level", 300)),
+            "soil_adc": int(body.get("raw_soil", 3800)),
+            "temperature": float(body.get("temperature", 27.5)),
+            "humidity": float(body.get("humidity", 65.0))
+        }
+        LATEST_IOT_BUFFER["calibrated"] = calibrated
+
+        return jsonify({
+            "status": "success",
+            "message": "IoT telemetry ingested and calibrated successfully",
+            "device_id": LATEST_IOT_BUFFER["device_id"],
+            "calibrated": calibrated,
+            "server_timestamp": time.time()
+        }), 200
+
+    # GET Request: Return latest buffer state with connection heartbeat evaluation
+    now = time.time()
+    last_seen = LATEST_IOT_BUFFER.get("last_seen_timestamp", 0)
+    is_alive = (now - last_seen) <= 12.0 if last_seen > 0 else False
+    seconds_ago = round(now - last_seen, 1) if last_seen > 0 else None
+
+    return jsonify({
+        "status": "success",
+        "is_connected": is_alive,
+        "seconds_since_last_ping": seconds_ago,
+        "node_info": {
+            "device_id": LATEST_IOT_BUFFER["device_id"],
+            "location": LATEST_IOT_BUFFER["location"],
+            "state": LATEST_IOT_BUFFER["state"],
+            "district": LATEST_IOT_BUFFER["district"],
+            "basin": LATEST_IOT_BUFFER["basin"],
+            "demo_mode": LATEST_IOT_BUFFER["demo_mode"]
+        },
+        "raw": LATEST_IOT_BUFFER["raw"],
+        "calibrated": LATEST_IOT_BUFFER["calibrated"]
+    }), 200
+
+@app.route("/api/iot/latest", methods=["GET"])
+def iot_latest():
+    return iot_telemetry()
+
+# ---------------------------------------------------------------------------
 # 3. ML Prediction Endpoint
 # ---------------------------------------------------------------------------
 @app.route("/predict", methods=["POST", "GET"])
@@ -661,6 +801,237 @@ def get_dashboard_data():
             "routing_engine": "OSM / GraphML Safe Path Finder (Connected)"
         }
     }), 200
+
+# ---------------------------------------------------------------------------
+# 7. IoT-Only ML Prediction Endpoint
+# ---------------------------------------------------------------------------
+@app.route("/api/predict/iot", methods=["POST", "GET"])
+def predict_iot():
+    body = request.get_json(silent=True) or {}
+    state = body.get("state") or LATEST_IOT_BUFFER["state"]
+    district = body.get("district") or LATEST_IOT_BUFFER["district"]
+    basin = body.get("basin") or LATEST_IOT_BUFFER["basin"]
+
+    calib = LATEST_IOT_BUFFER.get("calibrated", {})
+    rain_3d = float(calib.get("scaled_rain_3d_mm", 0.0))
+    rain_1h = float(calib.get("scaled_rain_1h_mm", 0.0))
+    soil_sat = float(calib.get("soil_saturation_pct", 35.0)) / 100.0
+    river_diff = float(calib.get("river_difference_m", -0.64))
+    gauge_level = float(calib.get("river_gauge_m", 19.36))
+
+    if ml_model:
+        prob, conf, importances = ml_model.predict_sample({
+            "rainfall_1d": rain_1h * 4.0,
+            "rainfall_3d": rain_3d,
+            "rainfall_7d": rain_3d * 1.5,
+            "rainfall_30d": rain_3d * 2.8,
+            "soil_saturation_proxy": soil_sat,
+            "ndvi": 0.58 if state == "Assam" else 0.48,
+            "slope_mean": 14.0 if state == "Assam" else 38.0,
+            "flow_accumulation": 5200.0 if state == "Assam" else 2400.0
+        })
+        prob_pct = int(round(prob * 100))
+    else:
+        # Physics baseline calculation
+        base_score = (rain_3d / 320.0) * 55.0 + (soil_sat * 35.0)
+        prob_pct = int(min(98, max(5, round(base_score))))
+        conf = 0.88
+        importances = {
+            "rainfall_3d": 0.42,
+            "soil_saturation_proxy": 0.30,
+            "river_discharge": 0.18,
+            "slope_mean": 0.10
+        }
+
+    # Physical hydrodynamic modifier: if river is above danger mark, escalate risk
+    if river_diff > 0:
+        surge_boost = int(min(25, river_diff * 40))
+        prob_pct = min(99, prob_pct + surge_boost)
+
+    category = compute_risk_category(prob_pct)
+    factors = [{"feature": k.replace("_", " ").title(), "score": v} for k, v in importances.items()]
+
+    routes = DEMO_ROUTES.get(state, DEMO_ROUTES["Assam"])
+    shelters = DEMO_SHELTERS.get(state, DEMO_SHELTERS["Assam"])
+
+    iot_summary = (
+        f"Ground IoT Node ({LATEST_IOT_BUFFER['device_id']}) computes {category} Risk ({prob_pct}%) "
+        f"based on localized hydro-physical readings: Rain Index {calib.get('rain_index_pct')}% ({rain_3d}mm equivalent), "
+        f"River Gauge {gauge_level}m ({'+' if river_diff > 0 else ''}{river_diff}m vs danger mark), "
+        f"and Soil Saturation {int(soil_sat * 100)}%."
+    )
+
+    return jsonify({
+        "status": "success",
+        "data_source": "esp32_iot_node",
+        "device_id": LATEST_IOT_BUFFER["device_id"],
+        "node_location": f"{district}, {state} (Basin {basin})",
+        "is_node_connected": LATEST_IOT_BUFFER["is_connected"],
+        "risk_summary": {
+            "probability_percent": prob_pct,
+            "category": category,
+            "confidence": conf,
+            "state": state,
+            "district": district,
+            "basin": basin,
+            "source_label": "Ground IoT Observation (Simulated Rainfall Equivalent Index)"
+        },
+        "explainable_ai": {
+            "summary": iot_summary,
+            "factors": factors
+        },
+        "calibrated_telemetry_snapshot": calib,
+        "routes_and_safety": routes,
+        "safe_shelters": shelters,
+        "agentic_action": {
+            "action": "TRIGGER_LOCAL_EVACUATION" if prob_pct >= 75 else "CONTINUOUS_NODE_MONITORING",
+            "lead_time": "3-6 Hours",
+            "advisory": f"Take safe elevated route {routes['safe']['name']}."
+        }
+    }), 200
+
+# ---------------------------------------------------------------------------
+# 8. Dual Inference & Discrepancy Engine (Satellite vs IoT)
+# ---------------------------------------------------------------------------
+@app.route("/api/predict/compare", methods=["POST", "GET"])
+def predict_compare():
+    body = request.get_json(silent=True) or {}
+    state = body.get("state", "Assam")
+    district = body.get("district", "Dhemaji")
+    basin = body.get("basin", "A011")
+    area = body.get("area", district)
+
+    # 1. Macro Satellite / NWP Pipeline
+    sat_telemetry = fetch_live_telemetry_py(state, district, basin, area)
+    sat_rain_3d = float(sat_telemetry["observed_rainfall"]["value_3d_cumulative"])
+    sat_rain_24h = float(sat_telemetry["observed_rainfall"]["value_24h"])
+    sat_soil = float(sat_telemetry["soil_moisture"]["saturation_pct"]) / 100.0
+
+    if ml_model:
+        sat_prob, sat_conf, sat_imp = ml_model.predict_sample({
+            "rainfall_1d": sat_rain_24h,
+            "rainfall_3d": sat_rain_3d,
+            "rainfall_7d": sat_rain_3d * 1.8,
+            "rainfall_30d": sat_rain_3d * 3.2,
+            "soil_saturation_proxy": sat_soil,
+            "ndvi": 0.58 if state == "Assam" else 0.48,
+            "slope_mean": 14.0 if state == "Assam" else 38.0,
+            "flow_accumulation": 5200.0 if state == "Assam" else 2400.0
+        })
+        sat_prob_pct = int(round(sat_prob * 100))
+    else:
+        sat_prob_pct = 85 if sat_rain_3d > 100 else 24
+        sat_conf = 0.86
+
+    sat_category = compute_risk_category(sat_prob_pct)
+
+    # 2. Local Ground ESP32 IoT Pipeline
+    calib = LATEST_IOT_BUFFER.get("calibrated", {})
+    iot_rain_3d = float(calib.get("scaled_rain_3d_mm", 0.0))
+    iot_rain_1h = float(calib.get("scaled_rain_1h_mm", 0.0))
+    iot_soil = float(calib.get("soil_saturation_pct", 35.0)) / 100.0
+    river_diff = float(calib.get("river_difference_m", -0.64))
+    gauge_level = float(calib.get("river_gauge_m", 19.36))
+
+    if ml_model:
+        iot_prob, iot_conf, iot_imp = ml_model.predict_sample({
+            "rainfall_1d": iot_rain_1h * 4.0,
+            "rainfall_3d": iot_rain_3d,
+            "rainfall_7d": iot_rain_3d * 1.5,
+            "rainfall_30d": iot_rain_3d * 2.8,
+            "soil_saturation_proxy": iot_soil,
+            "ndvi": 0.58 if state == "Assam" else 0.48,
+            "slope_mean": 14.0 if state == "Assam" else 38.0,
+            "flow_accumulation": 5200.0 if state == "Assam" else 2400.0
+        })
+        iot_prob_pct = int(round(iot_prob * 100))
+    else:
+        base_score = (iot_rain_3d / 320.0) * 55.0 + (iot_soil * 35.0)
+        iot_prob_pct = int(min(98, max(5, round(base_score))))
+        iot_conf = 0.88
+
+    if river_diff > 0:
+        iot_prob_pct = min(99, iot_prob_pct + int(min(25, river_diff * 40)))
+
+    iot_category = compute_risk_category(iot_prob_pct)
+
+    # 3. Discrepancy & Fusion Logic
+    delta_risk = iot_prob_pct - sat_prob_pct
+
+    if delta_risk >= 20:
+        discrepancy_level = "GROUND_FLASH_SURGE"
+        discrepancy_badge = "⚡ Ground Surge Alert (Local Discrepancy)"
+        badge_color = "danger"
+        insight = (
+            f"Discrepancy Detected (+{delta_risk}% higher risk on ground): Regional Satellite & NWP forecast indicates "
+            f"moderate conditions ({sat_prob_pct}% - {sat_category}), but Ground ESP32 IoT Node detects rapid localized catchment wetness "
+            f"({iot_rain_3d}mm equiv.) and river channel level surge ({'+' if river_diff > 0 else ''}{river_diff}m above danger mark). "
+            f"Agentic AI recommends issuing an immediate Localized Flash Flood Advisory without waiting for next satellite orbital pass."
+        )
+        recommended_action = "BROADCAST_LOCAL_FLASH_WARNING"
+    elif delta_risk <= -20:
+        discrepancy_level = "SATELLITE_PRECIP_LEAD"
+        discrepancy_badge = "🌐 Macro Inflow Warning"
+        badge_color = "warning"
+        insight = (
+            f"Regional Inflow Approaching ({abs(delta_risk)}% higher satellite projection): Satellite NWP predicts heavy regional precipitation "
+            f"({sat_rain_3d}mm), but local river channels have not yet peaked ({gauge_level}m). Prepare upstream flood retention."
+        )
+        recommended_action = "PRE_POSITION_RESPONSE_TEAMS"
+    else:
+        discrepancy_level = "ALIGNED"
+        discrepancy_badge = "⚖️ Telemetries Aligned"
+        badge_color = "success" if sat_prob_pct < 50 else "danger"
+        insight = (
+            f"High Data Consensus (Δ = {abs(delta_risk)}%): Both Satellite Radar Telemetry ({sat_prob_pct}%) and "
+            f"Ground ESP32 IoT Node ({iot_prob_pct}%) are in agreement. Hydrological model confidence is high ({int(sat_conf * 100)}%)."
+        )
+        recommended_action = "MAINTAIN_STANDARD_PROTOCOLS" if sat_prob_pct < 50 else "TRIGGER_DISTRICT_EVACUATION"
+
+    routes = DEMO_ROUTES.get(state, DEMO_ROUTES["Assam"])
+    shelters = DEMO_SHELTERS.get(state, DEMO_SHELTERS["Assam"])
+
+    return jsonify({
+        "status": "success",
+        "comparison": {
+            "discrepancy_level": discrepancy_level,
+            "discrepancy_badge": discrepancy_badge,
+            "badge_color": badge_color,
+            "delta_risk_percent": delta_risk,
+            "ai_discrepancy_insight": insight,
+            "recommended_action": recommended_action
+        },
+        "satellite_model": {
+            "source_name": "Regional Satellite & IMD NWP Telemetry",
+            "probability_percent": sat_prob_pct,
+            "category": sat_category,
+            "confidence": sat_conf,
+            "key_metrics": {
+                "rainfall_3d_mm": sat_rain_3d,
+                "soil_saturation_pct": int(sat_soil * 100),
+                "river_level_m": sat_telemetry.get("river_level", {}).get("gauge_level", 19.8)
+            }
+        },
+        "iot_ground_model": {
+            "source_name": "ESP32 Cyber-Physical Sensing Node (Live)",
+            "device_id": LATEST_IOT_BUFFER["device_id"],
+            "probability_percent": iot_prob_pct,
+            "category": iot_category,
+            "confidence": iot_conf,
+            "is_node_connected": LATEST_IOT_BUFFER["is_connected"],
+            "key_metrics": {
+                "scaled_rain_3d_mm": iot_rain_3d,
+                "rain_index_pct": calib.get("rain_index_pct", 0),
+                "soil_saturation_pct": int(iot_soil * 100),
+                "river_gauge_m": gauge_level,
+                "diff_to_danger_m": river_diff
+            },
+            "source_label": "Ground IoT Observation (Simulated Rainfall Equivalent Index)"
+        },
+        "routes_and_safety": routes,
+        "safe_shelters": shelters
+    }), 200
+
 
 # ---------------------------------------------------------------------------
 # Server Entry Point
