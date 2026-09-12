@@ -1021,7 +1021,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ─── ALWAYS RESET TO HOME ON FRESH PAGE LOAD ───
   // Ensure no stale panel/modal state is left from a previous session.
-  document.getElementById("home")?.classList.remove("hidden");
+  const home = document.getElementById("home");
+  if (home) {
+    home.classList.remove("hidden");
+    home.style.display = "block";
+  }
   ["weather-forecast-panel", "results-panel"].forEach(id => {
     document.getElementById(id)?.classList.add("hidden");
   });
@@ -1861,9 +1865,9 @@ window.toggleAppMode = function(mode) {
     setTimeout(() => { touristMapInstance.invalidateSize(); }, 300);
   } else {
     // Restore logic relies on app.js normal state
-    if (home && !home.classList.contains("hidden")) home.style.display = "";
-    if (wfPanel && !wfPanel.classList.contains("hidden")) wfPanel.style.display = "";
-    if (resPanel && !resPanel.classList.contains("hidden")) resPanel.style.display = "";
+    if (home && !home.classList.contains("hidden")) home.style.display = "block";
+    if (wfPanel && !wfPanel.classList.contains("hidden")) wfPanel.style.display = "block";
+    if (resPanel && !resPanel.classList.contains("hidden")) resPanel.style.display = "block";
     if (navDrawer) navDrawer.style.display = "";
     
     touristView.style.display = "none";
