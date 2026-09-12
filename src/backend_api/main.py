@@ -67,8 +67,39 @@ except Exception as e:
     print(f"[Master Backend] Notice: Using fallback routing dataset ({e})")
 
 # Initialize Flask app
+import sqlite3
+
 app = Flask(__name__)
 CORS(app)
+
+def init_iot_db():
+    db_path = os.path.join(os.path.dirname(__file__), 'iot_telemetry.db')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS IoT_Telemetry (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp REAL,
+            device_id TEXT,
+            location TEXT,
+            state TEXT,
+            district TEXT,
+            basin TEXT,
+            demo_mode BOOLEAN,
+            rain_adc INTEGER,
+            water_level_adc INTEGER,
+            soil_adc INTEGER,
+            temperature REAL,
+            humidity REAL,
+            calibrated_rain REAL,
+            calibrated_water_level REAL,
+            calibrated_soil REAL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_iot_db()
 
 @app.after_request
 def add_cors(resp):
@@ -542,9 +573,42 @@ def iot_telemetry():
         }
         LATEST_IOT_BUFFER["calibrated"] = calibrated
 
+        # --- DB LOGGING ---
+        try:
+            db_path = os.path.join(os.path.dirname(__file__), 'iot_telemetry.db')
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO IoT_Telemetry (
+                    timestamp, device_id, location, state, district, basin, demo_mode,
+                    rain_adc, water_level_adc, soil_adc, temperature, humidity,
+                    calibrated_rain, calibrated_water_level, calibrated_soil
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                LATEST_IOT_BUFFER["last_seen_timestamp"],
+                LATEST_IOT_BUFFER["device_id"],
+                LATEST_IOT_BUFFER["location"],
+                LATEST_IOT_BUFFER["state"],
+                LATEST_IOT_BUFFER["district"],
+                LATEST_IOT_BUFFER["basin"],
+                LATEST_IOT_BUFFER["demo_mode"],
+                LATEST_IOT_BUFFER["raw"]["rain_adc"],
+                LATEST_IOT_BUFFER["raw"]["water_level_adc"],
+                LATEST_IOT_BUFFER["raw"]["soil_adc"],
+                LATEST_IOT_BUFFER["raw"]["temperature"],
+                LATEST_IOT_BUFFER["raw"]["humidity"],
+                calibrated["rain_mm_per_hr"],
+                calibrated["water_level_cm"],
+                calibrated["soil_moisture_pct"]
+            ))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"[Master Backend] Failed to log IoT telemetry to DB: {e}")
+
         return jsonify({
             "status": "success",
-            "message": "IoT telemetry ingested and calibrated successfully",
+            "message": "IoT telemetry ingested, calibrated, and logged to database successfully",
             "device_id": LATEST_IOT_BUFFER["device_id"],
             "calibrated": calibrated,
             "server_timestamp": time.time()
