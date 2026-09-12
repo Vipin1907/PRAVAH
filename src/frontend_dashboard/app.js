@@ -331,6 +331,34 @@ function setGauge(pct, riskLevel) {
   verdictDetail.textContent = detailMap[riskLevel] || "";
 }
 
+function setLandslideGauge(pct, riskLevel) {
+  const gaugeRing = document.getElementById("ls-gauge-ring");
+  const gaugePct = document.getElementById("ls-gauge-pct");
+  const badge = document.getElementById("ls-risk-verdict-badge");
+  const verdictText = document.getElementById("ls-risk-verdict-text");
+  const verdictDetail = document.getElementById("ls-verdict-detail");
+
+  if (!gaugeRing) return;
+
+  const colorMap = { "Critical — Evacuate Immediately": "#ff5a5f", "High Risk — Alert Issued": "#ff9a3d", "Moderate Risk — Monitor Closely": "#ffd23d", "Stable — No Immediate Threat": "#31d17c" };
+  const col = colorMap[riskLevel] || "#8fa3b8";
+
+  gaugeRing.style.background = `conic-gradient(${col} 0% ${pct}%, #253243 ${pct}% 100%)`;
+  gaugePct.textContent = `${pct}%`;
+  gaugePct.style.color = col;
+  badge.style.background = `${col}22`;
+  badge.style.color = col;
+  verdictText.textContent = `${riskLevel}`;
+
+  const detailMap = {
+    "Critical — Evacuate Immediately": "Extreme landslide hazard. High probability of catastrophic slope failure. Immediate evacuation of steep terrain advised.",
+    "High Risk — Alert Issued": "High landslide vulnerability due to steep slope, heavy rainfall, and saturated soil. Avoid hillside routes.",
+    "Moderate Risk — Monitor Closely": "Moderate slope instability. Monitor local advisories before travelling on mountain passes.",
+    "Stable — No Immediate Threat": "No significant landslide hazard detected. Terrain is stable under current conditions."
+  };
+  verdictDetail.textContent = detailMap[riskLevel] || "";
+}
+
 function setHistComparison(state, weather, hist) {
   document.getElementById("ht-event-name").textContent = hist.eventName;
   document.getElementById("ht-curr-rain").textContent = weather.rain3d;
@@ -663,11 +691,18 @@ async function runPrediction(state, district, basinId, basinLabel) {
 
     // 3. Compute prediction (prefer backend, else client-side)
     let prediction;
+    let lsPrediction;
     if (backendData && backendData.risk_summary) {
       prediction = {
         probability: backendData.risk_summary.probability_percent,
         riskLevel: backendData.risk_summary.category
       };
+      if (backendData.landslide_risk) {
+        lsPrediction = {
+          probability: backendData.landslide_risk.probability_percent,
+          riskLevel: backendData.landslide_risk.status
+        };
+      }
       console.log("✅ Using REAL backend ML prediction:", prediction);
     } else {
       prediction = computeFloodProbability(weather);
@@ -719,6 +754,8 @@ async function runPrediction(state, district, basinId, basinLabel) {
 
     setWeatherCards(weather);
     setGauge(prediction.probability, prediction.riskLevel);
+    if (lsPrediction) setLandslideGauge(lsPrediction.probability, lsPrediction.riskLevel);
+
     setHistComparison(state, weather, hist);
     setShap(shap);
     setRoutes(routes);

@@ -37,6 +37,15 @@ except Exception as e:
     print(f"[Master Backend] Notice: Loading fallback classifier ({e})")
     ml_model = None
 
+# 1B. Import Landslide Predictor
+try:
+    from landslide_predictor import LandslidePredictor
+    landslide_model = LandslidePredictor()
+    print("[Master Backend] Landslide Risk Predictor loaded successfully.")
+except Exception as e:
+    print(f"[Master Backend] Notice: Landslide predictor fallback active ({e})")
+    landslide_model = None
+
 # 2. Import Agentic AI (LangGraph Multi-Agent System)
 try:
     from flood_alert_agent import app as agent_app
@@ -591,6 +600,11 @@ def predict():
     rain_24h = float(telemetry["observed_rainfall"]["value_24h"])
     soil = float(telemetry["soil_moisture"]["saturation_pct"])
 
+    # Get terrain metadata for this basin
+    meta = BASIN_GEO_MAP.get(basin, BASIN_GEO_MAP["A127"] if state == "Assam" else BASIN_GEO_MAP["U04"])
+    slope_deg = meta["slope"]
+    elev_m = meta["elev"]
+
     if ml_model:
         prob, conf, importances = ml_model.predict_sample({
             "rainfall_1d": rain_24h,
@@ -598,7 +612,7 @@ def predict():
             "rainfall_10d": rain_10d,
             "soil_saturation_proxy": soil / 100.0,
             "ndvi": 0.58 if state == "Assam" else 0.48,
-            "slope_mean": 12.0 if state == "Assam" else 36.0,
+            "slope_mean": slope_deg,
             "flow_accumulation": 4500.0 if state == "Assam" else 2200.0
         })
         prob_pct = int(round(prob * 100))
@@ -621,6 +635,24 @@ def predict():
     category = compute_risk_category(prob_pct)
     factors = [{"feature": k, "score": v} for k, v in importances.items()]
 
+    # --- LANDSLIDE RISK PREDICTION ---
+    ls_risk_pct = 0
+    ls_status = "Stable — No Immediate Threat"
+    ls_conf = 0.70
+    ls_contributions = {}
+    if landslide_model:
+        ls_prob, ls_conf, ls_status, ls_contributions = landslide_model.predict_landslide_risk({
+            "slope_degrees": slope_deg,
+            "rainfall_1d": rain_24h,
+            "rainfall_10d": rain_10d,
+            "soil_saturation": soil / 100.0,
+            "elevation_m": elev_m,
+            "ndvi": 0.58 if state == "Assam" else 0.48,
+        })
+        ls_risk_pct = int(round(ls_prob * 100))
+
+    ls_factors = [{"feature": k, "score": v} for k, v in ls_contributions.items()]
+
     return jsonify({
         "status": "success",
         "risk_summary": {
@@ -632,8 +664,17 @@ def predict():
             "district": district,
             "basin": basin
         },
+        "landslide_risk": {
+            "probability_percent": ls_risk_pct,
+            "status": ls_status,
+            "confidence": ls_conf,
+            "model_version": "TriNetraAI-Landslide-v1",
+            "slope_degrees": slope_deg,
+            "elevation_m": elev_m,
+            "factors": ls_factors
+        },
         "explainable_ai": {
-            "summary": f"High flood probability ({prob_pct}%) triggered primarily by {factors[0]['feature'].replace('_', ' ')} combined with high soil moisture ({soil}%).",
+            "summary": f"Flood probability ({prob_pct}%) triggered primarily by {factors[0]['feature'].replace('_', ' ')} combined with soil moisture ({soil}%). Landslide risk is {ls_risk_pct}% ({ls_status}).",
             "factors": factors
         },
         "historical_comparison": HISTORICAL_EVENTS.get(state, HISTORICAL_EVENTS["Assam"])
@@ -773,16 +814,40 @@ def get_dashboard_data():
 
     selected_date = body.get("date", time.strftime("%Y-%m-%d"))
 
+    # 2B. LANDSLIDE RISK PREDICTION
+    meta = BASIN_GEO_MAP.get(basin, BASIN_GEO_MAP["A127"] if state == "Assam" else BASIN_GEO_MAP["U04"])
+    slope_deg = meta["slope"]
+    elev_m = meta["elev"]
+
+    ls_risk_pct = 0
+    ls_status = "Stable — No Immediate Threat"
+    ls_conf = 0.70
+    ls_contributions = {}
+    if landslide_model:
+        ls_prob, ls_conf, ls_status, ls_contributions = landslide_model.predict_landslide_risk({
+            "slope_degrees": slope_deg,
+            "rainfall_1d": obs_rain_24h,
+            "rainfall_10d": obs_rain_10d,
+            "soil_saturation": soil_sat,
+            "elevation_m": elev_m,
+            "ndvi": 0.58 if state == "Assam" else 0.48,
+        })
+        ls_risk_pct = int(round(ls_prob * 100))
+
+    ls_factors = [{"feature": k, "score": v} for k, v in ls_contributions.items()]
+
     # 3. Agentic AI Reasoning Summary
     if prob_pct >= 50:
         agent_summary = (
             f"Agentic AI multi-agent supervisor detected compound flood risk for {district}, {state} ({category} - {prob_pct}%). "
-            f"3-day rainfall ({obs_rain_3d} mm) combined with soil saturation ({int(soil_sat * 100)}%) indicates heightened surface runoff."
+            f"3-day rainfall ({obs_rain_3d} mm) combined with soil saturation ({int(soil_sat * 100)}%) indicates heightened surface runoff. "
+            f"Landslide risk is {ls_risk_pct}% ({ls_status})."
         )
     else:
         agent_summary = (
             f"Hydrological conditions in {district}, {state} remain stable and within safe capacity ({category} - {prob_pct}%). "
-            f"Observed 3-day rainfall is {obs_rain_3d} mm and soil saturation is {int(soil_sat * 100)}% (Below threshold)."
+            f"Observed 3-day rainfall is {obs_rain_3d} mm and soil saturation is {int(soil_sat * 100)}% (Below threshold). "
+            f"Landslide risk is {ls_risk_pct}% ({ls_status})."
         )
 
     return jsonify({
@@ -795,6 +860,15 @@ def get_dashboard_data():
             "district": district,
             "basin": basin,
             "date": selected_date
+        },
+        "landslide_risk": {
+            "probability_percent": ls_risk_pct,
+            "status": ls_status,
+            "confidence": ls_conf,
+            "model_version": "TriNetraAI-Landslide-v1",
+            "slope_degrees": slope_deg,
+            "elevation_m": elev_m,
+            "factors": ls_factors
         },
         "explainable_ai": {
             "summary": agent_summary,
@@ -811,6 +885,7 @@ def get_dashboard_data():
         },
         "connected_services": {
             "ml_model": "XGBoost-v2 FlashFloodMLModel (Connected)",
+            "landslide_model": "LandslidePredictor-v1 (Connected)",
             "agentic_ai": "LangGraph Supervisor & Multi-Agent Network (Connected)",
             "routing_engine": "OSM / GraphML Safe Path Finder (Connected)"
         }

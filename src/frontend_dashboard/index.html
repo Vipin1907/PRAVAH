@@ -1629,7 +1629,7 @@
 
       <div class="comparison-layout">
 
-        <!-- Gauge card -->
+        <!-- Gauge card (Flood) -->
         <div class="gauge-result-card">
           <div class="grc-label" id="results-gauge-label">TODAY'S FLOOD PREDICTION SCORE</div>
           <div class="gauge-wrap">
@@ -1645,6 +1645,24 @@
             <span id="risk-verdict-text">—</span>
           </div>
           <p class="verdict-detail" id="verdict-detail">Run the prediction to see the AI verdict.</p>
+        </div>
+
+        <!-- Gauge card (Landslide) -->
+        <div class="gauge-result-card">
+          <div class="grc-label" id="ls-results-gauge-label">TODAY'S LANDSLIDE PREDICTION SCORE</div>
+          <div class="gauge-wrap">
+            <div class="gauge-ring" id="ls-gauge-ring">
+              <div class="gauge-center">
+                <span class="gauge-pct" id="ls-gauge-pct">—</span>
+                <span class="gauge-sub">RISK PROBABILITY</span>
+              </div>
+            </div>
+          </div>
+          <div class="risk-verdict-badge" id="ls-risk-verdict-badge">
+            <i class="fa-solid fa-mountain-city"></i>
+            <span id="ls-risk-verdict-text">—</span>
+          </div>
+          <p class="verdict-detail" id="ls-verdict-detail">Run the prediction to see the AI verdict.</p>
         </div>
 
         <!-- Historical table card -->
