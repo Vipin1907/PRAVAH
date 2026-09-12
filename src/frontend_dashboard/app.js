@@ -1014,7 +1014,7 @@ pollIotTelemetry();
 document.addEventListener("DOMContentLoaded", () => {
   // These workflow panels and modals must live outside the home section. Moving them at
   // startup prevents a hidden home section from also hiding the forecast view or modal popups.
-  ["weather-forecast-panel", "results-panel", "compare-modal", "cap-modal", "simulation-modal"].forEach((id) => {
+  ["weather-forecast-panel", "results-panel", "compare-modal", "cap-modal", "simulation-modal", "tourist-view"].forEach((id) => {
     const panel = document.getElementById(id);
     if (panel && panel.parentElement !== document.body) document.body.appendChild(panel);
   });
