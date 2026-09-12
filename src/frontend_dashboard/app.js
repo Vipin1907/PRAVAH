@@ -1016,8 +1016,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // startup prevents a hidden home section from also hiding the forecast view or modal popups.
   ["weather-forecast-panel", "results-panel", "compare-modal", "cap-modal", "simulation-modal"].forEach((id) => {
     const panel = document.getElementById(id);
-    const authView = document.getElementById("authority-view") || document.body;
-    if (panel && panel.parentElement !== authView) authView.appendChild(panel);
+    if (panel && panel.parentElement !== document.body) document.body.appendChild(panel);
   });
 
   // ─── ALWAYS RESET TO HOME ON FRESH PAGE LOAD ───
@@ -1822,13 +1821,22 @@ document.addEventListener("DOMContentLoaded", () => {
 let touristMapInstance = null;
 
 window.toggleAppMode = function(mode) {
-  const authView = document.getElementById("authority-view");
   const touristView = document.getElementById("tourist-view");
   const authLabel = document.getElementById("label-mode-auth");
   const touristLabel = document.getElementById("label-mode-tourist");
 
+  // Elements to hide in tourist mode
+  const home = document.getElementById("home");
+  const wfPanel = document.getElementById("weather-forecast-panel");
+  const resPanel = document.getElementById("results-panel");
+  const navDrawer = document.getElementById("nav-drawer"); // if exists
+
   if (mode === "tourist") {
-    authView.style.display = "none";
+    if (home) home.style.display = "none";
+    if (wfPanel) wfPanel.style.display = "none";
+    if (resPanel) resPanel.style.display = "none";
+    if (navDrawer) navDrawer.style.display = "none";
+    
     touristView.style.display = "block";
     authLabel.classList.remove("active");
     touristLabel.classList.add("active");
@@ -1843,7 +1851,12 @@ window.toggleAppMode = function(mode) {
     }
     setTimeout(() => { touristMapInstance.invalidateSize(); }, 300);
   } else {
-    authView.style.display = "block";
+    // Restore logic relies on app.js normal state
+    if (home && !home.classList.contains("hidden")) home.style.display = "";
+    if (wfPanel && !wfPanel.classList.contains("hidden")) wfPanel.style.display = "";
+    if (resPanel && !resPanel.classList.contains("hidden")) resPanel.style.display = "";
+    if (navDrawer) navDrawer.style.display = "";
+    
     touristView.style.display = "none";
     authLabel.classList.add("active");
     touristLabel.classList.remove("active");
