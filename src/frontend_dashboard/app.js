@@ -760,6 +760,13 @@ async function runPrediction(state, district, basinId, basinLabel) {
     setShap(shap);
     setRoutes(routes);
     setShelters(shelters);
+
+    if (window.updateTouristView) {
+      let maxRisk = prediction.probability;
+      if (lsPrediction && lsPrediction.probability > maxRisk) maxRisk = lsPrediction.probability;
+      window.updateTouristView(maxRisk, prediction.riskLevel, state, district, routes);
+    }
+
     initMap(state);
 
     window._lastCap = generateCAP(state, district, prediction.probability, prediction.riskLevel);
@@ -1807,3 +1814,98 @@ document.addEventListener("DOMContentLoaded", () => {
     navbar.style.boxShadow = window.scrollY > 20 ? "0 2px 20px rgba(0,0,0,.35)" : "";
   });
 });
+
+/* -------------------------------------------------
+   CITIZEN / TOURIST SAFE-ZONE MODE LOGIC
+   ------------------------------------------------- */
+let touristMapInstance = null;
+
+window.toggleAppMode = function(mode) {
+  const authView = document.getElementById("authority-view");
+  const touristView = document.getElementById("tourist-view");
+  const authLabel = document.getElementById("label-mode-auth");
+  const touristLabel = document.getElementById("label-mode-tourist");
+
+  if (mode === "tourist") {
+    authView.style.display = "none";
+    touristView.style.display = "block";
+    authLabel.classList.remove("active");
+    touristLabel.classList.add("active");
+    
+    // Initialize or resize map
+    if (!touristMapInstance) {
+      touristMapInstance = L.map('t-map').setView([26.20, 92.93], 7);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(touristMapInstance);
+      window._touristMapInstance = touristMapInstance;
+    }
+    setTimeout(() => { touristMapInstance.invalidateSize(); }, 300);
+  } else {
+    authView.style.display = "block";
+    touristView.style.display = "none";
+    authLabel.classList.add("active");
+    touristLabel.classList.remove("active");
+  }
+};
+
+window.updateTouristView = function(maxRiskPct, riskLevel, state, district, routes) {
+  const banner = document.getElementById("t-threat-banner");
+  const levelEl = document.getElementById("t-threat-level");
+  const locEl = document.getElementById("t-threat-location");
+  const blockedEl = document.getElementById("t-blocked-route");
+  const openEl = document.getElementById("t-open-route");
+  const safeEl = document.getElementById("t-safe-shelter");
+
+  locEl.innerHTML = `<i class="fa-solid fa-location-dot"></i> Your Location: ${district}, ${state} (Within 2.1 km of active surge buffer)`;
+
+  if (maxRiskPct >= 70) {
+    banner.className = "t-threat-banner danger";
+    levelEl.textContent = `CRITICAL (${maxRiskPct}%)`;
+  } else if (maxRiskPct >= 40) {
+    banner.className = "t-threat-banner danger";
+    levelEl.textContent = `HIGH (${maxRiskPct}%)`;
+  } else {
+    banner.className = "t-threat-banner safe";
+    levelEl.textContent = `SAFE (${maxRiskPct}%)`;
+    locEl.innerHTML = `<i class="fa-solid fa-location-dot"></i> Your Location: ${district}, ${state} (Terrain is stable)`;
+  }
+
+  if (routes && routes.normal && routes.safe) {
+    blockedEl.textContent = `${routes.normal.name} - ${routes.normal.warn}`;
+    openEl.textContent = `${routes.safe.name} (Est. ${routes.safe.time})`;
+  } else {
+    blockedEl.textContent = `Main Highway (Flood Risk)`;
+    openEl.textContent = `Highland Bypass Route`;
+  }
+  safeEl.textContent = "Govt High School Relief Camp";
+
+  if (touristMapInstance) {
+    // Clear old layers
+    touristMapInstance.eachLayer((layer) => {
+      if (layer instanceof L.Polyline || layer instanceof L.Marker) {
+        touristMapInstance.removeLayer(layer);
+      }
+    });
+
+    const coords = CATCHMENT_COORDS[state] || { lat: 26.2, lon: 92.9 };
+    touristMapInstance.setView([coords.lat, coords.lon], 10);
+    
+    // Add safe route line
+    L.polyline([
+      [coords.lat, coords.lon],
+      [coords.lat + 0.1, coords.lon + 0.1]
+    ], { color: '#10b981', weight: 5 }).addTo(touristMapInstance);
+    
+    // Add blocked route line
+    L.polyline([
+      [coords.lat, coords.lon],
+      [coords.lat - 0.05, coords.lon + 0.05]
+    ], { color: '#ef4444', weight: 4, dashArray: '10, 10' }).addTo(touristMapInstance);
+    
+    // Safe Haven Marker
+    L.marker([coords.lat + 0.1, coords.lon + 0.1]).addTo(touristMapInstance)
+      .bindPopup("Safe Haven").openPopup();
+  }
+};
+

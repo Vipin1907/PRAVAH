@@ -160,6 +160,24 @@
     </div>
   </header>
 
+  <!-- ─── MODE SWITCH BAR ─── -->
+  <div class="mode-switch-bar">
+    <div class="mode-switch-container">
+      <span class="mode-label">MODE SWITCH:</span>
+      <div class="mode-toggle-group">
+        <label class="mode-radio-label active" id="label-mode-auth">
+          <input type="radio" name="app_mode" value="authority" checked onchange="toggleAppMode(this.value)">
+          <i class="fa-solid fa-shield-halved"></i> Authority / B2B Command
+        </label>
+        <label class="mode-radio-label" id="label-mode-tourist">
+          <input type="radio" name="app_mode" value="tourist" onchange="toggleAppMode(this.value)">
+          <i class="fa-solid fa-person-walking-luggage"></i> Citizen / Tourist Safe-Zone
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div id="authority-view">
   <!-- ─── HERO SECTION ─── -->
   <section class="hero" id="home">
     <div class="hero-inner">
@@ -1863,6 +1881,54 @@
         <button class="btn-predict-action btn-iot-mode" id="btn-apply-iot-dash">
           <i class="fa-solid fa-arrow-right"></i> Open IoT Risk Dashboard
         </button>
+      </div>
+    </div>
+  </div>
+  </div> <!-- /authority-view -->
+
+  <!-- ─── TOURIST / CITIZEN SAFE-ZONE VIEW ─── -->
+  <div id="tourist-view" style="display: none;">
+    <div class="tourist-container">
+      
+      <!-- Threat Status Banner -->
+      <div class="t-threat-banner" id="t-threat-banner">
+        <h2>🚨 DISASTER THREAT: <span id="t-threat-level">UNKNOWN</span></h2>
+        <p id="t-threat-location"><i class="fa-solid fa-location-dot"></i> Your Location: Tracking...</p>
+      </div>
+
+      <div class="t-grid">
+        <!-- Dynamic Evacuation Map -->
+        <div class="t-card t-map-card">
+          <h3><i class="fa-solid fa-map-location-dot"></i> DYNAMIC EVACUATION MAP</h3>
+          <div id="t-map" style="width: 100%; height: 350px; border-radius: 8px; background: #e2e8f0; border: 2px solid #cbd5e1; margin-top: 15px;"></div>
+          <div class="t-map-legend">
+            <span class="t-leg-danger"></span> Danger Zone
+            <span class="t-leg-safe"></span> Open Escape
+          </div>
+        </div>
+
+        <!-- Offline Escape Directive & SMS -->
+        <div class="t-side-col">
+          <div class="t-card">
+            <h3><i class="fa-solid fa-person-running"></i> OFFLINE ESCAPE DIRECTIVE</h3>
+            <ul class="t-directives">
+              <li class="t-dir-blocked"><i class="fa-solid fa-ban"></i> <strong>Blocked:</strong> <span id="t-blocked-route">Waiting for AI...</span></li>
+              <li class="t-dir-open"><i class="fa-solid fa-check"></i> <strong>Open Path:</strong> <span id="t-open-route">Waiting for AI...</span></li>
+              <li class="t-dir-safe"><i class="fa-solid fa-house-medical"></i> <strong>Safe Haven:</strong> <span id="t-safe-shelter">Waiting for AI...</span></li>
+            </ul>
+          </div>
+
+          <div class="t-card" style="margin-top: 20px;">
+            <h3><i class="fa-solid fa-comment-sms"></i> SMS BROADCAST ENGINE</h3>
+            <div class="t-sms-form">
+              <input type="text" placeholder="Phone Input: +91 98765xxxxx" class="t-input" />
+              <button class="t-btn-sms" onclick="alert('SMS Dispatch Sent via GSM/Twilio API (Demo)')">
+                <i class="fa-solid fa-paper-plane"></i> Test Dispatch Alert
+              </button>
+              <div class="t-sms-status"><i class="fa-solid fa-tower-cell"></i> Status: Ready for Broadcast</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
