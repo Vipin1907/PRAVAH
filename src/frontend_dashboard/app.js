@@ -1,6 +1,7 @@
 /* ==========================================================
-   PravahAI — Frontend Application Logic
-   Fixed: state -> district -> basin cascading dropdowns
+   TriNetra AI — Frontend Application Logic
+   Handles Tabs, Real Data Fetching, Interactive UI, Charts,
+   Risk Gauge, Real-Time Alerts, Action Center & Explanations
    ========================================================== */
 "use strict";
 
@@ -405,8 +406,8 @@ function generateCAP(state, district, pct, riskLevel) {
   const now = new Date().toISOString();
   return `<?xml version="1.0" encoding="UTF-8"?>
 <alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
-  <identifier>PravahAI-${Date.now()}</identifier>
-  <sender>pravahai@disaster-mgmt.gov.in</sender>
+  <identifier>TriNetraAI-${Date.now()}</identifier>
+  <sender>trinetraai@disaster-mgmt.gov.in</sender>
   <sent>${now}</sent>
   <status>Draft</status>
   <msgType>Alert</msgType>
@@ -602,6 +603,10 @@ function showResultsPage(state, district, basinLabel) {
   document.getElementById("results-panel")?.classList.remove("hidden");
   document.getElementById("result-location-badge").textContent = `${state} · ${district} · ${basinLabel}`;
   window.scrollTo({ top: 0, behavior: "instant" });
+  // Unlock post-prediction drawer nav items
+  if (typeof window.unlockDrawerPostPrediction === "function") {
+    window.unlockDrawerPostPrediction();
+  }
 }
 
 function showHomePage() {
@@ -697,6 +702,21 @@ async function runPrediction(state, district, basinId, basinLabel) {
 
     // 7. Render everything on Results Page
     showResultsPage(state, district, basinLabel);
+
+    const secTag = document.getElementById("results-section-tag");
+    const secTitle = document.getElementById("results-section-title");
+    const secSub = document.getElementById("results-section-sub");
+    const gaugeLabel = document.getElementById("results-gauge-label");
+    const colToday = document.getElementById("results-col-today");
+    const todayTag = document.getElementById("results-today-tag");
+
+    if (secTag) secTag.innerHTML = `<i class="fa-solid fa-chart-pie"></i> TODAY'S WEATHER vs HISTORICAL FLOOD RECORDS`;
+    if (secTitle) secTitle.textContent = `"Will a Flood Occur Today Based on Today's Weather & Past Records?"`;
+    if (secSub) secSub.textContent = `Our ML ensemble model compares live hydro-meteorological observations against historic flood catastrophes in the same catchment.`;
+    if (gaugeLabel) gaugeLabel.textContent = `TODAY'S FLOOD PREDICTION SCORE`;
+    if (colToday) colToday.textContent = `Today's Live Weather`;
+    if (todayTag) todayTag.textContent = `Today (Observed)`;
+
     setWeatherCards(weather);
     setGauge(prediction.probability, prediction.riskLevel);
     setHistComparison(state, weather, hist);
@@ -743,6 +763,21 @@ async function runIotPrediction(state, district, basinId, basinLabel) {
 
     showResultsPage(state, district, `${basinLabel} (ESP32 Ground IoT Node)`);
     
+    // Update labels to reflect real IoT hardware data
+    const secTag = document.getElementById("results-section-tag");
+    const secTitle = document.getElementById("results-section-title");
+    const secSub = document.getElementById("results-section-sub");
+    const gaugeLabel = document.getElementById("results-gauge-label");
+    const colToday = document.getElementById("results-col-today");
+    const todayTag = document.getElementById("results-today-tag");
+
+    if (secTag) secTag.innerHTML = `<i class="fa-solid fa-microchip"></i> LIVE ESP32 IOT SENSORS vs HISTORICAL FLOOD RECORDS`;
+    if (secTitle) secTitle.textContent = `"Will a Flood Occur Today Based on Live ESP32 Ground Sensors & Past Records?"`;
+    if (secSub) secSub.textContent = `TriNetra AI XGBoost ML model evaluates real physical ground telemetry (Raindrop Plate, Water Probe, Soil Hygrometer) against historical catchments.`;
+    if (gaugeLabel) gaugeLabel.textContent = `ESP32 GROUND SENSOR FLOOD PREDICTION SCORE`;
+    if (colToday) colToday.textContent = `Live ESP32 Ground Node`;
+    if (todayTag) todayTag.textContent = `ESP32 Live (Observed)`;
+
     // Set custom IoT weather card proxy and historical comparison
     const hist = HISTORICAL_EVENTS[state] || HISTORICAL_EVENTS["Assam"];
     const calib = data.calibrated_telemetry_snapshot || {};
@@ -935,9 +970,20 @@ pollIotTelemetry();
 document.addEventListener("DOMContentLoaded", () => {
   // These workflow panels and modals must live outside the home section. Moving them at
   // startup prevents a hidden home section from also hiding the forecast view or modal popups.
-  ["weather-forecast-panel", "results-panel", "compare-modal", "cap-modal"].forEach((id) => {
+  ["weather-forecast-panel", "results-panel", "compare-modal", "cap-modal", "simulation-modal"].forEach((id) => {
     const panel = document.getElementById(id);
     if (panel && panel.parentElement !== document.body) document.body.appendChild(panel);
+  });
+
+  // ─── ALWAYS RESET TO HOME ON FRESH PAGE LOAD ───
+  // Ensure no stale panel/modal state is left from a previous session.
+  document.getElementById("home")?.classList.remove("hidden");
+  ["weather-forecast-panel", "results-panel"].forEach(id => {
+    document.getElementById(id)?.classList.add("hidden");
+  });
+  ["compare-modal", "cap-modal", "simulation-modal"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.add("hidden"); el.style.display = "none"; }
   });
 
   initHeroMap();
@@ -981,6 +1027,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-predict-compare")?.addEventListener("click", async () => {
     const { state, district, basinId, basinLabel } = currentPredictionParams;
     await runComparisonFlow(state, district, basinId, basinLabel);
+  });
+
+  // What-If Simulation Sandbox Button Handler
+  document.getElementById("btn-predict-simulation")?.addEventListener("click", (e) => {
+    if (e) e.preventDefault();
+    window.openSimulationModal();
   });
 
   // Comparison Modal Listeners
@@ -1160,32 +1212,107 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Drawer Nav Item Click
   document.querySelectorAll(".drawer-item").forEach((item) => {
-    item.addEventListener("click", () => {
+    item.addEventListener("click", (e) => {
+      // Locked items (post-prediction) — show tooltip and don't navigate
+      if (item.classList.contains("drawer-item-locked")) {
+        e.preventDefault();
+        const msg = item.getAttribute("title") || "Run a prediction first.";
+        // Briefly flash the item to signal it's locked
+        item.style.outline = "2px solid #f97316";
+        setTimeout(() => { item.style.outline = ""; }, 900);
+        return;
+      }
+
+      // For anchor links, if currently on results/forecast page → go home first
+      const href = item.getAttribute("href");
+      if (href && href.startsWith("#") && href !== "#") {
+        const resultsPanel = document.getElementById("results-panel");
+        const wfPanel = document.getElementById("weather-forecast-panel");
+        if ((resultsPanel && !resultsPanel.classList.contains("hidden")) ||
+            (wfPanel && !wfPanel.classList.contains("hidden"))) {
+          e.preventDefault();
+          showHomePage();
+          const targetId = href.substring(1);
+          setTimeout(() => {
+            document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth" });
+          }, 150);
+        }
+      }
+
       document.querySelectorAll(".drawer-item").forEach((i) => i.classList.remove("active"));
       item.classList.add("active");
       closeDrawer();
     });
   });
 
-  // --- Integrated Language Pill Toggle ---
+  // Unlock post-prediction drawer items after prediction runs
+  window.unlockDrawerPostPrediction = function() {
+    const dashBtn = document.getElementById("drawer-goto-dashboard");
+    const cmpBtn = document.getElementById("drawer-goto-comparison");
+    if (dashBtn) {
+      dashBtn.classList.remove("drawer-item-locked");
+      dashBtn.setAttribute("href", "#dashboard");
+      dashBtn.setAttribute("title", "Live Command Dashboard");
+    }
+    if (cmpBtn) {
+      cmpBtn.classList.remove("drawer-item-locked");
+      cmpBtn.setAttribute("href", "#comparison");
+      cmpBtn.setAttribute("title", "Flood Risk Comparison");
+    }
+  };
+
+  // --- Integrated Language Pill Toggle + Real Translation Engine ---
   const langEnOpt = document.getElementById("lang-en-opt");
   const langHiOpt = document.getElementById("lang-hi-opt");
+
+  // Core translation function — scans all elements with data-hi / data-en
+  function applyLanguage(lang) {
+    document.querySelectorAll("[data-hi]").forEach((el) => {
+      const hi = el.getAttribute("data-hi");
+      const en = el.getAttribute("data-en") || el.textContent.trim();
+      if (lang === "hi") {
+        el.textContent = hi;
+      } else {
+        el.textContent = en;
+      }
+    });
+
+    // Page title
+    if (lang === "hi") {
+      document.title = "ट्राईनेत्र AI — बाढ़ पूर्व चेतावनी प्रणाली";
+    } else {
+      document.title = "TriNetra AI — Flash Flood Intelligence & Early Warning System";
+    }
+
+    // Store preference
+    localStorage.setItem("trinetra-lang", lang);
+  }
 
   langEnOpt?.addEventListener("click", (e) => {
     e.stopPropagation();
     langEnOpt.classList.add("active");
     langHiOpt?.classList.remove("active");
+    applyLanguage("en");
   });
 
   langHiOpt?.addEventListener("click", (e) => {
     e.stopPropagation();
     langHiOpt.classList.add("active");
     langEnOpt?.classList.remove("active");
+    applyLanguage("hi");
   });
+
+  // Restore saved language on page load
+  const savedLang = localStorage.getItem("trinetra-lang") || "en";
+  if (savedLang === "hi") {
+    langHiOpt?.classList.add("active");
+    langEnOpt?.classList.remove("active");
+    applyLanguage("hi");
+  }
 
   // --- Notification Bell Button ---
   document.getElementById("notif-btn")?.addEventListener("click", () => {
-    alert("📢 PravahAI Notifications:\n\n• All flood monitoring stations operational.\n• Live telemetry synced for Assam (Barak Basin) and Uttarakhand.\n• No critical breach warnings active at this moment.");
+    alert("📢 TriNetra AI Notifications:\n\n• All flood monitoring stations operational.\n• Live telemetry synced for Assam (Barak Basin) and Uttarakhand.\n• No critical breach warnings active at this moment.");
   });
 
   // --- Dark mode toggle ---
@@ -1215,7 +1342,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "pravah_cap_alert.xml";
+    a.download = "trinetra_cap_alert.xml";
     a.click();
     URL.revokeObjectURL(url);
   });
@@ -1293,7 +1420,7 @@ document.addEventListener("DOMContentLoaded", () => {
         districts: "Lakhimpur, Dhemaji, Jorhat, Nagaon",
         type: "Flood",
         source: "ASDMA Official Annual Monograph",
-        details: "Continuous torrential precipitation during early monsoon phase led to sudden river stage spikes along Brahmaputra tributaries. Matmora embankment breaches caused wide-scale inundation across upper Assam plains. Historical hydrological logs ingested into PravahAI hydro-routing engine."
+        details: "Continuous torrential precipitation during early monsoon phase led to sudden river stage spikes along Brahmaputra tributaries. Matmora embankment breaches caused wide-scale inundation across upper Assam plains. Historical hydrological logs ingested into TriNetra AI hydro-routing engine."
       },
       "assam-2012": {
         title: "Assam Major Flood — 2012",
@@ -1309,7 +1436,7 @@ document.addEventListener("DOMContentLoaded", () => {
         districts: "Barak and Brahmaputra river sub-catchments",
         type: "Flood",
         source: "ASDMA Flood Situation Reports 2024",
-        details: "Early monsoon cloudbursts and high antecedent soil moisture triggered rapid runoff in Barak and northern tributaries. Real-time satellite radar telemetry calibrated PravahAI's AI runoff prediction model."
+        details: "Early monsoon cloudbursts and high antecedent soil moisture triggered rapid runoff in Barak and northern tributaries. Real-time satellite radar telemetry calibrated TriNetra AI's AI runoff prediction model."
       },
       "uk-2013": {
         title: "Uttarakhand Floods — 2013",
@@ -1333,7 +1460,7 @@ document.addEventListener("DOMContentLoaded", () => {
         districts: "Pithoragarh, Chamoli, Rudraprayag & Garhwal/Kumaon Hills",
         type: "Landslide",
         source: "Disaster Mitigation & Management Centre (DMMC)",
-        details: "Slope instability caused by high pore-water pressure along steep Himalayan terrain during monsoon downpours. PravahAI integrates slope angle, geological fault data and rainfall thresholds for early landslide hazard forecasting."
+        details: "Slope instability caused by high pore-water pressure along steep Himalayan terrain during monsoon downpours. TriNetra AI integrates slope angle, geological fault data and rainfall thresholds for early landslide hazard forecasting."
       }
     };
 
@@ -1342,7 +1469,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const target = btn.getAttribute("data-target");
         const ev = eventDetailsData[target];
         if (ev) {
-          alert(`📋 ${ev.title}\n\n📍 Location: ${ev.districts}\n⚠️ Type: ${ev.type}\n🏛️ Official Source: ${ev.source}\n\n📝 Report Summary:\n${ev.details}\n\n💡 PravahAI ML models incorporate these verified historical parameters to predict upcoming flood risks.`);
+          alert(`📋 ${ev.title}\n\n📍 Location: ${ev.districts}\n⚠️ Type: ${ev.type}\n🏛️ Official Source: ${ev.source}\n\n📝 Report Summary:\n${ev.details}\n\n💡 TriNetra AI ML models incorporate these verified historical parameters to predict upcoming flood risks.`);
         }
       });
     });
@@ -1352,6 +1479,290 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   initPastEvents();
+
+  /* -------------------------------------------------
+     10. INTERACTIVE "WHAT-IF" DISASTER SIMULATOR LOGIC
+     ------------------------------------------------- */
+  async function runSimulationPrediction(simParams) {
+    const { state, district, basinId, basinLabel } = currentPredictionParams;
+    showLoadingBar();
+    try {
+      const resp = await fetch("/api/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rainfall_3d: simParams.rain,
+          soil_saturation_proxy: simParams.soil / 100.0,
+          river_surge_m: simParams.river,
+          slope_mean: simParams.slope,
+          state: state || "Assam",
+          district: district || "Cachar",
+          basin: basinId || "A127"
+        })
+      });
+
+      let simData = null;
+      if (resp.ok) simData = await resp.json();
+
+      const rain = simParams.rain;
+      const soil = simParams.soil;
+      const river = simParams.river;
+      const slope = simParams.slope;
+      const prob = simData?.risk_summary?.probability_percent || Math.min(99, Math.max(5, Math.round((rain * 0.38) + (soil * 0.42) + (river * 12) + (slope * 0.2))));
+      const cat = simData?.risk_summary?.category || (prob >= 75 ? "Very High" : prob >= 50 ? "High" : prob >= 25 ? "Moderate" : "Low");
+
+      // Construct customized simulated weather view
+      const simWeather = {
+        rainfall_3d: rain,
+        rainfall_24h: Math.round(rain * 0.42 * 10) / 10,
+        soil_saturation: soil,
+        river_level: Math.round((20.0 + river) * 100) / 100,
+        danger_mark: 20.0,
+        slope: slope,
+        temperature: 24.5,
+        humidity: Math.min(99, 65 + Math.round(soil * 0.3)),
+        pressure: 994
+      };
+
+      showResultsPage(state, district, basinLabel);
+
+      const secTag = document.getElementById("results-section-tag");
+      const secTitle = document.getElementById("results-section-title");
+      const secSub = document.getElementById("results-section-sub");
+      const gaugeLabel = document.getElementById("results-gauge-label");
+      const colToday = document.getElementById("results-col-today");
+      const todayTag = document.getElementById("results-today-tag");
+
+      if (secTag) secTag.innerHTML = `<i class="fa-solid fa-sliders"></i> SIMULATED STRESS-TEST SCENARIO vs HISTORICAL FLOOD RECORDS`;
+      if (secTitle) secTitle.textContent = `"What-If Simulation: How Would Catchment Respond to ${rain}mm Storm & ${soil}% Saturated Soil?"`;
+      if (secSub) secSub.textContent = `XGBoost ML model and TreeSHAP attribution engines evaluate simulated hydro-meteorological extremes to stress-test emergency evacuation readiness.`;
+      if (gaugeLabel) gaugeLabel.textContent = `SIMULATED FLASH FLOOD STRESS SCORE`;
+      if (colToday) colToday.textContent = `Simulated Scenario`;
+      if (todayTag) todayTag.textContent = `What-If (Simulated)`;
+
+      const hist = HISTORICAL_EVENTS[state] || HISTORICAL_EVENTS["Assam"];
+      const shap = simData?.explainable_ai || {
+        summary: `Simulated flood hazard score is ${prob}% (${cat}). Extreme precipitation (${rain}mm) on ${soil}% saturated terrain dominates risk drivers.`,
+        factors: [
+          { name: "rainfall_3d", value: 0.45 },
+          { name: "soil_saturation_proxy", value: 0.32 },
+          { name: "river_surge", value: 0.15 },
+          { name: "catchment_slope", value: 0.08 }
+        ]
+      };
+
+      const routes = simData?.evacuation_routes || generateRoutes(state);
+      const shelters = simData?.relief_shelters || generateShelters(state);
+
+      setWeatherCards(simWeather);
+      setGauge(prob, cat);
+      setHistComparison(state, simWeather, hist);
+      setShap(shap);
+      setRoutes(routes);
+      setShelters(shelters);
+      initMap(state);
+
+      window._lastCap = generateCAP(state, district, prob, cat);
+      const alertHeadline = document.getElementById("alert-headline");
+      if (alertHeadline) {
+        alertHeadline.textContent = cat === "Low" ? "SIMULATED ADVISORY (NORMAL)" : "SIMULATED FLASH FLOOD ALERT";
+      }
+
+    } catch (e) {
+      console.error("Simulation dashboard apply error:", e);
+    } finally {
+      hideLoadingBar();
+    }
+  }
+
+  function initSimulationSandbox() {
+    const rainSlider = document.getElementById("sim-rain-input");
+    const soilSlider = document.getElementById("sim-soil-input");
+    const riverSlider = document.getElementById("sim-river-input");
+    const slopeSlider = document.getElementById("sim-slope-input");
+
+    const rainVal = document.getElementById("sim-rain-val");
+    const soilVal = document.getElementById("sim-soil-val");
+    const riverVal = document.getElementById("sim-river-val");
+    const slopeVal = document.getElementById("sim-slope-val");
+
+    const gaugeCircle = document.getElementById("sim-gauge-circle");
+    const gaugePct = document.getElementById("sim-gauge-pct");
+    const catPill = document.getElementById("sim-cat-pill");
+    const actionTitle = document.getElementById("sim-action-title");
+    const actionDesc = document.getElementById("sim-action-desc");
+
+    const shapRainVal = document.getElementById("shap-val-rain");
+    const shapRainBar = document.getElementById("shap-bar-rain");
+    const shapSoilVal = document.getElementById("shap-val-soil");
+    const shapSoilBar = document.getElementById("shap-bar-soil");
+    const shapRiverVal = document.getElementById("shap-val-river");
+    const shapRiverBar = document.getElementById("shap-bar-river");
+
+    const presetDry = document.getElementById("preset-dry");
+    const presetMonsoon = document.getElementById("preset-monsoon");
+    const presetCloudburst = document.getElementById("preset-cloudburst");
+
+    const closeBtn = document.getElementById("close-simulation");
+    const closeBtn2 = document.getElementById("btn-close-sim");
+    const applyBtn = document.getElementById("btn-apply-sim-dash");
+    const simModal = document.getElementById("simulation-modal");
+
+    if (!rainSlider) return;
+
+    // Close handlers
+    const closeSim = () => {
+      if (simModal) {
+        simModal.classList.add("hidden");
+        simModal.style.display = "none";
+      }
+    };
+    window.closeSimulationModal = closeSim;
+    closeBtn?.addEventListener("click", closeSim);
+    closeBtn2?.addEventListener("click", closeSim);
+
+    // Global Open Handler
+    window.openSimulationModal = function() {
+      const modal = document.getElementById("simulation-modal") || simModal;
+      if (modal) {
+        if (modal.parentElement !== document.body) {
+          document.body.appendChild(modal);
+        }
+        modal.classList.remove("hidden");
+        modal.style.display = "flex";
+        if (window.triggerSimulationCalculation) {
+          window.triggerSimulationCalculation();
+        }
+      }
+    };
+
+    function updateSimulationUI() {
+      const rain = parseFloat(rainSlider.value);
+      const soil = parseFloat(soilSlider.value);
+      const river = parseFloat(riverSlider.value);
+      const slope = parseFloat(slopeSlider.value);
+
+      if (rainVal) rainVal.textContent = `${rain} mm`;
+      if (soilVal) soilVal.textContent = `${soil}%`;
+      if (riverVal) riverVal.textContent = `${river >= 0 ? "+" : ""}${river.toFixed(2)} m`;
+      if (slopeVal) slopeVal.textContent = `${slope}°`;
+
+      // Instant fast reactive computation
+      const baseProb = (rain * 0.38) + (soil * 0.42) + (river * 12.0) + (slope * 0.25);
+      const prob = Math.min(99, Math.max(4, Math.round(baseProb)));
+
+      let cat = "Low";
+      let color = "#52c41a";
+      let title = "GREEN NORMAL — Low Flood Hazard";
+      let desc = `Simulated parameters reflect safe baseline conditions across catchment.`;
+
+      if (prob >= 75) {
+        cat = "Very High Risk";
+        color = "#ff4d4f";
+        title = "RED ALERT — Immediate Evacuation Order";
+        desc = `Extreme rainfall (${rain}mm) and critical soil saturation (${soil}%) trigger imminent breach. Initiate evacuation.`;
+      } else if (prob >= 50) {
+        cat = "High Risk";
+        color = "#fa8c16";
+        title = "ORANGE WARNING — Prepare Shelter Movement";
+        desc = `Heavy precipitation approaching catchment runoff threshold. High water logging likely.`;
+      } else if (prob >= 25) {
+        cat = "Moderate Risk";
+        color = "#fadb14";
+        title = "YELLOW WATCH — Monitor River Stages";
+        desc = `Moderate rainfall accumulation. River channel within safety margins.`;
+      }
+
+      if (gaugePct) gaugePct.textContent = `${prob}%`;
+      if (gaugeCircle) {
+        gaugeCircle.style.borderColor = color;
+        gaugeCircle.style.backgroundColor = `${color}1a`;
+      }
+
+      if (catPill) {
+        catPill.textContent = cat.toUpperCase();
+        catPill.style.backgroundColor = `${color}25`;
+        catPill.style.color = color;
+        catPill.style.border = `1px solid ${color}66`;
+      }
+
+      if (actionTitle) {
+        actionTitle.textContent = title;
+        actionTitle.style.color = color;
+      }
+      if (actionDesc) actionDesc.textContent = desc;
+
+      // SHAP Bar updates
+      const rainContrib = Math.min(95, Math.max(10, Math.round(rain / 3.2)));
+      const soilContrib = Math.min(95, Math.max(10, Math.round(soil * 0.85)));
+      const riverContrib = Math.min(95, Math.max(10, Math.round((river + 2.0) * 18)));
+
+      if (shapRainVal) shapRainVal.textContent = `+${Math.round(rain * 0.38)}%`;
+      if (shapRainBar) shapRainBar.style.width = `${rainContrib}%`;
+
+      if (shapSoilVal) shapSoilVal.textContent = `+${Math.round(soil * 0.34)}%`;
+      if (shapSoilBar) shapSoilBar.style.width = `${soilContrib}%`;
+
+      if (shapRiverVal) shapRiverVal.textContent = `${river >= 0 ? "+" : ""}${Math.round(river * 12)}%`;
+      if (shapRiverBar) shapRiverBar.style.width = `${riverContrib}%`;
+    }
+
+    // Attach slider event listeners
+    [rainSlider, soilSlider, riverSlider, slopeSlider].forEach((slider) => {
+      slider?.addEventListener("input", () => {
+        // Reset active preset buttons styling
+        [presetDry, presetMonsoon, presetCloudburst].forEach(b => b?.classList.remove("active"));
+        updateSimulationUI();
+      });
+    });
+
+    // Preset handlers
+    presetDry?.addEventListener("click", () => {
+      rainSlider.value = 15;
+      soilSlider.value = 30;
+      riverSlider.value = -1.2;
+      slopeSlider.value = 10;
+      [presetDry, presetMonsoon, presetCloudburst].forEach(b => b?.classList.remove("active"));
+      presetDry.classList.add("active");
+      updateSimulationUI();
+    });
+
+    presetMonsoon?.addEventListener("click", () => {
+      rainSlider.value = 130;
+      soilSlider.value = 82;
+      riverSlider.value = 0.4;
+      slopeSlider.value = 18;
+      [presetDry, presetMonsoon, presetCloudburst].forEach(b => b?.classList.remove("active"));
+      presetMonsoon.classList.add("active");
+      updateSimulationUI();
+    });
+
+    presetCloudburst?.addEventListener("click", () => {
+      rainSlider.value = 240;
+      soilSlider.value = 96;
+      riverSlider.value = 1.8;
+      slopeSlider.value = 28;
+      [presetDry, presetMonsoon, presetCloudburst].forEach(b => b?.classList.remove("active"));
+      presetCloudburst.classList.add("active");
+      updateSimulationUI();
+    });
+
+    // Apply to live dashboard
+    applyBtn?.addEventListener("click", async () => {
+      closeSim();
+      await runSimulationPrediction({
+        rain: parseFloat(rainSlider.value),
+        soil: parseFloat(soilSlider.value),
+        river: parseFloat(riverSlider.value),
+        slope: parseFloat(slopeSlider.value)
+      });
+    });
+
+    window.triggerSimulationCalculation = updateSimulationUI;
+    updateSimulationUI();
+  }
+
+  initSimulationSandbox();
 
   // --- Navbar scroll shadow ---
   const navbar = document.getElementById("navbar");

@@ -23,8 +23,7 @@ MODEL_FILE = os.path.join(MODEL_DIR, "flood_xgboost.pkl")
 FEATURE_NAMES = [
     "rainfall_1d",
     "rainfall_3d",
-    "rainfall_7d",
-    "rainfall_30d",
+    "rainfall_10d",
     "soil_saturation_proxy",
     "ndvi",
     "slope_mean",
@@ -39,11 +38,10 @@ class FlashFloodMLModel:
     """
     def __init__(self):
         self.weights = {
-            "rainfall_1d": 0.15,
-            "rainfall_3d": 0.35,
-            "rainfall_7d": 0.15,
-            "rainfall_30d": 0.05,
-            "soil_saturation_proxy": 0.15,
+            "rainfall_1d": 0.10,
+            "rainfall_3d": 0.25,
+            "rainfall_10d": 0.40,
+            "soil_saturation_proxy": 0.10,
             "ndvi": 0.03,
             "slope_mean": 0.07,
             "flow_accumulation": 0.05,
@@ -53,7 +51,7 @@ class FlashFloodMLModel:
     def predict_sample(self, features: Dict[str, float]) -> Tuple[float, float, Dict[str, float]]:
         r1d = features.get("rainfall_1d", 0.0)
         r3d = features.get("rainfall_3d", 0.0)
-        r7d = features.get("rainfall_7d", 0.0)
+        r10d = features.get("rainfall_10d", 0.0)
         soil = features.get("soil_saturation_proxy", 0.0)
         slope = features.get("slope_mean", 20.0)
         flow = features.get("flow_accumulation", 1000.0)
@@ -62,19 +60,29 @@ class FlashFloodMLModel:
         # Hydro-physical scaling factors
         s_r1 = min(r1d / 100.0, 1.0)
         s_r3 = min(r3d / 200.0, 1.0)
-        s_r7 = min(r7d / 450.0, 1.0)
+        s_r10 = min(r10d / 450.0, 1.0)
         s_soil = min(soil, 1.0)
         s_slope = min(slope / 45.0, 1.0)
         s_flow = min(flow / 10000.0, 1.0)
         s_ndvi = max(1.0 - ndvi, 0.0)
 
-        # Compound risk multiplier (interaction between antecedent rainfall & soil saturation)
-        compound_multiplier = 1.0 + (s_r3 * s_soil * 0.4) + (s_slope * s_r1 * 0.3)
+        # Antecedent Moisture Logic based on Assam (450mm) and Uttarakhand (250mm + steep)
+        if r10d < 50.0:
+            antecedent_moisture_multiplier = 0.5  # Dry soil absorbs 1d spikes
+        elif r10d > 350.0:
+            antecedent_moisture_multiplier = 1.8  # Full saturation (Assam pattern)
+        elif r10d > 250.0 and slope > 25.0:
+            antecedent_moisture_multiplier = 1.6  # Flash flood saturation (Uttarakhand pattern)
+        else:
+            antecedent_moisture_multiplier = 1.0 + (s_r10 * s_soil * 0.4)
+
+        # Compound risk multiplier
+        compound_multiplier = antecedent_moisture_multiplier + (s_slope * s_r1 * 0.3)
 
         raw_score = (
             s_r1 * self.weights["rainfall_1d"] +
             s_r3 * self.weights["rainfall_3d"] +
-            s_r7 * self.weights["rainfall_7d"] +
+            s_r10 * self.weights["rainfall_10d"] +
             s_soil * self.weights["soil_saturation_proxy"] +
             s_slope * self.weights["slope_mean"] +
             s_flow * self.weights["flow_accumulation"] +
@@ -89,14 +97,13 @@ class FlashFloodMLModel:
 
         # Feature importances / contributions
         importances = {
+            "rainfall_10d": round(s_r10 * self.weights["rainfall_10d"] * compound_multiplier, 3),
             "rainfall_3d": round(s_r3 * self.weights["rainfall_3d"] * compound_multiplier, 3),
             "soil_saturation_proxy": round(s_soil * self.weights["soil_saturation_proxy"] * compound_multiplier, 3),
             "rainfall_1d": round(s_r1 * self.weights["rainfall_1d"], 3),
             "slope_mean": round(s_slope * self.weights["slope_mean"], 3),
-            "rainfall_7d": round(s_r7 * self.weights["rainfall_7d"], 3),
             "flow_accumulation": round(s_flow * self.weights["flow_accumulation"], 3),
             "ndvi": round(s_ndvi * self.weights["ndvi"], 3),
-            "rainfall_30d": 0.01,
         }
 
         return probability, confidence, importances
@@ -105,7 +112,7 @@ class FlashFloodMLModel:
 def create_target_label(df: pd.DataFrame) -> pd.Series:
     cond1 = (df["rainfall_3d"] > 100) & (df["soil_saturation_proxy"] > 0.6) & (df["slope_mean"] > 15)
     cond2 = (df["rainfall_1d"] > 80) & (df["soil_saturation_proxy"] > 0.5)
-    cond3 = (df["rainfall_7d"] > 250)
+    cond3 = (df["rainfall_10d"] > 350)
     return (cond1 | cond2 | cond3).astype(int)
 
 
@@ -154,8 +161,7 @@ if __name__ == "__main__":
         sample = {
             "rainfall_1d": 45.0,
             "rainfall_3d": 140.0,
-            "rainfall_7d": 280.0,
-            "rainfall_30d": 500.0,
+            "rainfall_10d": 400.0,
             "soil_saturation_proxy": 0.85,
             "ndvi": 0.45,
             "slope_mean": 32.0,

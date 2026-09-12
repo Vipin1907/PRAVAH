@@ -1,5 +1,5 @@
 """
-PravahAI - ML Prediction Service
+TriNetra AI - ML Prediction Service
 ==================================
 Real, working XGBoost flood-risk model with SHAP explainability.
 

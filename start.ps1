@@ -1,5 +1,5 @@
 Write-Host "===================================================" -ForegroundColor Cyan
-Write-Host "      Starting PravahAI Full Stack System          " -ForegroundColor Yellow
+Write-Host "      Starting TriNetra AI Full Stack System       " -ForegroundColor Yellow
 Write-Host "===================================================" -ForegroundColor Cyan
 
 # 1. Master AI/ML & Routing Backend (Port 5000)

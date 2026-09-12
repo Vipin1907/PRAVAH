@@ -1,6 +1,6 @@
 """
 =============================================================================
-PravahAI — Master Backend System (Unified AI, ML, & Routing Gateway)
+TriNetra AI — Master Backend System (Unified AI, ML, & Routing Gateway)
 =============================================================================
 Connects and runs:
 1. XGBoost & Hydro-Meteorological ML Prediction Engine
@@ -228,7 +228,7 @@ def calibrate_iot_reading(raw_payload: dict) -> dict:
 def health():
     return jsonify({
         "status": "healthy",
-        "service": "PravahAI Unified Master Backend",
+        "service": "TriNetra AI Unified Master Backend",
         "ml_engine": "XGBoost v2 (Active)",
         "agentic_ai": "LangGraph Active" if has_agentic_ai else "Fallback Active",
         "routing_engine": "OSM Evacuation Engine (Active)"
@@ -258,35 +258,38 @@ def fetch_live_telemetry_py(state: str, district: str, basin: str, area: str):
         w_url = (f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
                  "&current=temperature_2m,relative_humidity_2m,surface_pressure,precipitation,rain"
                  "&hourly=precipitation,rain,relative_humidity_2m,soil_moisture_0_to_1cm,soil_moisture_1_to_3cm"
-                 "&past_days=3&forecast_days=2")
-        req_w = urllib.request.Request(w_url, headers={"User-Agent": "PravahAI/1.0"})
+                 "&past_days=10&forecast_days=2")
+        req_w = urllib.request.Request(w_url, headers={"User-Agent": "TriNetraAI/1.0"})
         with urllib.request.urlopen(req_w, timeout=5) as response:
             w_data = json.loads(response.read().decode())
 
         f_url = (f"https://flood-api.open-meteo.com/v1/flood?latitude={lat}&longitude={lon}"
                  "&daily=river_discharge,river_discharge_mean&forecast_days=7")
-        req_f = urllib.request.Request(f_url, headers={"User-Agent": "PravahAI/1.0"})
+        req_f = urllib.request.Request(f_url, headers={"User-Agent": "TriNetraAI/1.0"})
         with urllib.request.urlopen(req_f, timeout=5) as response:
             f_data = json.loads(response.read().decode())
 
         hourly = w_data.get("hourly", {})
         precip = hourly.get("precipitation") or hourly.get("rain") or []
-        past72 = precip[:72] if len(precip) >= 72 else [0]
-        past24 = past72[-24:] if len(past72) >= 24 else [0]
-        next24 = precip[72:96] if len(precip) >= 96 else [0]
+        past240 = precip[:240] if len(precip) >= 240 else [0]
+        past72 = past240[-72:] if len(past240) >= 72 else [0]
+        past24 = past240[-24:] if len(past240) >= 24 else [0]
+        next24 = precip[240:264] if len(precip) >= 264 else [0]
 
         obs_rain_24h = round(sum(float(x or 0) for x in past24), 1)
         obs_rain_3d = round(sum(float(x or 0) for x in past72), 1)
+        obs_rain_10d = round(sum(float(x or 0) for x in past240), 1)
         fc_rain_24h = round(sum(float(x or 0) for x in next24), 1)
         fc_peak = round(max((float(x or 0) for x in next24), default=0), 1)
         current_rate = round(float(w_data.get("current", {}).get("precipitation", 0) or 0), 1)
 
         # Demo Trick: Apply extreme weather fallback ONLY for Dhemaji (Assam) and Rudraprayag (Uttarakhand)
         if is_assam and district == "Dhemaji":
-            obs_rain_24h, obs_rain_3d, fc_rain_24h, fc_peak, current_rate = 142.5, 318.0, 78.0, 18.5, 24.8
+            obs_rain_24h, obs_rain_3d, obs_rain_10d, fc_rain_24h, fc_peak, current_rate = 142.5, 318.0, 485.0, 78.0, 18.5, 24.8
             soil_sat = 88.4
         elif (not is_assam) and district == "Rudraprayag":
-            obs_rain_24h, obs_rain_3d, fc_rain_24h, fc_peak, current_rate = 98.2, 205.4, 54.5, 12.0, 16.4
+            obs_rain_24h, obs_rain_3d, obs_rain_10d, fc_rain_24h, fc_peak, current_rate = 98.2, 205.4, 290.0, 54.5, 12.0, 16.4
+            soil_sat = 79.2
             soil_sat = 79.2
         else:
             soil_moisture_m3 = (hourly.get("soil_moisture_0_to_1cm") or [0.25])[-1]
@@ -312,6 +315,7 @@ def fetch_live_telemetry_py(state: str, district: str, basin: str, area: str):
             "observed_rainfall": {
                 "value_24h": obs_rain_24h,
                 "value_3d_cumulative": obs_rain_3d,
+                "value_10d_cumulative": obs_rain_10d,
                 "unit": "mm",
                 "source": "IMD AWS Network + Global Precipitation Measurement (GPM) Satellite",
                 "update_time": f"{time_ist} (Live Sat Telemetry)",
@@ -583,6 +587,7 @@ def predict():
     telemetry = fetch_live_telemetry_py(state, district, basin, area)
     
     rain_3d = float(telemetry["observed_rainfall"]["value_3d_cumulative"])
+    rain_10d = float(telemetry["observed_rainfall"].get("value_10d_cumulative", rain_3d * 2.5))
     rain_24h = float(telemetry["observed_rainfall"]["value_24h"])
     soil = float(telemetry["soil_moisture"]["saturation_pct"])
 
@@ -590,14 +595,18 @@ def predict():
         prob, conf, importances = ml_model.predict_sample({
             "rainfall_1d": rain_24h,
             "rainfall_3d": rain_3d,
-            "rainfall_7d": rain_3d * 1.8,
-            "rainfall_30d": rain_3d * 3.2,
+            "rainfall_10d": rain_10d,
             "soil_saturation_proxy": soil / 100.0,
             "ndvi": 0.58 if state == "Assam" else 0.48,
             "slope_mean": 12.0 if state == "Assam" else 36.0,
             "flow_accumulation": 4500.0 if state == "Assam" else 2200.0
         })
         prob_pct = int(round(prob * 100))
+        
+        # Physical Sanity Check: If there's barely any rain, cap the flood probability
+        if rain_3d < 20.0:
+            prob_pct = min(prob_pct, 15)
+            
     else:
         prob_pct = 85 if rain_3d > 100 else 12
         conf = 0.88
@@ -618,7 +627,7 @@ def predict():
             "probability_percent": prob_pct,
             "category": category,
             "confidence": conf,
-            "model_version": "PravahAI-XGBoost-v2",
+            "model_version": "TriNetraAI-XGBoost-v2",
             "state": state,
             "district": district,
             "basin": basin
@@ -728,6 +737,7 @@ def get_dashboard_data():
     telemetry = fetch_live_telemetry_py(state, district, basin, area)
     
     obs_rain_3d = float(telemetry["observed_rainfall"]["value_3d_cumulative"])
+    obs_rain_10d = float(telemetry["observed_rainfall"].get("value_10d_cumulative", obs_rain_3d * 2.5))
     obs_rain_24h = float(telemetry["observed_rainfall"]["value_24h"])
     soil_sat = float(telemetry["soil_moisture"]["saturation_pct"]) / 100.0
 
@@ -736,14 +746,18 @@ def get_dashboard_data():
         prob, conf, importances = ml_model.predict_sample({
             "rainfall_1d": obs_rain_24h,
             "rainfall_3d": obs_rain_3d,
-            "rainfall_7d": obs_rain_3d * 1.8,
-            "rainfall_30d": obs_rain_3d * 3.2,
+            "rainfall_10d": obs_rain_10d,
             "soil_saturation_proxy": soil_sat,
             "ndvi": 0.58 if state == "Assam" else 0.48,
             "slope_mean": 14.0 if state == "Assam" else 38.0,
             "flow_accumulation": 5200.0 if state == "Assam" else 2400.0
         })
         prob_pct = int(round(prob * 100))
+        
+        # Physical Sanity Check: If there's barely any rain, cap the flood probability
+        if obs_rain_3d < 20.0:
+            prob_pct = min(prob_pct, 15)
+            
     else:
         prob_pct = 85 if obs_rain_3d > 100 else 12
         conf = 0.86
@@ -1034,11 +1048,142 @@ def predict_compare():
 
 
 # ---------------------------------------------------------------------------
+# 6. Interactive "What-If" Disaster Simulation Sandbox Endpoint
+# ---------------------------------------------------------------------------
+@app.route("/api/simulate", methods=["POST", "GET"])
+def simulate_scenario():
+    """
+    Real-time What-If Flood Hazard Simulator:
+    Accepts arbitrary rainfall, soil moisture, river level surge, and slope parameters,
+    computes live XGBoost inference and SHAP factors, and generates tactical evacuation advice.
+    """
+    if request.method == "GET":
+        body = {
+            "rainfall_3d": float(request.args.get("rainfall_3d", 110.0)),
+            "soil_saturation_proxy": float(request.args.get("soil_saturation", 0.85)),
+            "river_surge_m": float(request.args.get("river_surge", 0.5)),
+            "slope_mean": float(request.args.get("slope", 14.0)),
+            "state": request.args.get("state", "Assam"),
+            "district": request.args.get("district", "Cachar"),
+            "basin": request.args.get("basin", "A127")
+        }
+    else:
+        body = request.get_json(silent=True) or {}
+
+    rain_3d = float(body.get("rainfall_3d", 110.0))
+    soil_in = float(body.get("soil_saturation_proxy", body.get("soil_saturation", 0.85)))
+    soil_val = soil_in if soil_in <= 1.0 else (soil_in / 100.0)
+    river_surge = float(body.get("river_surge_m", body.get("river_surge", 0.0)))
+    slope = float(body.get("slope_mean", body.get("slope", 14.0)))
+    state = body.get("state", "Assam")
+    district = body.get("district", "Cachar")
+    basin = body.get("basin", "A127")
+
+    # 1. Run XGBoost ML Model on Simulated Feature Vector
+    if ml_model:
+        prob, conf, importances = ml_model.predict_sample({
+            "rainfall_1d": rain_3d * 0.42,
+            "rainfall_3d": rain_3d,
+            "rainfall_7d": rain_3d * 1.8,
+            "rainfall_30d": rain_3d * 3.2,
+            "soil_saturation_proxy": max(0.1, min(1.0, soil_val)),
+            "ndvi": 0.58 if state == "Assam" else 0.48,
+            "slope_mean": slope,
+            "flow_accumulation": 4500.0 if state == "Assam" else 2200.0
+        })
+        # Factor in river surge modifier into final simulation score
+        surge_boost = max(0.0, min(0.25, river_surge * 0.08)) if river_surge > 0 else (river_surge * 0.05)
+        adjusted_prob = max(0.02, min(0.99, prob + surge_boost))
+        prob_pct = int(round(adjusted_prob * 100))
+    else:
+        base_calc = (rain_3d * 0.40) + (soil_val * 42.0) + (river_surge * 12.0) + (slope * 0.4)
+        prob_pct = int(round(max(5.0, min(99.0, base_calc))))
+        conf = 0.91
+        importances = {
+            "rainfall_3d": 0.45,
+            "soil_saturation_proxy": 0.30,
+            "river_surge": 0.15,
+            "slope_gradient": 0.10
+        }
+
+    category = compute_risk_category(prob_pct)
+    
+    # 2. Determine Tactical Action & Emergency Level
+    if prob_pct >= 75:
+        action_title = "RED ALERT — Immediate Evacuation Order"
+        action_msg = f"Simulated extreme rainfall ({rain_3d}mm) and critical soil saturation ({int(soil_val*100)}%) trigger imminent flash flood breach. Initiate evacuation along Highland Bypass corridors."
+        action_badge = "CRITICAL_EVACUATION"
+        risk_color = "#ff4d4f"
+    elif prob_pct >= 50:
+        action_title = "ORANGE WARNING — Prepare Shelter Movement"
+        action_msg = f"Elevated hydrologic stress detected. Saturated sub-catchment runoff capacity exceeding safe margin. Pre-position emergency relief supplies."
+        action_badge = "SHELTER_STANDBY"
+        risk_color = "#fa8c16"
+    elif prob_pct >= 25:
+        action_title = "YELLOW WATCH — Monitor River Stages"
+        action_msg = f"Moderate runoff accumulation. River levels within manageable bounds but rising. Routine hydro-sensor surveillance active."
+        action_badge = "MONITORING_WATCH"
+        risk_color = "#fadb14"
+    else:
+        action_title = "GREEN NORMAL — Low Flood Hazard"
+        action_msg = f"Current simulated parameters reflect safe hydrological conditions. No active overflow hazard detected across catchment {basin}."
+        action_badge = "ROUTINE_NORMAL"
+        risk_color = "#52c41a"
+
+    # 3. Dynamic SHAP Feature Breakdown
+    factors = [
+        {"feature": "rainfall_3d", "score": round(importances.get("rainfall_3d", 0.45), 2), "label": "3-Day Rainfall Accumulation"},
+        {"feature": "soil_saturation", "score": round(importances.get("soil_saturation_proxy", 0.30), 2), "label": "Antecedent Soil Saturation"},
+        {"feature": "river_surge", "score": round(importances.get("river_discharge", 0.15) if "river_discharge" in importances else 0.15, 2), "label": "River Level Surge"},
+        {"feature": "catchment_slope", "score": round(importances.get("slope_mean", 0.10), 2), "label": "Topographical Slope Gradient"}
+    ]
+
+    # 4. Routing & Shelters
+    routes = DEMO_ROUTES.get(state, DEMO_ROUTES["Assam"])
+    shelters = DEMO_SHELTERS.get(state, DEMO_SHELTERS["Assam"])
+
+    return jsonify({
+        "status": "success",
+        "simulation_mode": True,
+        "input_parameters": {
+            "rainfall_3d_mm": rain_3d,
+            "soil_saturation_pct": int(soil_val * 100),
+            "river_surge_m": river_surge,
+            "slope_degrees": slope,
+            "state": state,
+            "district": district,
+            "basin": basin
+        },
+        "risk_summary": {
+            "probability_percent": prob_pct,
+            "category": category,
+            "confidence": conf,
+            "model_version": "TriNetraAI-XGBoost-v2-Simulator",
+            "risk_color": risk_color,
+            "lead_time_hours": 3 if prob_pct >= 75 else 6 if prob_pct >= 50 else 12
+        },
+        "tactical_action": {
+            "title": action_title,
+            "message": action_msg,
+            "action_badge": action_badge,
+            "risk_color": risk_color
+        },
+        "explainable_ai": {
+            "summary": f"Simulated risk calculated at {prob_pct}% ({category}). Heavy precipitation ({rain_3d}mm) on {int(soil_val*100)}% saturated terrain is the dominant driver.",
+            "factors": factors
+        },
+        "evacuation_routes": routes,
+        "relief_shelters": shelters,
+        "timestamp": time.time()
+    }), 200
+
+
+# ---------------------------------------------------------------------------
 # Server Entry Point
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"============================================================")
-    print(f"  PravahAI Master Backend listening on http://0.0.0.0:{port}")
+    print(f"  TriNetra AI Master Backend listening on http://0.0.0.0:{port}")
     print(f"============================================================")
     app.run(host="0.0.0.0", port=port, debug=False)

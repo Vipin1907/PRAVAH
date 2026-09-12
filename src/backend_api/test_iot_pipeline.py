@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PravahAI — Comprehensive Test Suite for IoT & Dual Inference Engine
+TriNetra AI — Comprehensive Test Suite for IoT & Dual Inference Engine
 Verifies all endpoints, physics scaling calculations, ML inferences and comparisons.
 """
 
@@ -20,7 +20,7 @@ from main import app, LATEST_IOT_BUFFER, calibrate_iot_reading
 
 def run_tests():
     print("=" * 65)
-    print("  🧪 PravahAI IoT & Dual Inference Verification Test Suite")
+    print("  🧪 TriNetra AI IoT & Dual Inference Verification Test Suite")
     print("=" * 65)
 
     client = app.test_client()
@@ -102,6 +102,27 @@ def run_tests():
     print(f"  ✅ Delta Risk: {cmp_info['delta_risk_percent']}%")
     print(f"  ✅ AI Discrepancy Insight: {cmp_info['ai_discrepancy_insight'][:100]}...")
     print(f"  ✅ Recommended Action: {cmp_info['recommended_action']}")
+
+    # -------------------------------------------------------------
+    # Test 5: Interactive What-If Disaster Simulator (/api/simulate)
+    # -------------------------------------------------------------
+    print("\n[TEST 5] Testing /api/simulate (Interactive What-If Simulation Sandbox)...")
+    resp_sim = client.post("/api/simulate", json={
+        "rainfall_3d": 180.0,
+        "soil_saturation_proxy": 0.92,
+        "river_surge_m": 0.8,
+        "slope_mean": 20.0,
+        "state": "Assam",
+        "district": "Cachar",
+        "basin": "A127"
+    })
+    assert resp_sim.status_code == 200
+    sim_res = json.loads(resp_sim.data)
+    sim_risk = sim_res["risk_summary"]
+    sim_tactical = sim_res["tactical_action"]
+    print(f"  ✅ Simulation ML Risk: {sim_risk['probability_percent']}% ({sim_risk['category']})")
+    print(f"  ✅ Simulation Tactical Action: {sim_tactical['title']}")
+    print(f"  ✅ Evacuation Route: {sim_res['evacuation_routes']['safe']['name']}")
 
     print("\n" + "=" * 65)
     print("  🎉 ALL TESTS PASSED! FULL SYSTEM IS 100% OPERATIONAL & VERIFIED")

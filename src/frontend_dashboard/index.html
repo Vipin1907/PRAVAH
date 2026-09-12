@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PravahAI — Flash Flood Intelligence & Early Warning System</title>
+  <title>TriNetra AI — Flash Flood Intelligence & Early Warning System</title>
   <meta name="description" content="AI-powered flash flood prediction, real-time risk mapping, intelligent alerts, and safe route guidance for India." />
 
   <!-- Fonts -->
@@ -17,7 +17,7 @@
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/style.css?v=2.7.0" />
 </head>
 <body>
 
@@ -30,7 +30,7 @@
           <span class="drawer-dot"></span>
         </div>
         <div class="drawer-brand-text">
-          <div class="drawer-title">PRAVAH <span class="c-orange">AI.</span></div>
+          <div class="drawer-title">TRINETRA <span class="c-orange">AI.</span></div>
           <div class="drawer-sub">FLASH FLOOD INTELLIGENCE</div>
         </div>
       </div>
@@ -38,57 +38,65 @@
     </div>
 
     <nav class="drawer-nav">
+      <!-- ── MAIN PAGES ── -->
+      <div class="drawer-section-label">MAIN</div>
+
       <a href="#home" class="drawer-item active" data-target="home">
-        <i class="fa-solid fa-table-cells-large"></i>
-        <span>Home / Overview</span>
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
       </a>
-      <a href="#weather" class="drawer-item" data-target="weather">
-        <i class="fa-solid fa-cloud-rain"></i>
-        <span>Weather &amp; Telemetry</span>
-        <span class="d-badge">STEP 2</span>
-      </a>
-      <a href="#dashboard" class="drawer-item" data-target="dashboard">
-        <i class="fa-solid fa-layer-group"></i>
-        <span>Live Dashboard</span>
+
+      <a href="#prediction" class="drawer-item" data-target="prediction">
+        <i class="fa-solid fa-magnifying-glass-chart"></i>
+        <span>Flood Risk Prediction</span>
         <span class="d-badge">AI</span>
       </a>
-      <a href="#dashboard" class="drawer-item" data-target="dashboard">
-        <i class="fa-solid fa-map-location-dot"></i>
-        <span>Risk Map</span>
+
+      <!-- ── ABOUT SECTIONS ── -->
+      <div class="drawer-section-label">ABOUT</div>
+
+      <a href="#how-it-works" class="drawer-item" data-target="how-it-works">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>How It Works</span>
       </a>
-      <a href="#prediction" class="drawer-item" data-target="prediction">
-        <i class="fa-solid fa-cubes-stacked"></i>
-        <span>Catchment View</span>
+
+      <a href="#ml-model" class="drawer-item" data-target="ml-model">
+        <i class="fa-solid fa-brain"></i>
+        <span>ML Model</span>
+        <span class="d-badge">XGBoost</span>
       </a>
-      <a href="#weather" class="drawer-item" data-target="weather">
-        <i class="fa-solid fa-water"></i>
-        <span>Hydrology</span>
+
+      <a href="#agentic-ai" class="drawer-item" data-target="agentic-ai">
+        <i class="fa-solid fa-robot"></i>
+        <span>Agentic AI</span>
+        <span class="d-badge">LangGraph</span>
       </a>
-      <a href="#dashboard" class="drawer-item" data-target="dashboard">
-        <i class="fa-solid fa-bell"></i>
-        <span>Alerts</span>
+
+      <a href="#past-events" class="drawer-item" data-target="past-events">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>Past Events</span>
+      </a>
+
+      <!-- ── RESULTS (after prediction) ── -->
+      <div class="drawer-section-label">POST-PREDICTION</div>
+
+      <a href="#" class="drawer-item drawer-item-locked" id="drawer-goto-dashboard" title="Run a prediction first to access the Live Dashboard">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Live Dashboard</span>
         <span class="d-badge live">LIVE</span>
       </a>
-      <a href="#dashboard" class="drawer-item" data-target="dashboard">
-        <i class="fa-solid fa-location-arrow"></i>
-        <span>Routes &amp; Safety</span>
-        <span class="d-badge">OSM</span>
+
+      <a href="#" class="drawer-item drawer-item-locked" id="drawer-goto-comparison" title="Run a prediction first to access Flood Comparison">
+        <i class="fa-solid fa-chart-bar"></i>
+        <span>Risk Comparison</span>
       </a>
-      <a href="#comparison" class="drawer-item" data-target="comparison">
-        <i class="fa-solid fa-users"></i>
-        <span>Impact / Exposure</span>
-      </a>
-      <a href="#comparison" class="drawer-item" data-target="comparison">
-        <i class="fa-solid fa-file-lines"></i>
-        <span>Reports</span>
-      </a>
-      <a href="#weather" class="drawer-item" data-target="weather">
-        <i class="fa-solid fa-database"></i>
-        <span>Data Quality</span>
-      </a>
-      <a href="#prediction" class="drawer-item" data-target="prediction">
-        <i class="fa-solid fa-gear"></i>
-        <span>Settings</span>
+
+      <!-- ── ADMIN ── -->
+      <div class="drawer-section-label">ADMIN</div>
+
+      <a href="/static/admin-login.html" class="drawer-item">
+        <i class="fa-solid fa-user-shield"></i>
+        <span>Admin Portal</span>
       </a>
     </nav>
 
@@ -102,6 +110,7 @@
     </div>
   </aside>
 
+
   <!-- ─── NAVIGATION BAR ─── -->
   <header class="navbar" id="navbar">
     <div class="nav-inner">
@@ -111,7 +120,7 @@
           <i class="fa-solid fa-bars"></i>
         </button>
         <a href="#home" class="nav-brand">
-          <span class="nav-title">PRAVAH <span class="accent">AI</span></span>
+          <span class="nav-title">TRINETRA <span class="accent">AI</span></span>
         </a>
       </div>
 
@@ -158,8 +167,8 @@
       <!-- Hero Top Row: Left Text & Right Flood Map Illustration -->
       <div class="hero-top-grid">
         <div class="hero-text-col">
-          <div class="hero-badge">• FLASH FLOOD INTELLIGENCE &amp; EARLY WARNING SYSTEM •</div>
-          <h1 class="hero-headline">PRAVAH <span class="accent">AI</span></h1>
+          <div class="hero-badge" data-en="• FLASH FLOOD INTELLIGENCE &amp; EARLY WARNING SYSTEM •" data-hi="• बाढ़ पूर्व चेतावनी एवं आपदा प्रबंधन प्रणाली •">• FLASH FLOOD INTELLIGENCE &amp; EARLY WARNING SYSTEM •</div>
+          <h1 class="hero-headline">TRINETRA <span class="accent">AI</span></h1>
           <p class="hero-tagline">
             <span class="c-orange" data-en="PREDICT EARLY." data-hi="पूर्व चेतावनी।">PREDICT EARLY.</span>&nbsp;
             <span class="c-navy" data-en="EXPLAIN CLEARLY." data-hi="स्पष्ट व्याख्या।">EXPLAIN CLEARLY.</span>&nbsp;
@@ -378,7 +387,7 @@
             </div>
             <button type="submit" class="btn-check-risk" id="check-risk-btn">
               <i class="fa-solid fa-bolt"></i>
-              <span data-en="ANALYZE FLOOD RISK" data-hi="बाढ़ जोखिम विश्लेषण करें">Submit</span>
+              <span data-en="ANALYZE FLOOD RISK" data-hi="बाढ़ जोखिम विश्लेषण करें">ANALYZE FLOOD RISK</span>
               <i class="fa-solid fa-arrow-right"></i>
             </button>
           </div>
@@ -393,10 +402,10 @@
         </div>
       </div>
 
-      <!-- ─── PRAVAH AI FEATURES SECTION ─── -->
+      <!-- ─── TRINETRA AI FEATURES SECTION ─── -->
       <div class="features-section-wrap">
         <h2 class="features-main-heading">
-          PRAVAH AI <span class="features-accent">FEATURES</span>
+          TRINETRA AI <span class="features-accent">FEATURES</span>
         </h2>
 
         <div class="features-3col-grid">
@@ -437,7 +446,7 @@
         <div class="status-left-group">
           <div class="status-badge-item">
             <i class="fa-solid fa-circle-check status-check-icon"></i>
-            <span class="status-strong">PRAVAH AI SYSTEM OPERATIONAL</span>
+            <span class="status-strong">TRINETRA AI SYSTEM OPERATIONAL</span>
           </div>
           <span class="status-divider">|</span>
           <span class="status-item">All systems functional</span>
@@ -449,7 +458,7 @@
         </div>
       </div>
 
-      <!-- ─── HOW PRAVAH AI WORKS (CLEAN WORKFLOW PIPELINE) ─── -->
+      <!-- ─── HOW TRINETRA AI WORKS (CLEAN WORKFLOW PIPELINE) ─── -->
       <section class="how-it-works-section" id="how-it-works">
         <div class="hiw-container">
           
@@ -458,7 +467,7 @@
               <i class="fa-solid fa-diagram-project"></i>
               <span>SYSTEM WORKFLOW PIPELINE</span>
             </div>
-            <h2 class="hiw-title">How PravahAI Works</h2>
+            <h2 class="hiw-title">How TriNetra AI Works</h2>
             <p class="hiw-subtitle">From user input to real-time flood alerts and safe action.</p>
           </div>
 
@@ -571,7 +580,7 @@
               <span>ML ARCHITECTURE &amp; PIPELINE</span>
             </div>
             <h2 class="mlm-title">AI Flood Risk Prediction Model</h2>
-            <p class="mlm-subtitle">PravahAI analyzes environmental and historical data to predict flood risk.</p>
+            <p class="mlm-subtitle">TriNetra AI analyzes environmental and historical data to predict flood risk.</p>
           </div>
 
           <!-- Flow Pipeline Strip -->
@@ -849,7 +858,7 @@
             <div class="aai-actions-row">
               <a href="#prediction" class="aai-btn aai-btn-primary">
                 <i class="fa-solid fa-comments"></i>
-                <span>Ask PravahAI</span>
+                <span>Ask TriNetra AI</span>
               </a>
               <a href="#prediction" class="aai-btn aai-btn-secondary">
                 <i class="fa-solid fa-map-location-dot"></i>
@@ -1138,7 +1147,7 @@
           <div class="pe-bottom-wrap">
             <div class="pe-note-box">
               <i class="fa-solid fa-lightbulb c-yellow"></i>
-              <span>Past-event data helps PravahAI learn historical patterns and improve flood-risk analysis.</span>
+              <span>Past-event data helps TriNetra AI learn historical patterns and improve flood-risk analysis.</span>
             </div>
             
             <a href="#prediction" class="pe-cta-btn">
@@ -1579,6 +1588,10 @@
             <i class="fa-solid fa-scale-balanced"></i>
             <span>Compare Results</span>
           </button>
+          <button class="btn-predict-action btn-sim-mode" id="btn-predict-simulation" onclick="window.openSimulationModal &amp;&amp; window.openSimulationModal()" title="Interactive 'What-If' Disaster Simulation Sandbox">
+            <i class="fa-solid fa-sliders"></i>
+            <span>What-If Simulator</span>
+          </button>
         </div>
       </div>
 
@@ -1607,18 +1620,18 @@
 
     <!-- ── SECTION 2: FLOOD PREDICTION + HISTORICAL COMPARISON ── -->
     <section class="section-block alt-bg" id="comparison">
-      <div class="section-label orange-label">
+      <div class="section-label orange-label" id="results-section-tag">
         <i class="fa-solid fa-chart-pie"></i>
         TODAY'S WEATHER vs HISTORICAL FLOOD RECORDS
       </div>
-      <h2 class="section-title" data-en='"Will a Flood Occur Today Based on Today&apos;s Weather &amp; Past Records?"' data-hi='"क्या आज के मौसम और ऐतिहासिक डेटा के आधार पर बाढ़ आएगी?"'>"Will a Flood Occur Today Based on Today's Weather &amp; Past Records?"</h2>
-      <p class="section-sub">Our ML ensemble model compares live hydro-meteorological observations against historic flood catastrophes in the same catchment.</p>
+      <h2 class="section-title" id="results-section-title" data-en='"Will a Flood Occur Today Based on Today&apos;s Weather &amp; Past Records?"' data-hi='"क्या आज के मौसम और ऐतिहासिक डेटा के आधार पर बाढ़ आएगी?"'>"Will a Flood Occur Today Based on Today's Weather &amp; Past Records?"</h2>
+      <p class="section-sub" id="results-section-sub">Our ML ensemble model compares live hydro-meteorological observations against historic flood catastrophes in the same catchment.</p>
 
       <div class="comparison-layout">
 
         <!-- Gauge card -->
         <div class="gauge-result-card">
-          <div class="grc-label">TODAY'S FLOOD PREDICTION SCORE</div>
+          <div class="grc-label" id="results-gauge-label">TODAY'S FLOOD PREDICTION SCORE</div>
           <div class="gauge-wrap">
             <div class="gauge-ring" id="gauge-ring">
               <div class="gauge-center">
@@ -1642,7 +1655,7 @@
               <thead>
                 <tr>
                   <th>Parameter</th>
-                  <th>Today's Live Weather</th>
+                  <th id="results-col-today">Today's Live Weather</th>
                   <th>Past Historical Event</th>
                   <th>Status</th>
                 </tr>
@@ -1650,7 +1663,7 @@
               <tbody>
                 <tr>
                   <td><strong>Benchmark Event</strong></td>
-                  <td><span class="tag live">Today (Observed)</span></td>
+                  <td><span class="tag live" id="results-today-tag">Today (Observed)</span></td>
                   <td><strong id="ht-event-name">—</strong></td>
                   <td><span class="tag danger">Past Catastrophe</span></td>
                 </tr>
@@ -1836,10 +1849,181 @@
     </div>
   </div>
 
+  <!-- ─── INTERACTIVE "WHAT-IF" DISASTER SIMULATION SANDBOX MODAL ─── -->
+  <div id="simulation-modal" class="modal-bg hidden">
+    <div class="modal-box simulation-modal-box">
+      <div class="modal-head sim-modal-head">
+        <div class="modal-head-title">
+          <div class="sim-pulse-dot"></div>
+          <i class="fa-solid fa-sliders c-orange"></i>
+          <span>Interactive "What-If" Flash Flood Hazard Simulator</span>
+        </div>
+        <button class="close-x" id="close-simulation" onclick="window.closeSimulationModal &amp;&amp; window.closeSimulationModal()">&times;</button>
+      </div>
+
+      <!-- Simulation Subheader / Explanation Banner -->
+      <div class="sim-intro-banner">
+        <div class="sim-intro-text">
+          <strong>🔬 Stress-Test Engine:</strong> Drag live rainfall, soil saturation, river surge, and terrain slope sliders to evaluate real-time XGBoost ML classification, TreeSHAP feature contributions, and dynamic evacuation corridors.
+        </div>
+        <!-- 3 Instant Preset Scenario Pills -->
+        <div class="sim-presets-row">
+          <span class="sim-preset-label">Instant Presets:</span>
+          <button class="sim-preset-btn preset-dry" id="preset-dry" title="Dry baseline weather with low flood hazard">
+            <i class="fa-solid fa-sun"></i> 🟢 Dry Baseline (Normal)
+          </button>
+          <button class="sim-preset-btn preset-monsoon" id="preset-monsoon" title="Heavy continuous monsoon rainfall">
+            <i class="fa-solid fa-cloud-rain"></i> 🟡 Monsoon Saturation (Watch)
+          </button>
+          <button class="sim-preset-btn preset-cloudburst" id="preset-cloudburst" title="Severe cloudburst with sudden river surge and embankment breach">
+            <i class="fa-solid fa-bolt-lightning"></i> 🔴 Cloudburst &amp; Breach (Emergency)
+          </button>
+        </div>
+      </div>
+
+      <!-- 2-Column Simulation Body Grid -->
+      <div class="sim-body-grid">
+        
+        <!-- Left Column: 4 Interactive Live Range Sliders -->
+        <div class="sim-controls-col">
+          <h4 class="sim-col-heading"><i class="fa-solid fa-sliders"></i> Hydro-Meteorological Parameters</h4>
+
+          <!-- Slider 1: 3-Day Cumulative Rainfall -->
+          <div class="sim-slider-group">
+            <div class="sim-slider-header">
+              <label for="sim-rain-input"><i class="fa-solid fa-cloud-showers-heavy c-blue"></i> 3-Day Cumulative Rainfall (mm)</label>
+              <span class="sim-val-badge badge-rain" id="sim-rain-val">120 mm</span>
+            </div>
+            <input type="range" id="sim-rain-input" class="sim-range-slider" min="0" max="300" step="5" value="120" />
+            <div class="sim-slider-ticks">
+              <span>0 mm (Clear)</span>
+              <span>100 mm (Heavy)</span>
+              <span>200 mm (Severe)</span>
+              <span>300 mm (Catastrophic)</span>
+            </div>
+          </div>
+
+          <!-- Slider 2: Antecedent Soil Saturation -->
+          <div class="sim-slider-group">
+            <div class="sim-slider-header">
+              <label for="sim-soil-input"><i class="fa-solid fa-droplet c-orange"></i> Antecedent Soil Moisture / Saturation (%)</label>
+              <span class="sim-val-badge badge-soil" id="sim-soil-val">85%</span>
+            </div>
+            <input type="range" id="sim-soil-input" class="sim-range-slider" min="15" max="100" step="1" value="85" />
+            <div class="sim-slider-ticks">
+              <span>15% (Dry Porous)</span>
+              <span>50% (Moist)</span>
+              <span>80% (Near Capacity)</span>
+              <span>100% (Waterlogged)</span>
+            </div>
+          </div>
+
+          <!-- Slider 3: River Gauge Deviation Surge -->
+          <div class="sim-slider-group">
+            <div class="sim-slider-header">
+              <label for="sim-river-input"><i class="fa-solid fa-water c-teal"></i> River Gauge Surge (Deviation from Danger Mark)</label>
+              <span class="sim-val-badge badge-river" id="sim-river-val">+0.60 m</span>
+            </div>
+            <input type="range" id="sim-river-input" class="sim-range-slider" min="-2.0" max="3.0" step="0.1" value="0.6" />
+            <div class="sim-slider-ticks">
+              <span>-2.0 m (Safe Low)</span>
+              <span>0.0 m (Danger Level)</span>
+              <span>+1.5 m (Severe Breach)</span>
+              <span>+3.0 m (Extreme Peak)</span>
+            </div>
+          </div>
+
+          <!-- Slider 4: Basin Slope Gradient -->
+          <div class="sim-slider-group">
+            <div class="sim-slider-header">
+              <label for="sim-slope-input"><i class="fa-solid fa-mountain c-purple"></i> Catchment Basin Slope Gradient (°)</label>
+              <span class="sim-val-badge badge-slope" id="sim-slope-val">14°</span>
+            </div>
+            <input type="range" id="sim-slope-input" class="sim-range-slider" min="5" max="45" step="1" value="14" />
+            <div class="sim-slider-ticks">
+              <span>5° (Plains / Valley)</span>
+              <span>15° (Rolling Foothills)</span>
+              <span>30° (Steep Hills)</span>
+              <span>45° (Himalayan Ridge)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Live Real-Time Dynamic Simulation Output -->
+        <div class="sim-results-col">
+          <h4 class="sim-col-heading"><i class="fa-solid fa-brain"></i> Real-Time AI Inference &amp; Decision Loop</h4>
+
+          <!-- Live Scorecard Box -->
+          <div class="sim-output-card" id="sim-output-card">
+            <div class="sim-gauge-row">
+              <div class="sim-gauge-circle" id="sim-gauge-circle">
+                <span class="sim-gauge-pct" id="sim-gauge-pct">94%</span>
+                <span class="sim-gauge-sub">PROBABILITY</span>
+              </div>
+              <div class="sim-verdict-wrap">
+                <span class="sim-category-pill pill-danger" id="sim-cat-pill">VERY HIGH RISK</span>
+                <h5 class="sim-action-title" id="sim-action-title">RED ALERT — Immediate Evacuation Order</h5>
+                <p class="sim-action-desc" id="sim-action-desc">Simulated extreme rainfall (120mm) and critical soil saturation (85%) exceed embankment retention threshold.</p>
+              </div>
+            </div>
+
+            <!-- Dynamic SHAP Drivers in Simulator -->
+            <div class="sim-shap-wrap">
+              <div class="sim-shap-title"><i class="fa-solid fa-chart-column"></i> Real-Time Feature Attribution Breakdown (TreeSHAP)</div>
+              
+              <div class="sim-shap-row">
+                <div class="sim-shap-info"><span>🌧️ Rainfall 3-Day Load</span><strong id="shap-val-rain">+45%</strong></div>
+                <div class="sim-shap-bar-bg"><div class="sim-shap-bar-fill fill-red" id="shap-bar-rain" style="width: 85%;"></div></div>
+              </div>
+              
+              <div class="sim-shap-row">
+                <div class="sim-shap-info"><span>💧 Soil Saturation Capacity</span><strong id="shap-val-soil">+32%</strong></div>
+                <div class="sim-shap-bar-bg"><div class="sim-shap-bar-fill fill-orange" id="shap-bar-soil" style="width: 72%;"></div></div>
+              </div>
+              
+              <div class="sim-shap-row">
+                <div class="sim-shap-info"><span>🌊 River Level Surge</span><strong id="shap-val-river">+15%</strong></div>
+                <div class="sim-shap-bar-bg"><div class="sim-shap-bar-fill fill-yellow" id="shap-bar-river" style="width: 50%;"></div></div>
+              </div>
+            </div>
+
+            <!-- Live Safety Guidance Preview -->
+            <div class="sim-tactical-box">
+              <div class="sim-tactical-item">
+                <i class="fa-solid fa-route c-green"></i>
+                <div>
+                  <strong>Safe Evacuation Corridor:</strong>
+                  <span id="sim-safe-route-name">Silchar-Jiribam-Guwahati (Highland Bypass)</span>
+                </div>
+              </div>
+              <div class="sim-tactical-item">
+                <i class="fa-solid fa-house-medical c-blue"></i>
+                <div>
+                  <strong>Primary Verified Safe Shelter:</strong>
+                  <span id="sim-safe-shelter-name">Govt Higher Secondary Relief Centre (Elev: 68m MSL)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Action -->
+      <div class="modal-foot sim-modal-foot">
+        <button class="btn-sec" id="btn-close-sim" onclick="window.closeSimulationModal &amp;&amp; window.closeSimulationModal()">Close Simulator</button>
+        <button class="btn-predict-action btn-sim-apply" id="btn-apply-sim-dash">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Apply Scenario to Live Dashboard &amp; Evacuation Map</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=2.7.0"></script>
 </body>
 </html>

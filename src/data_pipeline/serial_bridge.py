@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-PravahAI — USB Data Cable (Serial) to Dashboard Bridge
+TriNetra AI — USB Data Cable (Serial) to Dashboard Bridge
 Reads live JSON telemetry packets from ESP32 via USB COM Port
-and forwards them to the PravahAI Master Backend (:5000) & Gateway (:3000).
+and forwards them to the TriNetra AI Master Backend (:5000) & Gateway (:3000).
 """
 
 import sys
@@ -54,9 +54,22 @@ def forward_to_backend(json_str):
     except Exception as ex:
         return None, str(ex)
 
+def get_risk_percentage():
+    try:
+        req = urllib.request.Request(
+            "http://localhost:5000/predict",
+            data=b'{"state":"Assam", "district":"Dhemaji"}',
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=2.5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data.get("risk_summary", {}).get("probability_percent", 0)
+    except Exception as ex:
+        return None
+
 def main():
     print("=" * 65)
-    print("  🔌 PravahAI — USB Data Cable (Serial) Bridge")
+    print("  🔌 TriNetra AI — USB Data Cable (Serial) Bridge")
     print("=================================================")
     
     port = find_esp32_port()
@@ -91,14 +104,19 @@ def main():
                     payload = json.loads(line)
                     status, res = forward_to_backend(line)
                     if status == 200:
-                        print(f"[🟢 LIVE HW HTTP {status}] RainADC={payload.get('raw_rain')} | WaterADC={payload.get('raw_water_level')} | SoilADC={payload.get('raw_soil')} | Temp={payload.get('temperature')}°C -> Ingested OK")
+                        risk_pct = get_risk_percentage()
+                        if risk_pct is not None:
+                            print(f"[🟢 LIVE HW HTTP {status}] RainADC={payload.get('raw_rain')} | WaterADC={payload.get('raw_water_level')} | Soil={payload.get('raw_soil')} -> Ingested OK | 🤖 ML Risk: {risk_pct}%")
+                            ser.write(f"RISK:{risk_pct}\n".encode('utf-8'))
+                        else:
+                            print(f"[🟢 LIVE HW HTTP {status}] RainADC={payload.get('raw_rain')} | WaterADC={payload.get('raw_water_level')} | SoilADC={payload.get('raw_soil')} | Temp={payload.get('temperature')}°C -> Ingested OK")
                     else:
                         print(f"[⚠️ WARNING] Data read from USB, but server returned: {res}")
                 except json.JSONDecodeError:
                     pass
             else:
                 # Debug message from ESP32 setup
-                if "PravahAI" in line or "Reading" in line:
+                if "TriNetra" in line or "Reading" in line:
                     print(f"[ESP32 BOOT] {line}")
         except KeyboardInterrupt:
             print("\n🛑 Stopped Serial Bridge.")

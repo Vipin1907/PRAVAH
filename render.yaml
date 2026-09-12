@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pravah-ai
+    name: trinetra-ai
     runtime: node
     rootDir: src/backend_api
     buildCommand: npm install

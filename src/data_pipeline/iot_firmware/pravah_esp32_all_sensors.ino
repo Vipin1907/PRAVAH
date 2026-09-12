@@ -1,34 +1,23 @@
 /*
  * =====================================================================
- * PravahAI — ESP32 Cyber-Physical 4-Sensor Hydrological Node
+ * TriNetra AI — ESP32 Cyber-Physical 4-Sensor Hydrological Node
  * =====================================================================
  * 
  * Works with USB Data Cable (Direct Serial) AND Optional Wi-Fi!
  * 
- * 🔌 SENSOR PINOUT WIRING:
+ * 🔌 SENSOR & OUTPUT WIRING:
  * -------------------------------------------------------------
- * 1. Raindrop Sensor Module:
- *    - AO (Analog Out)  -> GPIO 34 (ADC1)
- *    - VCC              -> 3.3V / 5V (VIN)
- *    - GND              -> GND
+ * [Inputs]
+ * 1. Raindrop Sensor Module: AO -> GPIO 34
+ * 2. Water Level Sensor Probe: S -> GPIO 35
+ * 3. Soil Moisture Sensor: AO -> GPIO 32
+ * 4. DHT11 Temp & Humidity: OUT -> GPIO 4
  * 
- * 2. Water Level Sensor Probe:
- *    - S (Signal)       -> GPIO 35 (ADC1)
- *    - + (VCC)          -> 3.3V / 5V (VIN)
- *    - - (GND)          -> GND
- * 
- * 3. Soil Moisture Sensor:
- *    - AO (Analog Out)  -> GPIO 32 (ADC1)
- *    - VCC              -> 3.3V / 5V (VIN)
- *    - GND              -> GND
- * 
- * 4. DHT11 Temp & Humidity:
- *    - OUT / Data (S)   -> GPIO 4  (Digital I/O)
- *    - + (VCC)          -> 3.3V
- *    - - (GND)          -> GND
- * 
- * 5. Built-in LED:
- *    - Status Blinker   -> GPIO 2
+ * [Outputs - Warning Indicators]
+ * 5. GREEN LED   -> GPIO 25 (Normal State)
+ * 6. YELLOW LED  -> GPIO 26 (Warning / Alert)
+ * 7. RED LED     -> GPIO 27 (Danger / Flood)
+ * 8. BUZZER      -> GPIO 14 (Evacuation Alarm)
  * =====================================================================
  */
 
@@ -37,17 +26,23 @@
 // ==========================================
 // 1. PIN CONFIGURATION
 // ==========================================
-#define PIN_RAIN_SENSOR       34   // Analog ADC1 (Raindrop plate)
-#define PIN_WATER_LEVEL       35   // Analog ADC1 (Water depth probe)
-#define PIN_SOIL_MOISTURE     32   // Analog ADC1 (Soil hygrometer)
-#define PIN_DHT               4    // Digital I/O (DHT11 Temperature & Humidity)
-#define PIN_STATUS_LED        2    // ESP32 Onboard LED indicator
+// Sensor Pins
+#define PIN_RAIN_SENSOR       34   
+#define PIN_WATER_LEVEL       35   
+#define PIN_SOIL_MOISTURE     32   
+#define PIN_DHT               4    
+#define PIN_STATUS_LED        2    
 
-#define DHTTYPE DHT11              // Set to DHT22 if using white sensor
+// Indicator Pins (LEDs & Buzzer)
+#define PIN_LED_GREEN         25
+#define PIN_LED_YELLOW        26
+#define PIN_LED_RED           27
+#define PIN_BUZZER            14
+
+#define DHTTYPE DHT11              
 DHT dht(PIN_DHT, DHTTYPE);
 
-// Sampling Interval (Milliseconds)
-const unsigned long TRANSMIT_INTERVAL_MS = 2000; // Har 2 second me packet bheje
+const unsigned long TRANSMIT_INTERVAL_MS = 2000; 
 unsigned long lastTransmitTime = 0;
 
 // Device Metadata
@@ -58,62 +53,95 @@ const char* DISTRICT_NAME = "Dhemaji";
 const char* BASIN_CODE = "A011";
 
 void setup() {
-  // Initialize USB Serial at 115200 Baud
   Serial.begin(115200);
   delay(1000);
 
+  // Initialize Input/Output Pins
   pinMode(PIN_STATUS_LED, OUTPUT);
+  pinMode(PIN_LED_GREEN, OUTPUT);
+  pinMode(PIN_LED_YELLOW, OUTPUT);
+  pinMode(PIN_LED_RED, OUTPUT);
+  pinMode(PIN_BUZZER, OUTPUT);
+
+  // Turn off all indicators initially
   digitalWrite(PIN_STATUS_LED, LOW);
+  digitalWrite(PIN_LED_GREEN, LOW);
+  digitalWrite(PIN_LED_YELLOW, LOW);
+  digitalWrite(PIN_LED_RED, LOW);
+  digitalWrite(PIN_BUZZER, LOW);
 
-  // Set ADC 12-bit resolution (0 - 4095)
   analogReadResolution(12);
-  analogSetAttenuation(ADC_11db); // 0 to 3.3V range
+  analogSetAttenuation(ADC_11db); 
 
-  // Initialize DHT11
   dht.begin();
 
   Serial.println("\n=======================================================");
-  Serial.println("  🌊 PravahAI — ESP32 4-Sensor Node Ready (USB Serial)");
+  Serial.println("  🌊 TriNetra AI — ESP32 4-Sensor + Alarm Node Ready");
   Serial.println("=======================================================");
-  Serial.println("[INFO] Reading 4 Sensors: Rain (GPIO 34), Water (GPIO 35), Soil (GPIO 32), DHT11 (GPIO 4)");
-  Serial.println("[INFO] Streaming JSON packets every 2.0 seconds...\n");
 }
+
+int currentRiskPct = 0;
 
 void loop() {
   unsigned long currentMillis = millis();
   
+  // 1. Send sensor data to Python every 2 seconds
   if (currentMillis - lastTransmitTime >= TRANSMIT_INTERVAL_MS) {
     lastTransmitTime = currentMillis;
     readAndTransmitTelemetry();
   }
+
+  // 2. Receive ML Risk Percentage from Python Backend
+  if (Serial.available() > 0) {
+    String incomingMsg = Serial.readStringUntil('\n');
+    incomingMsg.trim();
+    if (incomingMsg.startsWith("RISK:")) {
+      currentRiskPct = incomingMsg.substring(5).toInt();
+      updateIndicatorsByRisk(currentRiskPct);
+    }
+  }
+}
+
+void updateIndicatorsByRisk(int riskPct) {
+  // Subse pehle saari LEDs aur Buzzer OFF kar do
+  digitalWrite(PIN_LED_GREEN, LOW);
+  digitalWrite(PIN_LED_YELLOW, LOW);
+  digitalWrite(PIN_LED_RED, LOW);
+  digitalWrite(PIN_BUZZER, LOW);
+
+  // ML Risk Percentage based logic:
+  if (riskPct >= 95) {
+    // 🚨 CRITICAL (Risk 95-100%): Red + Buzzer ON
+    digitalWrite(PIN_LED_RED, HIGH);
+    digitalWrite(PIN_BUZZER, HIGH); 
+  }
+  else if (riskPct >= 80) {
+    // 🔴 DANGER (Risk 80-94%): Red LED Only (No Buzzer)
+    digitalWrite(PIN_LED_RED, HIGH);
+  }
+  else if (riskPct >= 40) {
+    // 🟡 WARNING (Risk 40-79%): Yellow LED Only
+    digitalWrite(PIN_LED_YELLOW, HIGH);
+  } 
+  else {
+    // 🟢 SAFE (Risk 0-39%): Green LED Only
+    digitalWrite(PIN_LED_GREEN, HIGH);
+  }
 }
 
 void readAndTransmitTelemetry() {
-  // 1. Read Raindrop Sensor (Dry ≈ 4095, Wet/Submerged ≈ 400-800)
   int rawRain = analogRead(PIN_RAIN_SENSOR);
-
-  // 2. Read Water Level Probe (Dry in Air ≈ 0-300, Submerged in water ≈ 2500-3600)
   int rawWater = analogRead(PIN_WATER_LEVEL);
-
-  // 3. Read Soil Moisture (Dry Soil ≈ 3500-4095, Saturated Soil ≈ 400-1200)
   int rawSoil = analogRead(PIN_SOIL_MOISTURE);
 
-  // 4. Read DHT11 Temperature & Relative Humidity
   float temperature = dht.readTemperature();
   float humidity = dht.readHumidity();
 
-  // Fallback if DHT pin reads NaN
-  if (isnan(temperature) || temperature < -10.0 || temperature > 80.0) {
-    temperature = 27.5; // Realistic baseline
-  }
-  if (isnan(humidity) || humidity < 0.0 || humidity > 100.0) {
-    humidity = 78.0;    // Realistic baseline
-  }
+  if (isnan(temperature) || temperature < -10.0 || temperature > 80.0) temperature = 27.5; 
+  if (isnan(humidity) || humidity < 0.0 || humidity > 100.0) humidity = 78.0;    
 
-  // Turn LED ON during packet transmission
   digitalWrite(PIN_STATUS_LED, HIGH);
 
-  // 5. Build Valid JSON Payload for PravahAI Master Backend
   char jsonPayload[512];
   snprintf(jsonPayload, sizeof(jsonPayload),
     "{"
@@ -133,10 +161,8 @@ void readAndTransmitTelemetry() {
     rawRain, rawWater, rawSoil, temperature, humidity
   );
 
-  // Print Clean JSON Line over USB Serial Cable
   Serial.println(jsonPayload);
 
-  // Quick LED Blink
   delay(50);
   digitalWrite(PIN_STATUS_LED, LOW);
 }

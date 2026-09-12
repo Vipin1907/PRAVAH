@@ -1,79 +1,71 @@
 #!/usr/bin/env python3
 """
-PravahAI — ESP32 Virtual Node Hardware Simulator
-Simulates real ESP32 micro-controller hydro-physical telemetry over HTTP POST.
-Allows instant testing of dry baseline, rain spray, and flash flood scenarios.
+TriNetra AI — ESP32 Virtual Node Hardware Simulator
+Directly sends synthetic sensor ADC readings to backend API (:5000) or Gateway (:3000).
+Tests and demonstrates real-time physical calibration into rainfall, river levels & soil moisture.
 """
 
+import sys
 import time
 import json
 import random
 import argparse
-import sys
 import urllib.request
 import urllib.error
 
-# Fix Windows console UTF-8 output
+# Fix Windows UTF-8 encoding
 sys.stdout.reconfigure(encoding='utf-8')
 
 DEFAULT_BACKEND_URL = "http://localhost:5000/api/iot-telemetry"
 DEFAULT_GATEWAY_URL = "http://localhost:3000/api/iot/readings"
 
+# -------------------------------------------------------------
+# Hardware Scenarios
+# -------------------------------------------------------------
 SCENARIOS = {
     "1": {
-        "name": "Dry Baseline (Safe/Low Risk)",
-        "description": "Rain sensor completely dry, river gauge at safe baseline, dry soil",
-        "raw_rain": (3800, 4095),      # Dry ADC
-        "raw_water_level": (200, 450), # Out of water
-        "raw_soil": (3600, 4000),      # Dry soil
-        "temp": (28.0, 31.0),
-        "humidity": (50.0, 65.0)
+        "name": "Scenario 1: Dry / Normal Baseline",
+        "description": "Clear skies, dry soil, low baseline river gauge",
+        "rain_range": (3800, 4095),      # High ADC = Dry sensor plate
+        "water_range": (150, 450),       # Low ADC = River safely below danger level
+        "soil_range": (3400, 3900),      # High ADC = Dry soil
+        "temp_range": (26.0, 32.0),
+        "hum_range": (45.0, 60.0)
     },
     "2": {
-        "name": "Rain Spray / Moderate Surge (Medium Risk)",
-        "description": "Mist/Water spray on raindrop sensor, steady river flow, moist soil",
-        "raw_rain": (1200, 1800),      # Partially wet
-        "raw_water_level": (1500, 2200),# Moderate depth
-        "raw_soil": (1800, 2400),      # Moist soil
-        "temp": (25.0, 27.0),
-        "humidity": (80.0, 88.0)
+        "name": "Scenario 2: Pre-Monsoon Showers & Soil Saturation",
+        "description": "Moderate intermittent rain, wetting soil, rising river channel",
+        "rain_range": (1800, 2600),      # Medium ADC = Water droplets on plate
+        "water_range": (1200, 1800),     # Moderate river elevation
+        "soil_range": (1800, 2400),      # Moist soil
+        "temp_range": (24.0, 28.0),
+        "hum_range": (70.0, 85.0)
     },
     "3": {
-        "name": "Extreme Flash Flood (Very High / Danger Alert)",
-        "description": "Rain sensor submerged/soaked, river probe submerged (+0.45m above danger), 95% saturated soil",
-        "raw_rain": (350, 600),        # Heavily soaked ADC
-        "raw_water_level": (3300, 3800),# High water submersion
-        "raw_soil": (400, 800),        # Liquid saturated soil
-        "temp": (23.5, 25.5),
-        "humidity": (92.0, 98.0)
+        "name": "Scenario 3: Severe Cloudburst & Imminent Flash Flood",
+        "description": "Heavy downpour, fully submerged river probe, 100% saturated soil",
+        "rain_range": (400, 1100),       # Low ADC = Heavy sheet flow across sensor
+        "water_range": (2600, 3400),     # High ADC = Exceeds danger mark
+        "soil_range": (900, 1400),       # High saturation
+        "temp_range": (21.0, 24.0),
+        "hum_range": (92.0, 99.0)
     }
 }
 
-def generate_telemetry_payload(scenario_key="1"):
-    sc = SCENARIOS.get(str(scenario_key), SCENARIOS["1"])
-    raw_rain = random.randint(sc["raw_rain"][0], sc["raw_rain"][1])
-    raw_water = random.randint(sc["raw_water_level"][0], sc["raw_water_level"][1])
-    raw_soil = random.randint(sc["raw_soil"][0], sc["raw_soil"][1])
-    temp = round(random.uniform(sc["temp"][0], sc["temp"][1]), 1)
-    humidity = round(random.uniform(sc["humidity"][0], sc["humidity"][1]), 1)
-
-    payload = {
-        "device_id": "ESP32_DEMO_01",
-        "location": "Subansiri River Gauge Node",
-        "state": "Assam",
-        "district": "Dhemaji",
-        "basin": "A011",
-        "raw_rain": raw_rain,
-        "raw_water_level": raw_water,
-        "raw_soil": raw_soil,
-        "temperature": temp,
-        "humidity": humidity,
-        "demo_mode": True,
-        "scenario_name": sc["name"]
+def generate_telemetry(scenario_key):
+    sc = SCENARIOS.get(scenario_key, SCENARIOS["3"])
+    return {
+        "node_id": "ESP32_DEV_K01",
+        "raw_rain": random.randint(*sc["rain_range"]),
+        "raw_water_level": random.randint(*sc["water_range"]),
+        "raw_soil": random.randint(*sc["soil_range"]),
+        "temperature": round(random.uniform(*sc["temp_range"]), 1),
+        "humidity": round(random.uniform(*sc["hum_range"]), 1),
+        "timestamp": int(time.time()),
+        "status": "active"
     }
-    return payload
 
-def send_payload(url, payload):
+def transmit(url, payload):
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
         url,
@@ -82,16 +74,14 @@ def send_payload(url, payload):
     )
     try:
         with urllib.request.urlopen(req, timeout=3) as resp:
-            status = resp.status
-            body = resp.read().decode("utf-8")
-            return status, body
-    except urllib.error.URLError as e:
-        return None, str(e)
+            return resp.status, resp.read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        return e.code, e.read().decode("utf-8")
     except Exception as e:
         return None, str(e)
 
 def main():
-    parser = argparse.ArgumentParser(description="PravahAI ESP32 Hardware Simulator")
+    parser = argparse.ArgumentParser(description="TriNetra AI ESP32 Hardware Simulator")
     parser.add_argument("--url", default=DEFAULT_BACKEND_URL, help="Backend or Gateway URL")
     parser.add_argument("--scenario", default=None, choices=["1", "2", "3"], help="Scenario 1=Dry, 2=Spray, 3=Flash Flood")
     parser.add_argument("--continuous", action="store_true", help="Send stream every 2.5 seconds")
@@ -99,7 +89,7 @@ def main():
     args = parser.parse_args()
 
     print("=" * 60)
-    print("  🌊 PravahAI — Virtual ESP32 Hardware Telemetry Node")
+    print("  🌊 TriNetra AI — Virtual ESP32 Hardware Telemetry Node")
     print("=" * 60)
     print(f"Target Server Endpoint: {args.url}")
 

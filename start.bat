@@ -1,6 +1,6 @@
 @echo off
 echo ===================================================
-echo       Starting PravahAI Full Stack System
+echo       Starting TriNetra AI Full Stack System
 echo ===================================================
 
 :: Clean up old hanging instances on port 5000 and 3000
@@ -8,12 +8,12 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":5000" ^| findstr "LISTENING
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":3000" ^| findstr "LISTENING"') do taskkill /f /pid %%a >nul 2>&1
 
 echo [1/2] Starting Unified AI/ML and Routing Backend (Port 5000)...
-start "PravahAI - Master Python Backend (5000)" cmd /k "python src\backend_api\main.py"
+start "TriNetra AI - Master Python Backend (5000)" cmd /k "python src\backend_api\main.py"
 
 ping 127.0.0.1 -n 3 >nul
 
 echo [2/2] Starting Web Application and API Gateway (Port 3000)...
-start "PravahAI - Express Gateway (3000)" cmd /k "cd src\backend_api && node SERVER.JS"
+start "TriNetra AI - Express Gateway (3000)" cmd /k "cd src\backend_api && node SERVER.JS"
 
 echo.
 echo ===================================================

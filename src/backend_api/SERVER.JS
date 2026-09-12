@@ -1,5 +1,5 @@
 /* ==========================================================
-   PravahAI — Backend API Gateway & Aggregator (Express)
+   TriNetra AI — Backend API Gateway & Aggregator (Express)
    ========================================================== */
 const axios = require("axios");
 const cors = require("cors");
@@ -22,7 +22,7 @@ app.use(express.static(FRONTEND_DIR));
 app.get("/status", (req, res) => {
   res.json({
     status: "online",
-    gateway: "PravahAI Express Gateway",
+    gateway: "TriNetra AI Express Gateway",
     port: PORT,
     frontend: "Active"
   });
@@ -41,7 +41,7 @@ const EXPLAIN_API_URL = process.env.EXPLAIN_API_URL || "http://localhost:5001/ex
 
 const OPEN_METEO_GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
-const WEATHER_HEADERS = { "User-Agent": "PravahAI-Weather/1.0 (flood-hazard-monitoring; contact@pravah.ai)" };
+const WEATHER_HEADERS = { "User-Agent": "TriNetraAI-Weather/1.0 (flood-hazard-monitoring; contact@trinetra.ai)" };
 
 const weatherDescription = (code) => ({
   0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
@@ -443,7 +443,7 @@ app.all("/predict", async (req, res) => {
         probability_percent: 78,
         category: "Very High",
         confidence: 0.88,
-        model_version: "PravahAI-XGBoost-v2"
+        model_version: "TriNetraAI-XGBoost-v2"
       },
       explainable_ai: {
         summary: "Compound flood risk triggered by antecedent rainfall and saturated soil moisture.",
@@ -544,15 +544,15 @@ app.post("/api/get-dashboard-data", async (req, res) => {
 
 app.post("/api/admin/login", (req, res) => {
   const { username, password } = req.body;
-  if (username === "admin" && password === "PravahAdmin@2026") {
-    return res.json({ status: "success", token: "pravah-mock-admin-token-12345" });
+  if (username === "admin" && password === "TriNetraAdmin@2026") {
+    return res.json({ status: "success", token: "trinetra-mock-admin-token-12345" });
   }
   return res.status(401).json({ status: "error", message: "Invalid credentials" });
 });
 
 app.post("/api/admin/broadcast", (req, res) => {
   const { token, message, severity, targetArea } = req.body;
-  if (token !== "pravah-mock-admin-token-12345") {
+  if (token !== "trinetra-mock-admin-token-12345") {
     return res.status(403).json({ status: "error", message: "Unauthorized" });
   }
   
@@ -625,9 +625,61 @@ app.post("/api/predict/compare", async (req, res) => {
   }
 });
 
+/* -----------------------------------------------------------
+   9. WHAT-IF DISASTER SIMULATION PROXY: /api/simulate
+   Directly proxies simulation payloads to Python Master Backend (:5000)
+----------------------------------------------------------- */
+app.all("/api/simulate", async (req, res) => {
+  try {
+    const isPost = req.method === "POST";
+    const payload = isPost ? req.body : req.query;
+    const pythonResp = await axios({
+      method: req.method,
+      url: "http://localhost:5000/api/simulate",
+      data: isPost ? payload : undefined,
+      params: !isPost ? payload : undefined,
+      timeout: 5000
+    });
+    return res.status(pythonResp.status).json(pythonResp.data);
+  } catch (err) {
+    // Fast local fallback calculation if Python is temporarily busy
+    const rain = parseFloat(req.body?.rainfall_3d || req.query?.rainfall_3d || 110);
+    const soil = parseFloat(req.body?.soil_saturation_proxy || req.query?.soil_saturation || 0.85);
+    const surge = parseFloat(req.body?.river_surge_m || req.query?.river_surge || 0.4);
+    
+    let prob = Math.min(98, Math.max(8, Math.round((rain * 0.42) + (soil * 40) + (surge * 15))));
+    let cat = prob >= 75 ? "Very High" : prob >= 50 ? "High" : prob >= 25 ? "Moderate" : "Low";
+    
+    return res.json({
+      status: "success",
+      simulation_mode: true,
+      risk_summary: {
+        probability_percent: prob,
+        category: cat,
+        confidence: 0.90,
+        model_version: "TriNetraAI-XGBoost-v2-Simulator-Fallback",
+        risk_color: prob >= 75 ? "#ff4d4f" : prob >= 50 ? "#fa8c16" : prob >= 25 ? "#fadb14" : "#52c41a",
+        lead_time_hours: prob >= 75 ? 3 : 6
+      },
+      tactical_action: {
+        title: prob >= 75 ? "RED ALERT — Immediate Evacuation Order" : "ORANGE WARNING — Prepare Movement",
+        message: `Simulation: Precipitation (${rain}mm) on saturated terrain (${Math.round(soil*100)}%) triggers elevated hazard.`
+      },
+      explainable_ai: {
+        summary: `Calculated flood hazard probability is ${prob}% (${cat}).`,
+        factors: [
+          { feature: "rainfall_3d", score: 0.45, label: "3-Day Rainfall Accumulation" },
+          { feature: "soil_saturation", score: 0.32, label: "Antecedent Soil Saturation" },
+          { feature: "river_surge", score: 0.15, label: "River Level Surge" }
+        ]
+      }
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`====================================================`);
-  console.log(`✅ PravahAI Gateway running at http://localhost:${PORT}`);
+  console.log(`✅ TriNetra AI Gateway running at http://localhost:${PORT}`);
   console.log(`   Frontend served from: ${FRONTEND_DIR}`);
   console.log(`   Connected to ML Model, Agentic AI & Routing Engine`);
   console.log(`====================================================`);
