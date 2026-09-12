@@ -58,14 +58,16 @@ def get_risk_percentage():
     try:
         req = urllib.request.Request(
             "http://localhost:5000/predict",
-            data=b'{"state":"Assam", "district":"Dhemaji"}',
+            data=b'{"state":"Uttarakhand", "district":"Chamoli", "basin":"U04"}',
             headers={"Content-Type": "application/json"}
         )
         with urllib.request.urlopen(req, timeout=2.5) as resp:
             data = json.loads(resp.read().decode("utf-8"))
-            return data.get("risk_summary", {}).get("probability_percent", 0)
+            flood_risk = data.get("risk_summary", {}).get("probability_percent", 0)
+            landslide_risk = data.get("landslide_risk", {}).get("probability_percent", 0)
+            return max(flood_risk, landslide_risk), flood_risk, landslide_risk
     except Exception as ex:
-        return None
+        return None, 0, 0
 
 def main():
     print("=" * 65)
@@ -104,10 +106,10 @@ def main():
                     payload = json.loads(line)
                     status, res = forward_to_backend(line)
                     if status == 200:
-                        risk_pct = get_risk_percentage()
-                        if risk_pct is not None:
-                            print(f"[🟢 LIVE HW HTTP {status}] RainADC={payload.get('raw_rain')} | WaterADC={payload.get('raw_water_level')} | Soil={payload.get('raw_soil')} -> Ingested OK | 🤖 ML Risk: {risk_pct}%")
-                            ser.write(f"RISK:{risk_pct}\n".encode('utf-8'))
+                        max_risk, flood_risk, landslide_risk = get_risk_percentage()
+                        if max_risk is not None:
+                            print(f"[🟢 LIVE HW HTTP {status}] Rain={payload.get('raw_rain')} | Soil={payload.get('raw_soil')} | 🌊 Flood: {flood_risk}% | 🏔️ Landslide: {landslide_risk}% -> 🔴 Sending Max Risk ({max_risk}%) to ESP32")
+                            ser.write(f"RISK:{max_risk}\n".encode('utf-8'))
                         else:
                             print(f"[🟢 LIVE HW HTTP {status}] RainADC={payload.get('raw_rain')} | WaterADC={payload.get('raw_water_level')} | SoilADC={payload.get('raw_soil')} | Temp={payload.get('temperature')}°C -> Ingested OK")
                     else:
