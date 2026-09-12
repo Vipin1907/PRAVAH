@@ -1016,7 +1016,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // startup prevents a hidden home section from also hiding the forecast view or modal popups.
   ["weather-forecast-panel", "results-panel", "compare-modal", "cap-modal", "simulation-modal"].forEach((id) => {
     const panel = document.getElementById(id);
-    if (panel && panel.parentElement !== document.body) document.body.appendChild(panel);
+    const authView = document.getElementById("authority-view") || document.body;
+    if (panel && panel.parentElement !== authView) authView.appendChild(panel);
   });
 
   // ─── ALWAYS RESET TO HOME ON FRESH PAGE LOAD ───
