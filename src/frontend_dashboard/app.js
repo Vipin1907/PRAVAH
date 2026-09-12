@@ -1844,10 +1844,19 @@ window.toggleAppMode = function(mode) {
     // Initialize or resize map
     if (!touristMapInstance) {
       touristMapInstance = L.map('t-map').setView([26.20, 92.93], 7);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(touristMapInstance);
       window._touristMapInstance = touristMapInstance;
+      
+      // Auto-populate with safe defaults if no prediction has run yet
+      const levelEl = document.getElementById("t-threat-level");
+      if (levelEl && levelEl.textContent === "UNKNOWN") {
+        window.updateTouristView(12, "LOW", "Assam", "Cachar", {
+          normal: { name: "NH-37", warn: "Clear" },
+          safe: { name: "Highland Route", time: "45 mins" }
+        });
+      }
     }
     setTimeout(() => { touristMapInstance.invalidateSize(); }, 300);
   } else {
