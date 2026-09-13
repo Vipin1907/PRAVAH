@@ -2845,6 +2845,24 @@ body.dark .live-weather-table td { border-color: #1e314f; }
   margin-top: 6px;
 }
 
+.wfc-formula-box {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  color: #475569;
+  text-align: center;
+}
+
+body.dark .wfc-formula-box {
+  background: #0f172a;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
 .wfc-meta-table {
   display: flex;
   flex-direction: column;

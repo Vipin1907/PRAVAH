@@ -994,6 +994,24 @@ async function pollIotTelemetry() {
       if (soilVal) soilVal.innerHTML = `${calib.soil_saturation_pct} <span class="wfc-unit">%</span>`;
       if (rawSoil) rawSoil.textContent = `${raw?.soil_adc || 3800} (${calib.soil_saturation_pct > 80 ? 'Saturated' : 'Damp'})`;
 
+      const formulaRain = document.getElementById("formula-rain");
+      if (formulaRain) {
+        const rADC = raw?.rain_adc || 4095;
+        formulaRain.innerHTML = `<code>Rain % = ((4095 - ${rADC}) / 3600) * 100 = <strong>${calib.rain_index_pct}%</strong></code>`;
+      }
+      
+      const formulaWater = document.getElementById("formula-water");
+      if (formulaWater) {
+        const wADC = raw?.water_level_adc || 300;
+        formulaWater.innerHTML = `<code>Level = 20.0 + ((${wADC} - 300) / 3200) * 1.6 = <strong>${calib.river_gauge_m}m</strong></code>`;
+      }
+      
+      const formulaSoil = document.getElementById("formula-soil");
+      if (formulaSoil) {
+        const sADC = raw?.soil_adc || 3800;
+        formulaSoil.innerHTML = `<code>Soil % = 35.0 + ((4095 - ${sADC}) / 3200) * 62 = <strong>${calib.soil_saturation_pct}%</strong></code>`;
+      }
+
       const tempVal = document.getElementById("iot-temp-val");
       const humVal = document.getElementById("iot-hum-val");
       if (tempVal) tempVal.innerHTML = `${calib.temperature_c} <span class="wfc-unit">°C</span>`;
@@ -1936,3 +1954,37 @@ window.updateTouristView = function(maxRiskPct, riskLevel, state, district, rout
   }
 };
 
+/* -------------------------------------------------
+   14. NAVBAR SMOOTH SCROLL FIX
+   ------------------------------------------------- */
+document.querySelectorAll('.nav-links a, .drawer-nav a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    const targetId = this.getAttribute('href');
+    if (targetId && targetId.length > 1 && targetId.startsWith('#')) {
+      const targetElement = document.querySelector(targetId);
+      if (targetElement) {
+        e.preventDefault();
+        
+        if (typeof showHomePage === 'function') {
+          showHomePage();
+        }
+        
+        const headerOffset = 130; 
+        const elementPosition = targetElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        
+        window.scrollTo({
+             top: offsetPosition,
+             behavior: "smooth"
+        });
+        
+        const drawer = document.getElementById('sidebar-drawer');
+        const overlay = document.getElementById('drawer-overlay');
+        if (drawer && drawer.classList.contains('open')) {
+            drawer.classList.remove('open');
+            if (overlay) overlay.classList.add('hidden');
+        }
+      }
+    }
+  });
+});

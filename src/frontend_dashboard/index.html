@@ -1522,6 +1522,9 @@
               <div class="wfc-meta-row"><span class="wfc-meta-key">Probe Status:</span><span class="wfc-meta-val status-verified" id="iot-rain-status">Active Wet Surface</span></div>
               <div class="wfc-meta-row"><span class="wfc-meta-key">Estimated R1h:</span><span class="wfc-meta-val" id="iot-rain-1h">30.8 mm/h (Surge)</span></div>
             </div>
+            <div class="wfc-formula-box" id="formula-rain">
+              <code>Rain % = ((4095 - ADC) / 3600) * 100</code>
+            </div>
           </div>
 
           <!-- IoT 2: River Gauge Water Level -->
@@ -1541,6 +1544,9 @@
               <div class="wfc-meta-row"><span class="wfc-meta-key">Discharge:</span><span class="wfc-meta-val" id="iot-discharge-val">1,580 m³/s</span></div>
               <div class="wfc-meta-row"><span class="wfc-meta-key">Raw Probe ADC:</span><span class="wfc-meta-val" id="iot-raw-water">3400 (Submerged)</span></div>
             </div>
+            <div class="wfc-formula-box" id="formula-water">
+              <code>Level (m) = 20.0 + ((ADC - 300) / 3200) * 1.6</code>
+            </div>
           </div>
 
           <!-- IoT 3: Soil Moisture -->
@@ -1559,6 +1565,9 @@
             <div class="wfc-meta-table">
               <div class="wfc-meta-row"><span class="wfc-meta-key">Raw Soil ADC:</span><span class="wfc-meta-val" id="iot-raw-soil">380 (Saturated)</span></div>
               <div class="wfc-meta-row"><span class="wfc-meta-key">Runoff Status:</span><span class="wfc-meta-val status-verified">Immediate Inflow</span></div>
+            </div>
+            <div class="wfc-formula-box" id="formula-soil">
+              <code>Soil % = 35.0 + ((4095 - ADC) / 3200) * 62</code>
             </div>
           </div>
 
