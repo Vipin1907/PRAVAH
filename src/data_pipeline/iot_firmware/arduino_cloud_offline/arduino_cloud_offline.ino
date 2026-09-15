@@ -3,8 +3,17 @@
   Uses thingProperties.h for configuration
 */
 
+#include <WiFi.h>
+#include <HTTPClient.h>
 #include "thingProperties.h"
 #include <DHT.h>
+
+const char* serverUrl = "http://10.107.107.76:5000/api/iot-telemetry";
+const char* DEVICE_ID = "ESP32_DEMO_01";
+const char* LOCATION_NAME = "Subansiri River Basin";
+const char* STATE_NAME = "Assam";
+const char* DISTRICT_NAME = "Dhemaji";
+const char* BASIN_CODE = "A011";
 
 // ==========================================
 // 1. PIN CONFIGURATION
@@ -87,4 +96,45 @@ void readSensors() {
   humidity = hum;
 
   Serial.println("Sensors Updated in Cloud!");
+
+  // Build JSON Payload and send to Local TriNetra Backend
+  char jsonPayload[512];
+  snprintf(jsonPayload, sizeof(jsonPayload),
+    "{"
+      "\"device_id\":\"%s\","
+      "\"location\":\"%s\","
+      "\"state\":\"%s\","
+      "\"district\":\"%s\","
+      "\"basin\":\"%s\","
+      "\"raw_rain\":%d,"
+      "\"raw_water_level\":%d,"
+      "\"raw_soil\":%d,"
+      "\"temperature\":%.2f,"
+      "\"humidity\":%.2f,"
+      "\"demo_mode\":false"
+    "}",
+    DEVICE_ID, LOCATION_NAME, STATE_NAME, DISTRICT_NAME, BASIN_CODE,
+    rawRain, rawWater, rawSoil, temp, hum
+  );
+
+  // THIS IS CRITICAL FOR THE USB SERIAL BRIDGE TO WORK!
+  Serial.println(jsonPayload);
+
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
+
+    int httpResponseCode = http.POST(jsonPayload);
+
+    if (httpResponseCode > 0) {
+      Serial.printf("[HTTP] POST Success to Local Dashboard! Response Code: %d\n", httpResponseCode);
+    } else {
+      Serial.printf("[HTTP] POST Error! Code: %d\n", httpResponseCode);
+    }
+    http.end();
+  } else {
+    Serial.print("[WARNING] WiFi not fully connected yet. Status: ");
+    Serial.println(WiFi.status());
+  }
 }

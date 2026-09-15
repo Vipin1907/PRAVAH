@@ -2,11 +2,11 @@
 #include <ArduinoIoTCloud.h>
 #include <Arduino_ConnectionHandler.h>
 
-const char DEVICE_LOGIN_NAME[]  = "YOUR_DEVICE_ID_HERE";
+const char DEVICE_LOGIN_NAME[]  = "d587a110-9a08-4df1-907f-da9cb87f1828";
 
-const char SSID[]               = "YOUR_WIFI_SSID_HERE";    // Network SSID (name)
-const char PASS[]               = "YOUR_WIFI_PASSWORD_HERE";    // Network password
-const char DEVICE_KEY[]         = "YOUR_SECRET_KEY_HERE";    // Secret device password
+const char SSID[]               = "Future with me";    // Network SSID (name)
+const char PASS[]               = "Future with me";    // Network password
+const char DEVICE_KEY[]         = "WnAIsyvIhywBUTiBs120q2Qbz";    // Secret device password
 
 float humidity;
 float rainfall;
