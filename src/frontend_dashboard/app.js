@@ -1,5 +1,5 @@
 /* ==========================================================
-   TriNetra AI — Frontend Application Logic
+   Pravah AI — Frontend Application Logic
    Handles Tabs, Real Data Fetching, Interactive UI, Charts,
    Risk Gauge, Real-Time Alerts, Action Center & Explanations
    ========================================================== */
@@ -434,8 +434,8 @@ function generateCAP(state, district, pct, riskLevel) {
   const now = new Date().toISOString();
   return `<?xml version="1.0" encoding="UTF-8"?>
 <alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
-  <identifier>TriNetraAI-${Date.now()}</identifier>
-  <sender>trinetraai@disaster-mgmt.gov.in</sender>
+  <identifier>PravahAI-${Date.now()}</identifier>
+  <sender>pravahai@disaster-mgmt.gov.in</sender>
   <sent>${now}</sent>
   <status>Draft</status>
   <msgType>Alert</msgType>
@@ -817,7 +817,7 @@ async function runIotPrediction(state, district, basinId, basinLabel) {
 
     if (secTag) secTag.innerHTML = `<i class="fa-solid fa-microchip"></i> LIVE ESP32 IOT SENSORS vs HISTORICAL FLOOD RECORDS`;
     if (secTitle) secTitle.textContent = `"Will a Flood Occur Today Based on Live ESP32 Ground Sensors & Past Records?"`;
-    if (secSub) secSub.textContent = `TriNetra AI XGBoost ML model evaluates real physical ground telemetry (Raindrop Plate, Water Probe, Soil Hygrometer) against historical catchments.`;
+    if (secSub) secSub.textContent = `Pravah AI XGBoost ML model evaluates real physical ground telemetry (Raindrop Plate, Water Probe, Soil Hygrometer) against historical catchments.`;
     if (gaugeLabel) gaugeLabel.textContent = `ESP32 GROUND SENSOR FLOOD PREDICTION SCORE`;
     if (colToday) colToday.textContent = `Live ESP32 Ground Node`;
     if (todayTag) todayTag.textContent = `ESP32 Live (Observed)`;
@@ -1347,11 +1347,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (lang === "hi") {
       document.title = "ट्राईनेत्र AI — बाढ़ पूर्व चेतावनी प्रणाली";
     } else {
-      document.title = "TriNetra AI — Flash Flood Intelligence & Early Warning System";
+      document.title = "Pravah AI — Flash Flood Intelligence & Early Warning System";
     }
 
     // Store preference
-    localStorage.setItem("trinetra-lang", lang);
+    localStorage.setItem("pravah-lang", lang);
   }
 
   langEnOpt?.addEventListener("click", (e) => {
@@ -1369,7 +1369,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Restore saved language on page load
-  const savedLang = localStorage.getItem("trinetra-lang") || "en";
+  const savedLang = localStorage.getItem("pravah-lang") || "en";
   if (savedLang === "hi") {
     langHiOpt?.classList.add("active");
     langEnOpt?.classList.remove("active");
@@ -1378,7 +1378,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Notification Bell Button ---
   document.getElementById("notif-btn")?.addEventListener("click", () => {
-    alert("📢 TriNetra AI Notifications:\n\n• All flood monitoring stations operational.\n• Live telemetry synced for Assam (Barak Basin) and Uttarakhand.\n• No critical breach warnings active at this moment.");
+    alert("📢 Pravah AI Notifications:\n\n• All flood monitoring stations operational.\n• Live telemetry synced for Assam (Barak Basin) and Uttarakhand.\n• No critical breach warnings active at this moment.");
   });
 
   // --- Dark mode toggle ---
@@ -1408,7 +1408,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "trinetra_cap_alert.xml";
+    a.download = "pravah_cap_alert.xml";
     a.click();
     URL.revokeObjectURL(url);
   });
@@ -1486,7 +1486,7 @@ document.addEventListener("DOMContentLoaded", () => {
         districts: "Lakhimpur, Dhemaji, Jorhat, Nagaon",
         type: "Flood",
         source: "ASDMA Official Annual Monograph",
-        details: "Continuous torrential precipitation during early monsoon phase led to sudden river stage spikes along Brahmaputra tributaries. Matmora embankment breaches caused wide-scale inundation across upper Assam plains. Historical hydrological logs ingested into TriNetra AI hydro-routing engine."
+        details: "Continuous torrential precipitation during early monsoon phase led to sudden river stage spikes along Brahmaputra tributaries. Matmora embankment breaches caused wide-scale inundation across upper Assam plains. Historical hydrological logs ingested into Pravah AI hydro-routing engine."
       },
       "assam-2012": {
         title: "Assam Major Flood — 2012",
@@ -1502,7 +1502,7 @@ document.addEventListener("DOMContentLoaded", () => {
         districts: "Barak and Brahmaputra river sub-catchments",
         type: "Flood",
         source: "ASDMA Flood Situation Reports 2024",
-        details: "Early monsoon cloudbursts and high antecedent soil moisture triggered rapid runoff in Barak and northern tributaries. Real-time satellite radar telemetry calibrated TriNetra AI's AI runoff prediction model."
+        details: "Early monsoon cloudbursts and high antecedent soil moisture triggered rapid runoff in Barak and northern tributaries. Real-time satellite radar telemetry calibrated Pravah AI's AI runoff prediction model."
       },
       "uk-2013": {
         title: "Uttarakhand Floods — 2013",
@@ -1526,7 +1526,7 @@ document.addEventListener("DOMContentLoaded", () => {
         districts: "Pithoragarh, Chamoli, Rudraprayag & Garhwal/Kumaon Hills",
         type: "Landslide",
         source: "Disaster Mitigation & Management Centre (DMMC)",
-        details: "Slope instability caused by high pore-water pressure along steep Himalayan terrain during monsoon downpours. TriNetra AI integrates slope angle, geological fault data and rainfall thresholds for early landslide hazard forecasting."
+        details: "Slope instability caused by high pore-water pressure along steep Himalayan terrain during monsoon downpours. Pravah AI integrates slope angle, geological fault data and rainfall thresholds for early landslide hazard forecasting."
       }
     };
 
@@ -1535,7 +1535,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const target = btn.getAttribute("data-target");
         const ev = eventDetailsData[target];
         if (ev) {
-          alert(`📋 ${ev.title}\n\n📍 Location: ${ev.districts}\n⚠️ Type: ${ev.type}\n🏛️ Official Source: ${ev.source}\n\n📝 Report Summary:\n${ev.details}\n\n💡 TriNetra AI ML models incorporate these verified historical parameters to predict upcoming flood risks.`);
+          alert(`📋 ${ev.title}\n\n📍 Location: ${ev.districts}\n⚠️ Type: ${ev.type}\n🏛️ Official Source: ${ev.source}\n\n📝 Report Summary:\n${ev.details}\n\n💡 Pravah AI ML models incorporate these verified historical parameters to predict upcoming flood risks.`);
         }
       });
     });

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TriNetra AI — ESP32 Virtual Node Hardware Simulator
+Pravah AI — ESP32 Virtual Node Hardware Simulator
 Directly sends synthetic sensor ADC readings to backend API (:5000) or Gateway (:3000).
 Tests and demonstrates real-time physical calibration into rainfall, river levels & soil moisture.
 """
@@ -81,7 +81,7 @@ def transmit(url, payload):
         return None, str(e)
 
 def main():
-    parser = argparse.ArgumentParser(description="TriNetra AI ESP32 Hardware Simulator")
+    parser = argparse.ArgumentParser(description="Pravah AI ESP32 Hardware Simulator")
     parser.add_argument("--url", default=DEFAULT_BACKEND_URL, help="Backend or Gateway URL")
     parser.add_argument("--scenario", default=None, choices=["1", "2", "3"], help="Scenario 1=Dry, 2=Spray, 3=Flash Flood")
     parser.add_argument("--continuous", action="store_true", help="Send stream every 2.5 seconds")
@@ -89,7 +89,7 @@ def main():
     args = parser.parse_args()
 
     print("=" * 60)
-    print("  🌊 TriNetra AI — Virtual ESP32 Hardware Telemetry Node")
+    print("  🌊 Pravah AI — Virtual ESP32 Hardware Telemetry Node")
     print("=" * 60)
     print(f"Target Server Endpoint: {args.url}")
 

@@ -1,6 +1,6 @@
 /*
  * =====================================================================
- * TriNetra AI — ESP32 Cyber-Physical Wi-Fi Node
+ * Pravah AI — ESP32 Cyber-Physical Wi-Fi Node
  * =====================================================================
  * 
  * Works over Wi-Fi (No USB Serial connection needed for data)
@@ -87,7 +87,7 @@ void setup() {
   dht.begin();
 
   Serial.println("\n=======================================================");
-  Serial.println("  🌊 TriNetra AI — ESP32 Wi-Fi Node Starting...");
+  Serial.println("  🌊 Pravah AI — ESP32 Wi-Fi Node Starting...");
   Serial.println("=======================================================");
 
   WiFi.begin(ssid, password);

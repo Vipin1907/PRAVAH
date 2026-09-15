@@ -1,5 +1,5 @@
 """
-landslide_predictor.py — Landslide Risk Prediction Model for TriNetra AI
+landslide_predictor.py — Landslide Risk Prediction Model for Pravah AI
 
 Based on real geophysical research:
   - Shallow landslides in Himalayan terrain (Uttarakhand) triggered by:
@@ -247,7 +247,7 @@ if __name__ == "__main__":
     model = LandslidePredictor()
 
     print("=" * 60)
-    print("  TriNetra AI — Landslide Risk Predictor Test")
+    print("  Pravah AI — Landslide Risk Predictor Test")
     print("=" * 60)
 
     # Test 1: Assam (flat plains) — should be LOW risk

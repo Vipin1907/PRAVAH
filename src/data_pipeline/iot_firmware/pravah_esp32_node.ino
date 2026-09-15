@@ -1,5 +1,5 @@
 /*
- * TriNetra AI — ESP32 Cyber-Physical Hydrological Sensing Node
+ * Pravah AI — ESP32 Cyber-Physical Hydrological Sensing Node
  * 
  * Hardware Bill of Materials & Pin Configuration:
  * - Raindrop Sensor AO   -> GPIO 34 (ADC1_CH6)
@@ -10,7 +10,7 @@
  * 
  * Function:
  * Reads physical analog/digital sensors every 2-3 seconds, builds JSON payload,
- * and transmits via HTTP POST to the TriNetra AI Gateway / Master Backend.
+ * and transmits via HTTP POST to the Pravah AI Gateway / Master Backend.
  */
 
 #include <WiFi.h>
@@ -23,7 +23,7 @@
 const char* ssid = "YOUR_WIFI_SSID";           // Replace with your Wi-Fi SSID / Mobile Hotspot
 const char* password = "YOUR_WIFI_PASSWORD";   // Replace with your Wi-Fi Password
 
-// URL to TriNetra AI Express Gateway or Python Master Backend
+// URL to Pravah AI Express Gateway or Python Master Backend
 // Example: "http://192.168.1.100:3000/api/iot/readings" or "http://192.168.1.100:5000/api/iot-telemetry"
 const char* serverUrl = "http://192.168.1.100:5000/api/iot-telemetry";
 
@@ -64,7 +64,7 @@ void setup() {
   dht.begin();
 
   Serial.println("\n==========================================");
-  Serial.println("  🌊 TriNetra AI ESP32 IoT Node Initializing  ");
+  Serial.println("  🌊 Pravah AI ESP32 IoT Node Initializing  ");
   Serial.println("==========================================");
 
   // Connect to Wi-Fi

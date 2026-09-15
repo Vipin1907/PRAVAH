@@ -1,11 +1,11 @@
-# TriNetra AI — Unified IoT + ML Flood Risk Intelligence System
+# Pravah AI — Unified IoT + ML Flood Risk Intelligence System
 ## Master Integration Plan: Combining Cyber-Physical Sensing, Satellite Telemetry & Agentic AI
 
 ---
 
 ## 📌 1. Purpose & System Vision
 
-**TriNetra AI** integrates two complementary data streams to provide reliable, multi-scale flood forecasting:
+**Pravah AI** integrates two complementary data streams to provide reliable, multi-scale flood forecasting:
 1. **Macro/Regional Layer (Satellite & IMD NWP)**: Captures large-scale monsoon anomalies, 3-day satellite precipitation, and catchment-wide topography.
 2. **Micro/Local Layer (ESP32 IoT Sensor Node)**: Captures ground-level hydro-physical indicators (soil saturation, immediate precipitation accumulation, river gauge surges).
 
@@ -21,7 +21,7 @@ graph TD
     end
 
     subgraph Communication Bridge
-        ESP -->|Wi-Fi HTTP POST JSON \n Every 2-3 sec| Gateway["TriNetra AI Gateway / Express (:3000)"]
+        ESP -->|Wi-Fi HTTP POST JSON \n Every 2-3 sec| Gateway["Pravah AI Gateway / Express (:3000)"]
         Gateway --> PythonMaster["Python Master Backend (:5000)"]
     end
 
@@ -34,7 +34,7 @@ graph TD
     end
 
     subgraph Triple-Action Frontend UI
-        PythonMaster --> UI["TriNetra AI Dashboard (:3000)"]
+        PythonMaster --> UI["Pravah AI Dashboard (:3000)"]
         UI --> M1["[Predict Using Weather]"]
         UI --> M2["[Predict Using IoT]"]
         UI --> M3["[Compare Results (Satellite vs IoT)]"]
@@ -49,7 +49,7 @@ graph TD
 > **Hackathon & Evaluation Defense Rule**:
 > Low-cost demo sensors (e.g., analog raindrop probes) cannot measure calibrated continuous rainfall volume in exact millimetres. 
 > 
-> In TriNetra AI, we explicitly label these measurements as:
+> In Pravah AI, we explicitly label these measurements as:
 > **`Ground IoT Observation (Simulated Rainfall Equivalent Index)`** instead of claiming raw sensor precision.
 
 ### 🎯 Pre-empting Jury Cross-Questions:
@@ -112,7 +112,7 @@ sequenceDiagram
     participant ESP as ESP32 Hardware Node
     participant Gateway as Express Gateway (:3000)
     participant Python as Master Backend (:5000)
-    participant UI as TriNetra AI Frontend
+    participant UI as Pravah AI Frontend
 
     ESP->>Gateway: POST /api/iot/readings (JSON)
     Gateway->>Python: Forward to /api/iot-telemetry

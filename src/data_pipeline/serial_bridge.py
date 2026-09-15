@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-TriNetra AI — USB Data Cable (Serial) to Dashboard Bridge
+Pravah AI — USB Data Cable (Serial) to Dashboard Bridge
 Reads live JSON telemetry packets from ESP32 via USB COM Port
-and forwards them to the TriNetra AI Master Backend (:5000) & Gateway (:3000).
+and forwards them to the Pravah AI Master Backend (:5000) & Gateway (:3000).
 """
 
 import sys
@@ -71,7 +71,7 @@ def get_risk_percentage():
 
 def main():
     print("=" * 65)
-    print("  🔌 TriNetra AI — USB Data Cable (Serial) Bridge")
+    print("  🔌 Pravah AI — USB Data Cable (Serial) Bridge")
     print("=================================================")
     
     port = find_esp32_port()
@@ -118,7 +118,7 @@ def main():
                     pass
             else:
                 # Debug message from ESP32 setup
-                if "TriNetra" in line or "Reading" in line:
+                if "Pravah AI" in line or "Reading" in line:
                     print(f"[ESP32 BOOT] {line}")
         except KeyboardInterrupt:
             print("\n🛑 Stopped Serial Bridge.")

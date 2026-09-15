@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TriNetra AI — Comprehensive Test Suite for IoT & Dual Inference Engine
+Pravah AI — Comprehensive Test Suite for IoT & Dual Inference Engine
 Verifies all endpoints, physics scaling calculations, ML inferences and comparisons.
 """
 
@@ -20,7 +20,7 @@ from main import app, LATEST_IOT_BUFFER, calibrate_iot_reading
 
 def run_tests():
     print("=" * 65)
-    print("  🧪 TriNetra AI IoT & Dual Inference Verification Test Suite")
+    print("  🧪 Pravah AI IoT & Dual Inference Verification Test Suite")
     print("=" * 65)
 
     client = app.test_client()

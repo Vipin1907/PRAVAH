@@ -1,6 +1,6 @@
 """
 =============================================================================
-TriNetra AI — Master Backend System (Unified AI, ML, & Routing Gateway)
+Pravah AI — Master Backend System (Unified AI, ML, & Routing Gateway)
 =============================================================================
 Connects and runs:
 1. XGBoost & Hydro-Meteorological ML Prediction Engine
@@ -268,7 +268,7 @@ def calibrate_iot_reading(raw_payload: dict) -> dict:
 def health():
     return jsonify({
         "status": "healthy",
-        "service": "TriNetra AI Unified Master Backend",
+        "service": "Pravah AI Unified Master Backend",
         "ml_engine": "XGBoost v2 (Active)",
         "agentic_ai": "LangGraph Active" if has_agentic_ai else "Fallback Active",
         "routing_engine": "OSM Evacuation Engine (Active)"
@@ -299,13 +299,13 @@ def fetch_live_telemetry_py(state: str, district: str, basin: str, area: str):
                  "&current=temperature_2m,relative_humidity_2m,surface_pressure,precipitation,rain"
                  "&hourly=precipitation,rain,relative_humidity_2m,soil_moisture_0_to_1cm,soil_moisture_1_to_3cm"
                  "&past_days=10&forecast_days=2")
-        req_w = urllib.request.Request(w_url, headers={"User-Agent": "TriNetraAI/1.0"})
+        req_w = urllib.request.Request(w_url, headers={"User-Agent": "PravahAI/1.0"})
         with urllib.request.urlopen(req_w, timeout=5) as response:
             w_data = json.loads(response.read().decode())
 
         f_url = (f"https://flood-api.open-meteo.com/v1/flood?latitude={lat}&longitude={lon}"
                  "&daily=river_discharge,river_discharge_mean&forecast_days=7")
-        req_f = urllib.request.Request(f_url, headers={"User-Agent": "TriNetraAI/1.0"})
+        req_f = urllib.request.Request(f_url, headers={"User-Agent": "PravahAI/1.0"})
         with urllib.request.urlopen(req_f, timeout=5) as response:
             f_data = json.loads(response.read().decode())
 
@@ -723,7 +723,7 @@ def predict():
             "probability_percent": prob_pct,
             "category": category,
             "confidence": conf,
-            "model_version": "TriNetraAI-XGBoost-v2",
+            "model_version": "PravahAI-XGBoost-v2",
             "state": state,
             "district": district,
             "basin": basin
@@ -732,7 +732,7 @@ def predict():
             "probability_percent": ls_risk_pct,
             "status": ls_status,
             "confidence": ls_conf,
-            "model_version": "TriNetraAI-Landslide-v1",
+            "model_version": "PravahAI-Landslide-v1",
             "slope_degrees": slope_deg,
             "elevation_m": elev_m,
             "factors": ls_factors
@@ -929,7 +929,7 @@ def get_dashboard_data():
             "probability_percent": ls_risk_pct,
             "status": ls_status,
             "confidence": ls_conf,
-            "model_version": "TriNetraAI-Landslide-v1",
+            "model_version": "PravahAI-Landslide-v1",
             "slope_degrees": slope_deg,
             "elevation_m": elev_m,
             "factors": ls_factors
@@ -1297,7 +1297,7 @@ def simulate_scenario():
             "probability_percent": prob_pct,
             "category": category,
             "confidence": conf,
-            "model_version": "TriNetraAI-XGBoost-v2-Simulator",
+            "model_version": "PravahAI-XGBoost-v2-Simulator",
             "risk_color": risk_color,
             "lead_time_hours": 3 if prob_pct >= 75 else 6 if prob_pct >= 50 else 12
         },
@@ -1323,6 +1323,6 @@ def simulate_scenario():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"============================================================")
-    print(f"  TriNetra AI Master Backend listening on http://0.0.0.0:{port}")
+    print(f"  Pravah AI Master Backend listening on http://0.0.0.0:{port}")
     print(f"============================================================")
     app.run(host="0.0.0.0", port=port, debug=False)

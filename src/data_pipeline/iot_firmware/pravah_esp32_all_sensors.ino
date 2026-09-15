@@ -1,6 +1,6 @@
 /*
  * =====================================================================
- * TriNetra AI — ESP32 Cyber-Physical 4-Sensor Hydrological Node
+ * Pravah AI — ESP32 Cyber-Physical 4-Sensor Hydrological Node
  * =====================================================================
  * 
  * Works with USB Data Cable (Direct Serial) AND Optional Wi-Fi!
@@ -76,7 +76,7 @@ void setup() {
   dht.begin();
 
   Serial.println("\n=======================================================");
-  Serial.println("  🌊 TriNetra AI — ESP32 4-Sensor + Alarm Node Ready");
+  Serial.println("  🌊 Pravah AI — ESP32 4-Sensor + Alarm Node Ready");
   Serial.println("=======================================================");
 }
 

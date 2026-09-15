@@ -1,5 +1,5 @@
 /* ==========================================================
-   TriNetra AI — Backend API Gateway & Aggregator (Express)
+   Pravah AI — Backend API Gateway & Aggregator (Express)
    ========================================================== */
 const axios = require("axios");
 const cors = require("cors");
@@ -22,7 +22,7 @@ app.use(express.static(FRONTEND_DIR));
 app.get("/status", (req, res) => {
   res.json({
     status: "online",
-    gateway: "TriNetra AI Express Gateway",
+    gateway: "Pravah AI Express Gateway",
     port: PORT,
     frontend: "Active"
   });
@@ -41,7 +41,7 @@ const EXPLAIN_API_URL = process.env.EXPLAIN_API_URL || "http://localhost:5001/ex
 
 const OPEN_METEO_GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
-const WEATHER_HEADERS = { "User-Agent": "TriNetraAI-Weather/1.0 (flood-hazard-monitoring; contact@trinetra.ai)" };
+const WEATHER_HEADERS = { "User-Agent": "PravahAI-Weather/1.0 (flood-hazard-monitoring; contact@pravah.ai)" };
 
 const weatherDescription = (code) => ({
   0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
@@ -443,7 +443,7 @@ app.all("/predict", async (req, res) => {
         probability_percent: 78,
         category: "Very High",
         confidence: 0.88,
-        model_version: "TriNetraAI-XGBoost-v2"
+        model_version: "PravahAI-XGBoost-v2"
       },
       explainable_ai: {
         summary: "Compound flood risk triggered by antecedent rainfall and saturated soil moisture.",
@@ -544,15 +544,15 @@ app.post("/api/get-dashboard-data", async (req, res) => {
 
 app.post("/api/admin/login", (req, res) => {
   const { username, password } = req.body;
-  if (username === "admin" && password === "TriNetraAdmin@2026") {
-    return res.json({ status: "success", token: "trinetra-mock-admin-token-12345" });
+  if (username === "admin" && password === "PravahAdmin@2026") {
+    return res.json({ status: "success", token: "pravah-mock-admin-token-12345" });
   }
   return res.status(401).json({ status: "error", message: "Invalid credentials" });
 });
 
 app.post("/api/admin/broadcast", (req, res) => {
   const { token, message, severity, targetArea } = req.body;
-  if (token !== "trinetra-mock-admin-token-12345") {
+  if (token !== "pravah-mock-admin-token-12345") {
     return res.status(403).json({ status: "error", message: "Unauthorized" });
   }
   
@@ -657,7 +657,7 @@ app.all("/api/simulate", async (req, res) => {
         probability_percent: prob,
         category: cat,
         confidence: 0.90,
-        model_version: "TriNetraAI-XGBoost-v2-Simulator-Fallback",
+        model_version: "PravahAI-XGBoost-v2-Simulator-Fallback",
         risk_color: prob >= 75 ? "#ff4d4f" : prob >= 50 ? "#fa8c16" : prob >= 25 ? "#fadb14" : "#52c41a",
         lead_time_hours: prob >= 75 ? 3 : 6
       },
@@ -679,7 +679,7 @@ app.all("/api/simulate", async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`====================================================`);
-  console.log(`✅ TriNetra AI Gateway running at http://localhost:${PORT}`);
+  console.log(`✅ Pravah AI Gateway running at http://localhost:${PORT}`);
   console.log(`   Frontend served from: ${FRONTEND_DIR}`);
   console.log(`   Connected to ML Model, Agentic AI & Routing Engine`);
   console.log(`====================================================`);
